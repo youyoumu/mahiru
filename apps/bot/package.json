@@ -1,0 +1,31 @@
+{
+  "name": "bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/index.ts",
+    "start": "node ./dist/src/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "npm run lint --fix",
+    "build": "tsc && tsc-alias",
+    "deploy-command": "tsx --env-file=.env src/deploy-command.ts"
+  },
+  "keywords": [],
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@t3-oss/env-core": "^0.13.0",
+    "discord.js": "^14.19.2",
+    "valibot": "^1.0.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "eslint": "^9.25.0",
+    "tsx": "^4.19.4"
+  }
+}
