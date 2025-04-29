@@ -2,6 +2,10 @@ import "dotenv/config";
 import { serve } from "@hono/node-server";
 
 import app from "./app";
+import "./routes";
+import "./routes/docs";
+import "./routes/openapi";
+
 import { env } from "./env";
 
 const port = env.PORT;

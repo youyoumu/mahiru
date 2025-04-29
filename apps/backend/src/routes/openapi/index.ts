@@ -1,26 +1,21 @@
-import { Hono } from "hono";
 import { openAPISpecs } from "hono-openapi";
+import app from "../../app";
 
-export function configureOpenAPI(app: Hono) {
-  return app.get(
-    "/openapi",
-    openAPISpecs(app, {
-      documentation: {
-        info: {
-          title: "Hono",
-          version: "1.0.0",
-          description: "API for greeting users",
-        },
-        servers: [
-          {
-            url: "http://localhost:8100",
-            description: "Local server",
-          },
-        ],
+app.get(
+  "/openapi",
+  openAPISpecs(app, {
+    documentation: {
+      info: {
+        title: "Hono",
+        version: "1.0.0",
+        description: "API for greeting users",
       },
-    }),
-  );
-}
-
-const app = configureOpenAPI(new Hono());
-export default app;
+      servers: [
+        {
+          url: "http://localhost:8100",
+          description: "Local server",
+        },
+      ],
+    },
+  }),
+);

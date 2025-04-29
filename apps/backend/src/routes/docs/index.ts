@@ -1,8 +1,4 @@
-import { Hono } from "hono";
 import { Scalar } from "@scalar/hono-api-reference";
-
-const app = new Hono();
+import app from "../../app";
 
 app.get("/docs", Scalar({ url: "/openapi" }));
-
-export default app;

@@ -1,9 +1,7 @@
-import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/valibot";
 import { object, string } from "valibot";
-
-const app = new Hono();
+import app from "../app";
 
 const responseSchema = object({
   name: string(),
@@ -33,5 +31,3 @@ app.get(
     return c.json({ namee: "asd" });
   },
 );
-
-export default app;
