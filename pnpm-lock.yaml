@@ -26,9 +26,12 @@ importers:
       '@hono/valibot-validator':
         specifier: ^0.5.2
         version: 0.5.2(hono@4.7.8)(valibot@1.0.0(typescript@5.8.2))
+      '@scalar/hono-api-reference':
+        specifier: ^0.8.5
+        version: 0.8.5(hono@4.7.8)
       '@t3-oss/env-core':
         specifier: ^0.13.0
-        version: 0.13.0(arktype@2.1.20)(typescript@5.8.2)(valibot@1.0.0(typescript@5.8.2))
+        version: 0.13.0(arktype@2.1.20)(typescript@5.8.2)(valibot@1.0.0(typescript@5.8.2))(zod@3.24.3)
       '@valibot/to-json-schema':
         specifier: ^1.0.0
         version: 1.0.0(valibot@1.0.0(typescript@5.8.2))
@@ -40,7 +43,7 @@ importers:
         version: 4.7.8
       hono-openapi:
         specifier: ^0.4.7
-        version: 0.4.7(@hono/valibot-validator@0.5.2(hono@4.7.8)(valibot@1.0.0(typescript@5.8.2)))(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.2)))(arktype@2.1.20)(hono@4.7.8)(openapi-types@12.1.3)(valibot@1.0.0(typescript@5.8.2))
+        version: 0.4.7(@hono/valibot-validator@0.5.2(hono@4.7.8)(valibot@1.0.0(typescript@5.8.2)))(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.2)))(arktype@2.1.20)(hono@4.7.8)(openapi-types@12.1.3)(valibot@1.0.0(typescript@5.8.2))(zod@3.24.3)
       valibot:
         specifier: ^1.0.0
         version: 1.0.0(typescript@5.8.2)
@@ -68,7 +71,7 @@ importers:
     dependencies:
       '@t3-oss/env-core':
         specifier: ^0.13.0
-        version: 0.13.0(arktype@2.1.20)(typescript@5.8.2)(valibot@1.0.0(typescript@5.8.2))
+        version: 0.13.0(arktype@2.1.20)(typescript@5.8.2)(valibot@1.0.0(typescript@5.8.2))(zod@3.24.3)
       discord.js:
         specifier: ^14.19.2
         version: 14.19.2
@@ -179,7 +182,7 @@ importers:
         version: 0.15.4
       '@t3-oss/env-core':
         specifier: ^0.13.0
-        version: 0.13.0(arktype@2.1.20)(typescript@5.8.2)(valibot@1.0.0(typescript@5.8.2))
+        version: 0.13.0(arktype@2.1.20)(typescript@5.8.2)(valibot@1.0.0(typescript@5.8.2))(zod@3.24.3)
       dotenv:
         specifier: ^16.5.0
         version: 16.5.0
@@ -950,6 +953,24 @@ packages:
     resolution: {integrity: sha512-jjmJywLAFoWeBi1W7994zZyiNWPIiqRRNAmSERxyg93xRGzNYvGjlZ0gR6x0F4gPRi2+0O6S71kOZYyr3cxaIQ==}
     engines: {node: '>=v14.0.0', npm: '>=7.0.0'}
 
+  '@scalar/core@0.2.11':
+    resolution: {integrity: sha512-crakGk7IOWEvlexKdxr+uLW+SzvE/9OLZMYGHn0GNop3jSsHqZRB7a4epZ6MzmOP6L2665M4q8g1IuTKBudYVw==}
+    engines: {node: '>=18'}
+
+  '@scalar/hono-api-reference@0.8.5':
+    resolution: {integrity: sha512-s9jmP7wQnXNvGR/pFyUxc1BDb7YMbLHJY7czqbMouBjNOhaeutipg2RioiViLOPdyLUoJWeUDxL7h4fUxcZMoA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      hono: ^4.0.0
+
+  '@scalar/openapi-types@0.2.1':
+    resolution: {integrity: sha512-UMxX54taQXnEWYEuesbH+pkjlXRVV1u/Wx6YbVeU3QoJdFGqT3Z7si9zsokoG6MXDcdi1LGny7A0KwownmPvUQ==}
+    engines: {node: '>=18'}
+
+  '@scalar/types@0.1.11':
+    resolution: {integrity: sha512-fNcaZbZKoZ2PvoW+KJHmk4au8ZukgWlb6qLK3k/SLkfsTggN3DO4PR57ch6cyl2WhwENNbw+iI+ss7fTRcPnOA==}
+    engines: {node: '>=18'}
+
   '@swc/counter@0.1.3':
     resolution: {integrity: sha512-e2BR4lsJkkRlKZ/qCHPw9ZaSxc0MVUd7gtbtaB7aMvHeJVYe8sOB8DBZkP2DtISHGSku9sCK6T6cnY0CtXrOCQ==}
 
@@ -1073,6 +1094,9 @@ packages:
   '@typescript-eslint/visitor-keys@8.31.0':
     resolution: {integrity: sha512-QcGHmlRHWOl93o64ZUMNewCdwKGU6WItOU52H0djgNmn1EOrhVudrDzXz4OycCRSCPwFCDrE2iIt5vmuUdHxuQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@unhead/schema@1.11.20':
+    resolution: {integrity: sha512-0zWykKAaJdm+/Y7yi/Yds20PrUK7XabLe9c3IRcjnwYmSWY6z0Cr19VIs3ozCj8P+GhR+/TI2mwtGlueCEYouA==}
 
   '@valibot/to-json-schema@1.0.0':
     resolution: {integrity: sha512-/9crJgPptVsGCL6X+JPDQyaJwkalSZ/52WuF8DiRUxJgcmpNdzYRfZ+gqMEP8W3CTVfuMWPqqvIgfwJ97f9Etw==}
@@ -1881,6 +1905,9 @@ packages:
     resolution: {integrity: sha512-PCibtFdxa7/Ldud9yddl1G81GjYaeMYYTq4ywSaNsYbB1Lug4mwtOMJf2WXykL0pntYwmpRJeOI3NmoDgD+Jxw==}
     engines: {node: '>=16.9.0'}
 
+  hookable@5.5.3:
+    resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
+
   http-proxy-agent@7.0.2:
     resolution: {integrity: sha512-T1gkAiYYDWYx3V5Bmyu7HcfcvL7mUrTWiM6yOfa3PIphViJ/gFPbvidQ+veqSOHci/PxBcDabeUNCzpOODJZig==}
     engines: {node: '>= 14'}
@@ -2212,6 +2239,11 @@ packages:
   nanoid@3.3.11:
     resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
+
+  nanoid@5.1.5:
+    resolution: {integrity: sha512-Ir/+ZpE9fDsNH0hQ3C68uyThDXzYcim2EqcZ8zn8Chtt1iylPT9xXJB0kPCnqzgcEGikO9RxSrh63MsmVCU7Fw==}
+    engines: {node: ^18 || >=20}
+    hasBin: true
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
@@ -2780,6 +2812,10 @@ packages:
     resolution: {integrity: sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==}
     engines: {node: '>=10'}
 
+  type-fest@4.40.1:
+    resolution: {integrity: sha512-9YvLNnORDpI+vghLU/Nf+zSv0kL47KbVJ1o3sKgoTefl6i+zebxbiDQWoe/oWWqPhIgQdRZRT1KA9sCPL810SA==}
+    engines: {node: '>=16'}
+
   typed-array-buffer@1.0.3:
     resolution: {integrity: sha512-nAYYwfY3qnzX30IkA6AQZjVbtK6duGontcQm1WSG1MD94YLqK0515GNApXkoxKOWMusVssAHWLh9SeaoefYFGw==}
     engines: {node: '>= 0.4'}
@@ -2916,6 +2952,12 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  zhead@2.2.4:
+    resolution: {integrity: sha512-8F0OI5dpWIA5IGG5NHUg9staDwz/ZPxZtvGVf01j7vHqSyZ0raHY+78atOVxRqb73AotX22uV1pXt3gYSstGag==}
+
+  zod@3.24.3:
+    resolution: {integrity: sha512-HhY1oqzWCQWuUqvBFnsyrtZRhyPeR7SUGv+C4+MsisMuVfSPx8HpwWqH8tRahSlt6M3PiFAcoeFhZAqIXTxoSg==}
 
 snapshots:
 
@@ -3409,18 +3451,40 @@ snapshots:
 
   '@sapphire/snowflake@3.5.3': {}
 
+  '@scalar/core@0.2.11':
+    dependencies:
+      '@scalar/types': 0.1.11
+
+  '@scalar/hono-api-reference@0.8.5(hono@4.7.8)':
+    dependencies:
+      '@scalar/core': 0.2.11
+      hono: 4.7.8
+
+  '@scalar/openapi-types@0.2.1':
+    dependencies:
+      zod: 3.24.3
+
+  '@scalar/types@0.1.11':
+    dependencies:
+      '@scalar/openapi-types': 0.2.1
+      '@unhead/schema': 1.11.20
+      nanoid: 5.1.5
+      type-fest: 4.40.1
+      zod: 3.24.3
+
   '@swc/counter@0.1.3': {}
 
   '@swc/helpers@0.5.15':
     dependencies:
       tslib: 2.8.1
 
-  '@t3-oss/env-core@0.13.0(arktype@2.1.20)(typescript@5.8.2)(valibot@1.0.0(typescript@5.8.2))':
+  '@t3-oss/env-core@0.13.0(arktype@2.1.20)(typescript@5.8.2)(valibot@1.0.0(typescript@5.8.2))(zod@3.24.3)':
     dependencies:
       arktype: 2.1.20
     optionalDependencies:
       typescript: 5.8.2
       valibot: 1.0.0(typescript@5.8.2)
+      zod: 3.24.3
 
   '@tootallnate/quickjs-emscripten@0.23.0': {}
 
@@ -3580,6 +3644,11 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.31.0
       eslint-visitor-keys: 4.2.0
+
+  '@unhead/schema@1.11.20':
+    dependencies:
+      hookable: 5.5.3
+      zhead: 2.2.4
 
   '@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.2))':
     dependencies:
@@ -4497,7 +4566,7 @@ snapshots:
       no-case: 2.3.2
       upper-case: 1.1.3
 
-  hono-openapi@0.4.7(@hono/valibot-validator@0.5.2(hono@4.7.8)(valibot@1.0.0(typescript@5.8.2)))(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.2)))(arktype@2.1.20)(hono@4.7.8)(openapi-types@12.1.3)(valibot@1.0.0(typescript@5.8.2)):
+  hono-openapi@0.4.7(@hono/valibot-validator@0.5.2(hono@4.7.8)(valibot@1.0.0(typescript@5.8.2)))(@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.2)))(arktype@2.1.20)(hono@4.7.8)(openapi-types@12.1.3)(valibot@1.0.0(typescript@5.8.2))(zod@3.24.3):
     dependencies:
       json-schema-walker: 2.0.0
       openapi-types: 12.1.3
@@ -4507,8 +4576,11 @@ snapshots:
       arktype: 2.1.20
       hono: 4.7.8
       valibot: 1.0.0(typescript@5.8.2)
+      zod: 3.24.3
 
   hono@4.7.8: {}
+
+  hookable@5.5.3: {}
 
   http-proxy-agent@7.0.2:
     dependencies:
@@ -4865,6 +4937,8 @@ snapshots:
   mute-stream@0.0.8: {}
 
   nanoid@3.3.11: {}
+
+  nanoid@5.1.5: {}
 
   natural-compare@1.4.0: {}
 
@@ -5543,6 +5617,8 @@ snapshots:
 
   type-fest@0.21.3: {}
 
+  type-fest@4.40.1: {}
+
   typed-array-buffer@1.0.3:
     dependencies:
       call-bound: 1.0.4
@@ -5696,3 +5772,7 @@ snapshots:
   yn@3.1.1: {}
 
   yocto-queue@0.1.0: {}
+
+  zhead@2.2.4: {}
+
+  zod@3.24.3: {}

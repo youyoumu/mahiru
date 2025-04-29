@@ -15,6 +15,7 @@
   "dependencies": {
     "@hono/node-server": "^1.14.1",
     "@hono/valibot-validator": "^0.5.2",
+    "@scalar/hono-api-reference": "^0.8.5",
     "@t3-oss/env-core": "^0.13.0",
     "@valibot/to-json-schema": "^1.0.0",
     "dotenv": "^16.5.0",
