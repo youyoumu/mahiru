@@ -1,5 +1,5 @@
+import app from "#/app";
 import { openAPISpecs } from "hono-openapi";
-import app from "../../app";
 
 app.get(
   "/openapi",

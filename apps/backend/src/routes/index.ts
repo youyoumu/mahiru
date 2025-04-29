@@ -1,7 +1,7 @@
+import app from "#/app";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/valibot";
 import { object, string } from "valibot";
-import app from "../app";
 
 const responseSchema = object({
   name: string(),
