@@ -1,4 +1,5 @@
 // Require the necessary discord.js classes
+import "dotenv/config";
 import { Client, GatewayIntentBits } from "discord.js";
 import { env } from "./env";
 import events from "./events";

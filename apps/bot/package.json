@@ -4,13 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch --env-file=.env src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "start": "node ./dist/src/index.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "npm run lint --fix",
     "build": "tsc && tsc-alias",
-    "deploy-command": "tsx --env-file=.env src/deploy-command.ts"
+    "deploy-command": "tsx src/deploy-command.ts"
   },
   "keywords": [],
   "type": "module",
@@ -19,9 +19,11 @@
   "dependencies": {
     "@t3-oss/env-core": "^0.13.0",
     "discord.js": "^14.19.2",
+    "dotenv": "^16.5.0",
     "valibot": "^1.0.0"
   },
   "devDependencies": {
+    "@repo/db": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",

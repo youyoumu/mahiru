@@ -3,9 +3,6 @@ import { string } from "valibot";
 
 export const env = createEnv({
   server: {
-    DISCORD_TOKEN: string(),
-    CLIENT_ID: string(),
-    GUILD_ID: string(),
     DATABASE_URL: string(),
   },
 
