@@ -11,7 +11,6 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 // Log in to Discord with your client's token
 client.login(env.DISCORD_TOKEN);
 
-const commands = new Collection();
 // Extend the Client interface
 declare module "discord.js" {
   interface Client {
@@ -19,7 +18,7 @@ declare module "discord.js" {
   }
 }
 
-client.commands = commands;
+client.commands = new Collection();
 
 const commandArray = [ping];
 const events = [interactionCreate, ready];
@@ -36,10 +35,12 @@ for (const command of commandArray) {
 
 for (const event of events) {
   if (event.once) {
-    client.once(event.name as any, (interaction) => event.execute(interaction));
+    client.once(event.name as any, (...args) => {
+      event.execute(args[0]);
+    });
   } else {
-    client.on(event.name as any, (interaction) => {
-      event.execute(interaction);
+    client.on(event.name as any, (...args) => {
+      event.execute(args[0]);
     });
   }
 }

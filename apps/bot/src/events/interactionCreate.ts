@@ -1,12 +1,15 @@
-import { Events, MessageFlags } from "discord.js";
+import { BaseInteraction, Events, MessageFlags } from "discord.js";
+import ping from "../commands/utility/ping";
 
 export default {
   name: Events.InteractionCreate,
   once: false,
-  async execute(interaction: any) {
+  async execute(interaction: BaseInteraction) {
     if (!interaction.isChatInputCommand()) return;
 
-    const command = interaction.client.commands.get(interaction.commandName);
+    const command = interaction.client.commands.get(
+      interaction.commandName,
+    ) as typeof ping;
 
     if (!command) {
       console.error(
