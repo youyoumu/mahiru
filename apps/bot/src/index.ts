@@ -1,9 +1,7 @@
 // Require the necessary discord.js classes
-import { Client, Collection, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits } from "discord.js";
 import { env } from "./env";
-import ping from "./commands/utility/ping";
-import interactionCreate from "./events/interactionCreate";
-import ready from "./events/ready";
+import events from "./events";
 
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -11,36 +9,8 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 // Log in to Discord with your client's token
 client.login(env.DISCORD_TOKEN);
 
-// Extend the Client interface
-declare module "discord.js" {
-  interface Client {
-    commands: Collection<unknown, unknown>;
-  }
-}
+client.once(events.ready.name, (client) => events.ready.execute(client));
 
-client.commands = new Collection();
-
-const commandArray = [ping];
-const events = [interactionCreate, ready];
-
-for (const command of commandArray) {
-  if ("data" in command && "execute" in command) {
-    client.commands.set(command.data.name, command);
-  } else {
-    console.log(
-      "some command is missing a required 'data' or 'execute' property",
-    );
-  }
-}
-
-for (const event of events) {
-  if (event.once) {
-    client.once(event.name as any, (...args) => {
-      event.execute(args[0]);
-    });
-  } else {
-    client.on(event.name as any, (...args) => {
-      event.execute(args[0]);
-    });
-  }
-}
+client.on(events.interactionCreate.name, (interaction) =>
+  events.interactionCreate.execute(interaction),
+);
