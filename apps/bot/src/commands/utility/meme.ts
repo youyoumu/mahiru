@@ -72,8 +72,6 @@ export default {
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
-    const meme = await db.query.meme.findFirst();
-
     const selectedAction =
       interaction.options.getSubcommand() as keyof typeof action;
     const key = interaction.options.getString(param.key);
@@ -122,6 +120,8 @@ export default {
           if (guildMeme) {
             return interaction.reply(guildMeme.value);
           }
+
+          return interaction.reply("⚠️ Unknown Key");
         }
 
       case "list":
@@ -164,10 +164,6 @@ export default {
         }
     }
 
-    console.log("DEBUG[296]: selectedKey=", selectedAction);
-
-    console.log("DEBUG[292]: meme=", meme);
-    console.log("DEBUG[291]: interaction=", interaction);
-    await interaction.reply("Pong!");
+    return interaction.reply("Something went wrong");
   },
 };
