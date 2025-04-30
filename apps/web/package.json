@@ -12,6 +12,7 @@
   "dependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@tanstack/react-query": "^5.74.11",
     "@tanstack/react-router": "^1.114.3",
     "@tanstack/react-router-devtools": "^1.114.3",
     "@tanstack/router-plugin": "^1.114.3",
@@ -20,11 +21,11 @@
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
-    "eslint": "^9.25.0",
     "@testing-library/react": "^16.2.0",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.25.0",
     "jsdom": "^26.0.0",
     "typescript": "^5.7.2",
     "vite": "^6.1.0",
@@ -32,4 +33,3 @@
     "web-vitals": "^4.2.4"
   }
 }
-
