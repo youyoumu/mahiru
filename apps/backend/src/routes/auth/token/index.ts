@@ -35,7 +35,7 @@ app.post(
     const { discord_user_id } = c.req.valid("json");
 
     if (!admin) {
-      return c.json({ error: "unauthorized" }, 401);
+      return c.body(null, 401);
     }
 
     const one_time_token = nanoid();

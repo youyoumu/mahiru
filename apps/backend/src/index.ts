@@ -5,6 +5,8 @@ import app from "./app";
 import "./routes";
 import "./routes/docs";
 import "./routes/openapi";
+import "./routes/auth/token";
+import "./routes/auth/sign_in/";
 
 import { env } from "./env";
 

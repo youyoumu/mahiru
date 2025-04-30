@@ -36,12 +36,7 @@ app.post(
 
     if (secret_key) {
       if (secret_key !== env.SECRET_KEY) {
-        return c.json(
-          {
-            error: "invalid secret key",
-          },
-          400,
-        );
+        return c.body(null, 401);
       }
 
       const token = await createJwtToken({
@@ -70,7 +65,7 @@ app.post(
       {
         error: "invalid one time token",
       },
-      400,
+      401,
     );
   },
 );
