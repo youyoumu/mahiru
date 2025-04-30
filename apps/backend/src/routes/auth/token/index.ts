@@ -7,7 +7,7 @@ import { object, string, type InferOutput } from "valibot";
 
 const responseSchema = object({
   discord_user_id: string(),
-  token: string(),
+  one_time_token: string(),
 });
 
 const requestSchema = object({
@@ -31,12 +31,18 @@ app.post(
   }),
   validator("json", requestSchema),
   (c) => {
+    const { admin } = c.get("jwtPayload");
     const { discord_user_id } = c.req.valid("json");
-    const token = nanoid();
-    tokenStorage.set(token, discord_user_id);
+
+    if (!admin) {
+      return c.json({ error: "unauthorized" }, 401);
+    }
+
+    const one_time_token = nanoid();
+    tokenStorage.set(one_time_token, discord_user_id);
     return c.json<InferOutput<typeof responseSchema>>({
       discord_user_id,
-      token,
+      one_time_token,
     });
   },
 );
