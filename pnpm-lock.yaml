@@ -115,6 +115,9 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@tailwindcss/vite':
         specifier: ^4.1.4
         version: 4.1.4(vite@6.3.4(@types/node@22.15.3)(jiti@2.4.2)(lightningcss@1.29.2)(tsx@4.19.4))
@@ -300,6 +303,18 @@ importers:
       typescript:
         specifier: 5.8.2
         version: 5.8.2
+
+  packages/utils:
+    dependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      hono:
+        specifier: ^4.7.8
+        version: 4.7.8
 
 packages:
 

@@ -1,0 +1,14 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "module": "es2022",
+    "verbatimModuleSyntax": true,
+    "moduleResolution": "bundler",
+    "paths": {
+      "#/*": ["./src/*"]
+    }
+  },
+
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}

@@ -12,6 +12,7 @@
   "dependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/utils": "workspace:*",
     "@tailwindcss/vite": "^4.1.4",
     "@tanstack/react-query": "^5.74.11",
     "@tanstack/react-router": "^1.114.3",
