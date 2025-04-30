@@ -1,4 +1,5 @@
 import { env } from "#/env";
+import { localhost } from "#/utils/domain";
 import { hcWithType } from "@repo/backend/hc";
 import { Client, Events } from "discord.js";
 
@@ -11,7 +12,7 @@ export default {
 
     if (res.ok) {
       const { token } = await res.json();
-      client.hc = hcWithType("http://localhost:8100", {
+      client.hc = hcWithType(localhost, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
