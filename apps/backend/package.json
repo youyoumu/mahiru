@@ -21,6 +21,7 @@
     "dotenv": "^16.5.0",
     "hono": "^4.7.8",
     "hono-openapi": "^0.4.7",
+    "nanoid": "^5.1.5",
     "valibot": "^1.0.0"
   },
   "devDependencies": {
