@@ -80,7 +80,7 @@ export default {
     const discord_guild_id = interaction.guildId;
 
     switch (selectedAction) {
-      case "add":
+      case "add": {
         if (key && value) {
           await db.insert(schema.meme).values({
             key,
@@ -91,8 +91,10 @@ export default {
 
           return await interaction.reply(value);
         }
+        return interaction.reply("⚠️ Invalid arguments");
+      }
 
-      case "drop":
+      case "drop": {
         if (key) {
           const userMeme = await db.query.meme.findFirst({
             where(fields, { eq, and }) {
@@ -123,8 +125,9 @@ export default {
 
           return interaction.reply("⚠️ Unknown Key");
         }
-
-      case "list":
+        return interaction.reply("⚠️ Invalid arguments");
+      }
+      case "list": {
         const userMemes = await db.query.meme.findMany({
           where(fields, { eq, and }) {
             return and(eq(fields.discord_user_id, discord_user_id));
@@ -142,7 +145,7 @@ export default {
         const allMemes = [...userMemes, ...guildMemes];
         const allKeys = unique(allMemes.map((meme) => meme.key));
         return interaction.reply(allKeys.join("\n"));
-
+      }
       case "remove":
         if (key) {
           const userMeme = await db.query.meme.findFirst({
@@ -162,6 +165,7 @@ export default {
             return interaction.reply("⚠️ Unknown Key");
           }
         }
+        return interaction.reply("⚠️ Invalid arguments");
     }
 
     return interaction.reply("Something went wrong");
