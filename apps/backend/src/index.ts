@@ -13,7 +13,7 @@ import { env } from "./env";
 const port = env.PORT;
 console.log(`Server is running on port http://localhost:${port}`);
 
-const route = app
+export const route = app
   .route("/", index)
   .route("/docs", docs)
   .route("/openapi", openapi)
@@ -24,5 +24,3 @@ serve({
   fetch: route.fetch,
   port,
 });
-
-export type AppType = typeof route;

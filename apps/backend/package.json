@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "@repo/backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,6 +12,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "exports": {
+    "./hc": "./src/hc.ts"
+  },
   "dependencies": {
     "@hono/node-server": "^1.14.1",
     "@hono/valibot-validator": "^0.5.2",

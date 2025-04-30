@@ -7,6 +7,7 @@ export const env = createEnv({
     CLIENT_ID: string(),
     GUILD_ID: string(),
     DATABASE_URL: string(),
+    SECRET_KEY: string(),
   },
 
   clientPrefix: "PUBLIC_",
