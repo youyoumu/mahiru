@@ -1,4 +1,4 @@
-import app from "#/app";
+import { createApp } from "#/app";
 import { Scalar } from "@scalar/hono-api-reference";
 
-app.get("/docs", Scalar({ url: "/openapi" }));
+export default createApp().get("/", Scalar({ url: "/openapi" }));

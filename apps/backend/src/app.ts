@@ -4,7 +4,11 @@ import type { JwtVariables } from "hono/jwt";
 import { env } from "./env";
 import type { JwtPayload } from "./lib/jwt";
 
-const app = new Hono<{ Variables: JwtVariables<JwtPayload> }>();
+export function createApp() {
+  return new Hono<{ Variables: JwtVariables<JwtPayload> }>();
+}
+
+const app = createApp();
 
 app.use(
   "/auth/token",

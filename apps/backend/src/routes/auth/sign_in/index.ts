@@ -1,4 +1,4 @@
-import app from "#/app";
+import { createApp } from "#/app";
 import { consumeToken } from "#/lib/tokenStorage";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/valibot";
@@ -15,8 +15,8 @@ const requestSchema = object({
   secret_key: optional(string()),
 });
 
-app.post(
-  "/auth/sign_in",
+export default createApp().post(
+  "/",
   describeRoute({
     description: "Login with one_time_token or secret_key",
     responses: {

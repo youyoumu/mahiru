@@ -1,8 +1,8 @@
-import app from "#/app";
+import app, { createApp } from "#/app";
 import { openAPISpecs } from "hono-openapi";
 
-app.get(
-  "/openapi",
+export default createApp().get(
+  "/",
   openAPISpecs(app, {
     documentation: {
       info: {

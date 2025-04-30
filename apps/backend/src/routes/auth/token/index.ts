@@ -1,4 +1,4 @@
-import app from "#/app";
+import { createApp } from "#/app";
 import { tokenStorage } from "#/lib/tokenStorage";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/valibot";
@@ -14,8 +14,8 @@ const requestSchema = object({
   discord_user_id: string(),
 });
 
-app.post(
-  "/auth/token",
+export default createApp().post(
+  "/",
   describeRoute({
     description: "Get one time token for login",
     responses: {

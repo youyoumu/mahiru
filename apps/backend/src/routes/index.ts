@@ -1,4 +1,4 @@
-import app from "#/app";
+import { createApp } from "#/app";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/valibot";
 import { object, string } from "valibot";
@@ -11,7 +11,7 @@ const querySchema = object({
   name: string(),
 });
 
-app.get(
+export default createApp().get(
   "/",
   describeRoute({
     description: "Say hello to the user",
