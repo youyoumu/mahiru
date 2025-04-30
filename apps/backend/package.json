@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "npm run lint --fix"
@@ -13,7 +14,7 @@
   "author": "",
   "license": "ISC",
   "exports": {
-    "./hc": "./src/hc.ts"
+    "./hc": "./dist/hc.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.14.1",
@@ -25,7 +26,8 @@
     "hono": "^4.7.8",
     "hono-openapi": "^0.4.7",
     "nanoid": "^5.1.5",
-    "valibot": "^1.0.0"
+    "valibot": "^1.0.0",
+    "tsup": "8.3.0"
   },
   "devDependencies": {
     "@repo/db": "workspace:*",

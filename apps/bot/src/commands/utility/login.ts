@@ -1,5 +1,4 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { hcWithType } from "@repo/backend/hc";
 
 export default {
   data: new SlashCommandBuilder()

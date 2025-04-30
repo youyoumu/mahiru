@@ -6,9 +6,11 @@
     "moduleResolution": "bundler",
     "paths": {
       "#/*": ["./src/*"]
-    }
+    },
+    "outDir": "dist",
+    "rootDir": "src"
   },
 
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }
