@@ -26,6 +26,9 @@ importers:
       '@hono/valibot-validator':
         specifier: ^0.5.2
         version: 0.5.2(hono@4.7.8)(valibot@1.0.0(typescript@5.8.2))
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@scalar/hono-api-reference':
         specifier: ^0.8.5
         version: 0.8.5(hono@4.7.8)
@@ -54,9 +57,6 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0(typescript@5.8.2)
     devDependencies:
-      '@repo/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -166,6 +166,9 @@ importers:
       tailwindcss:
         specifier: ^4.1.4
         version: 4.1.4
+      valibot:
+        specifier: ^1.0.0
+        version: 1.0.0(typescript@5.8.2)
     devDependencies:
       '@testing-library/dom':
         specifier: ^10.4.0
