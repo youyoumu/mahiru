@@ -1,0 +1,152 @@
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import db, { schema } from "@repo/db";
+import { unique } from "../../utils/unique";
+
+const action = {
+  add: "add",
+  drop: "drop",
+  list: "list",
+  remove: "remove",
+} as const;
+
+const param = {
+  key: "key",
+  value: "value",
+};
+
+export default {
+  data: new SlashCommandBuilder()
+    .setName("meme")
+    .setDescription("Manage your meme collections")
+
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(action.add)
+        .setDescription("Add a meme to your collections")
+        .addStringOption((option) =>
+          option
+            .setName(param.key)
+            .setDescription("Key to retrieve the meme")
+            .setMaxLength(32)
+            .setRequired(true),
+        )
+        .addStringOption((option) =>
+          option
+            .setName(param.value)
+            .setDescription("Text or link")
+            .setRequired(true),
+        ),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(action.drop)
+        .setDescription("Drop a meme from your or server collections")
+        .addStringOption((option) =>
+          option
+            .setName(param.key)
+            .setDescription("Key to retrieve the meme")
+            .setMaxLength(32)
+            .setRequired(true),
+        ),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(action.list)
+        .setDescription("List all memes you can drop"),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(action.remove)
+        .setDescription("Remove a meme from your or server collections")
+        .addStringOption((option) =>
+          option
+            .setName(param.key)
+            .setDescription("Key to retrieve the meme")
+            .setMaxLength(32)
+            .setRequired(true),
+        ),
+    ),
+
+  async execute(interaction: ChatInputCommandInteraction) {
+    const meme = await db.query.meme.findFirst();
+
+    const selectedAction =
+      interaction.options.getSubcommand() as keyof typeof action;
+    const key = interaction.options.getString(param.key);
+    const value = interaction.options.getString(param.value);
+    const discord_user_id = interaction.user.id;
+    const discord_guild_id = interaction.guildId;
+
+    switch (selectedAction) {
+      case "add":
+        if (key && value) {
+          await db.insert(schema.meme).values({
+            key,
+            value,
+            discord_user_id,
+            discord_guild_id: discord_guild_id ?? "",
+          });
+
+          return await interaction.reply(value);
+        }
+
+      case "drop":
+        if (key) {
+          const userMeme = await db.query.meme.findFirst({
+            where(fields, { eq, and }) {
+              return and(
+                eq(fields.key, key),
+                eq(fields.discord_user_id, discord_user_id),
+              );
+            },
+          });
+
+          const guildMeme = discord_guild_id
+            ? await db.query.meme.findFirst({
+                where(fields, { eq, and }) {
+                  return and(
+                    eq(fields.key, key),
+                    eq(fields.discord_guild_id, discord_guild_id),
+                  );
+                },
+              })
+            : undefined;
+
+          if (userMeme) {
+            return interaction.reply(userMeme.value);
+          }
+          if (guildMeme) {
+            return interaction.reply(guildMeme.value);
+          }
+        }
+
+      case "list":
+        const userMemes = await db.query.meme.findMany({
+          where(fields, { eq, and }) {
+            return and(eq(fields.discord_user_id, discord_user_id));
+          },
+        });
+
+        const guildMemes = discord_guild_id
+          ? await db.query.meme.findMany({
+              where(fields, { eq, and }) {
+                return and(eq(fields.discord_guild_id, discord_guild_id));
+              },
+            })
+          : [];
+
+        const allMemes = [...userMemes, ...guildMemes];
+        const allKeys = unique(allMemes.map((meme) => meme.key));
+        return interaction.reply(allKeys.join("\n"));
+    }
+
+    console.log("DEBUG[296]: selectedKey=", selectedAction);
+
+    console.log("DEBUG[292]: meme=", meme);
+    console.log("DEBUG[291]: interaction=", interaction);
+    await interaction.reply("Pong!");
+  },
+};
