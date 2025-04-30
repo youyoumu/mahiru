@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import db, { schema } from "@repo/db";
 import { unique } from "../../utils/unique";
+import { eq } from "drizzle-orm";
 
 const action = {
   add: "add",
@@ -141,6 +142,26 @@ export default {
         const allMemes = [...userMemes, ...guildMemes];
         const allKeys = unique(allMemes.map((meme) => meme.key));
         return interaction.reply(allKeys.join("\n"));
+
+      case "remove":
+        if (key) {
+          const userMeme = await db.query.meme.findFirst({
+            where(fields, { eq, and }) {
+              return and(
+                eq(fields.key, key),
+                eq(fields.discord_user_id, discord_user_id),
+              );
+            },
+          });
+
+          if (userMeme) {
+            await db.delete(schema.meme).where(eq(schema.meme.id, userMeme.id));
+            return interaction.reply(`${userMeme.key} has been deleted`);
+          }
+          {
+            return interaction.reply("⚠️ Unknown Key");
+          }
+        }
     }
 
     console.log("DEBUG[296]: selectedKey=", selectedAction);
