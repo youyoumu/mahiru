@@ -17,6 +17,13 @@ app.use(
   }),
 );
 
+app.use(
+  "/memes",
+  jwt({
+    secret: env.SECRET_KEY,
+  }),
+);
+
 export default app;
 
 export type AppType = typeof app;

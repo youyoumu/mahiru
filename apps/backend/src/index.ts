@@ -5,6 +5,7 @@ import app from "./app";
 import index from "./routes";
 import docs from "./routes/docs";
 import openapi from "./routes/openapi";
+import memes from "./routes/memes";
 import authToken from "./routes/auth/token";
 import authSignIn from "./routes/auth/sign_in/";
 
@@ -17,6 +18,7 @@ export const route = app
   .route("/", index)
   .route("/docs", docs)
   .route("/openapi", openapi)
+  .route("/memes", memes)
   .route("auth/token", authToken)
   .route("auth/sign_in", authSignIn);
 
