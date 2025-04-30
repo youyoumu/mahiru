@@ -3,9 +3,19 @@ import "dotenv/config";
 import { Client, GatewayIntentBits } from "discord.js";
 import { env } from "./env";
 import events from "./events";
+import { hcWithType } from "@repo/backend/hc";
 
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+declare module "discord.js" {
+  interface Client {
+    hc: typeof hc;
+  }
+}
+
+const hc = hcWithType("http://localhost:8100");
+client.hc = hc;
 
 // Log in to Discord with your client's token
 client.login(env.DISCORD_TOKEN);
