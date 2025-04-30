@@ -13,6 +13,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "type": "module",
   "exports": {
     "./hc": "./dist/hc.js"
   },

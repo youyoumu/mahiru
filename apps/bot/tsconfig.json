@@ -3,7 +3,10 @@
   "compilerOptions": {
     "module": "es2022",
     "verbatimModuleSyntax": true,
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "paths": {
+      "#/*": ["./src/*"]
+    }
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
