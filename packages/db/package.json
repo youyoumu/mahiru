@@ -7,7 +7,8 @@
     "push": "drizzle-kit push",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
-    "studio": "drizzle-kit studio"
+    "studio": "drizzle-kit studio",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
