@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@radix-ui/react-avatar": "^1.1.7",
+    "@radix-ui/react-navigation-menu": "^1.2.10",
     "@radix-ui/react-slot": "^1.2.0",
     "@repo/backend": "workspace:*",
     "@repo/eslint-config": "workspace:*",
