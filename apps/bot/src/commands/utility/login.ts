@@ -1,5 +1,4 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { hcWithType } from "@repo/backend/hc";
 
 export default {
   data: new SlashCommandBuilder()
@@ -15,7 +14,9 @@ export default {
     if (res.ok) {
       const { one_time_token } = await res.json();
 
-      return await interaction.reply(one_time_token);
+      return await interaction.reply(
+        `http://localhost:3000/sign_in?one_time_token=${one_time_token}`,
+      );
     }
 
     await interaction.reply("Something went wrong");
