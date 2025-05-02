@@ -9,6 +9,7 @@ import {
 import { Button } from "#/components/ui/button";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
+import type { ReactNode } from "react";
 
 export default function MemesPage() {
   const { data: memes = [] } = useMemes();
@@ -35,7 +36,7 @@ export default function MemesPage() {
                 />
               </div>
             </CardHeader>
-            <CardContent>{meme.value}</CardContent>
+            <CardContent>{processValue(meme.value)}</CardContent>
             <CardFooter>
               <div className="flex gap-2 justify-end grow">
                 <Button
@@ -58,4 +59,18 @@ export default function MemesPage() {
       </div>
     </div>
   );
+}
+
+function processValue(value: string): ReactNode {
+  const isUrl = value.startsWith("http://") || value.startsWith("https://");
+
+  if (!isUrl) return value;
+
+  const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(value);
+
+  if (isImage) {
+    return <img src={value} alt="Image" />;
+  } else {
+    return `<a href="${value}" target="_blank" rel="noopener noreferrer">${value}</a>`;
+  }
 }
