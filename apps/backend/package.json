@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsup",
-    "dev": "tsx --watch src/index.ts &&  tsup --watch",
+    "dev": "tsx --watch src/index.ts & tsup --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "npm run lint --fix"
