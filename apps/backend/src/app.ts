@@ -27,4 +27,11 @@ app.use(
   }),
 );
 
+app.use(
+  "/users/*",
+  jwt({
+    secret: env.SECRET_KEY,
+  }),
+);
+
 export default app;

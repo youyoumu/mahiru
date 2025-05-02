@@ -10,6 +10,7 @@ import authToken from "./routes/auth/token";
 import authSignIn from "./routes/auth/sign_in/";
 
 import { env } from "./env";
+import users from "./routes/users";
 
 const port = env.PORT;
 console.log(`Server is running on port http://localhost:${port}`);
@@ -19,6 +20,7 @@ export const route = app
   .route("/docs", docs)
   .route("/openapi", openapi)
   .route("/memes", memes)
+  .route("/users", users)
   .route("auth/token", authToken)
   .route("auth/sign_in", authSignIn);
 
