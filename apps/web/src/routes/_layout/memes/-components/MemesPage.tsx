@@ -71,6 +71,15 @@ function processValue(value: string): ReactNode {
   if (isImage) {
     return <img src={value} alt="Image" />;
   } else {
-    return `<a href="${value}" target="_blank" rel="noopener noreferrer">${value}</a>`;
+    return (
+      <a
+        href={value}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-500"
+      >
+        {value}
+      </a>
+    );
   }
 }
