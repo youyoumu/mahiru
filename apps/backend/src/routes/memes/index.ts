@@ -1,10 +1,10 @@
 import { createApp } from "#/app";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/valibot";
-import { array, string, type InferOutput } from "valibot";
-import db from "@repo/db";
+import { array, parse, type InferOutput } from "valibot";
+import db, { valibot } from "@repo/db";
 
-const responseSchema = array(string());
+const responseSchema = array(valibot.selectMemesSchema);
 
 export default createApp().get(
   "/",
@@ -20,6 +20,7 @@ export default createApp().get(
         },
       },
     },
+    validateResponse: true,
   }),
   async (c) => {
     const { discord_user_id } = c.get("jwtPayload");
@@ -28,8 +29,14 @@ export default createApp().get(
         return eq(fields.discord_user_id, discord_user_id);
       },
     });
-    return c.json<InferOutput<typeof responseSchema>>(
-      memes.map((meme) => meme.key + ":" + meme.value),
+
+    const data = parse(
+      responseSchema,
+      memes.map((meme) => {
+        return meme;
+      }),
     );
+
+    return c.json<InferOutput<typeof responseSchema>>(data);
   },
 );
