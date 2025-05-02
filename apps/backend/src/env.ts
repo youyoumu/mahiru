@@ -8,6 +8,7 @@ export const env = createEnv({
       transform((input) => Number(input)),
     ),
     SECRET_KEY: string(),
+    DISCORD_TOKEN: string(),
   },
 
   clientPrefix: "PUBLIC_",

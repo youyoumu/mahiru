@@ -1,10 +1,11 @@
 import { createApp } from "#/app";
+import { getUser } from "#/lib/discordRest";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/valibot";
-import { object, string } from "valibot";
+import { object, parse, string, type InferOutput } from "valibot";
 
 const responseSchema = object({
-  name: string(),
+  username: string(),
 });
 
 const app = createApp();
@@ -24,11 +25,13 @@ const routeMe = createApp().get(
       },
     },
   }),
-  (c) => {
-    console.log("DEBUG[31asd]: discord_user_id=");
+  async (c) => {
     const { discord_user_id } = c.get("jwtPayload");
-    console.log("DEBUG[31asd]: discord_user_id=", discord_user_id);
-    return c.json({ namee: "asd" });
+    const user = await getUser({ discord_user_id });
+    console.log("DEBUG[318]: user=", user);
+    return c.json<InferOutput<typeof responseSchema>>(
+      parse(responseSchema, user),
+    );
   },
 );
 
@@ -50,8 +53,7 @@ const routeUserId = createApp().get(
   validator("param", string()),
   (c) => {
     const { user_id } = c.req.param();
-    console.log("DEBUG[315]: user_id=", user_id);
-    return c.json({ namee: "asd" });
+    return c.json({ name: "asd" });
   },
 );
 
