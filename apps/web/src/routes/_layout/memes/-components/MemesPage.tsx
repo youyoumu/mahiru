@@ -8,6 +8,7 @@ import {
 } from "#/components/ui/card";
 import { Button } from "#/components/ui/button";
 import { Copy } from "lucide-react";
+import { toast } from "sonner";
 
 export default function MemesPage() {
   const { data: memes = [] } = useMemes();
@@ -20,13 +21,36 @@ export default function MemesPage() {
               <div className="flex items-center justify-between gap-1">
                 <CardTitle>{meme.key}</CardTitle>
 
-                <Copy className="w-4 cursor-pointer" />
+                <Copy
+                  className="w-4 cursor-pointer"
+                  onClick={() => {
+                    navigator.clipboard.writeText(meme.key);
+                    toast(
+                      <div>
+                        <div>Copied key to clipboard:</div>
+                        <div className="text-neutral-500">{meme.key}</div>
+                      </div>,
+                    );
+                  }}
+                />
               </div>
             </CardHeader>
             <CardContent>{meme.value}</CardContent>
             <CardFooter>
               <div className="flex gap-2 justify-end grow">
-                <Button>Copy value</Button>
+                <Button
+                  onClick={() => {
+                    navigator.clipboard.writeText(meme.value);
+                    toast(
+                      <div>
+                        <div>Copied value to clipboard:</div>
+                        <div className="text-neutral-500">{meme.value}</div>
+                      </div>,
+                    );
+                  }}
+                >
+                  Copy value
+                </Button>
               </div>
             </CardFooter>
           </Card>
