@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as SigninIndexImport } from './routes/sign_in/index'
+import { Route as MemesIndexImport } from './routes/memes/index'
 
 // Create/Update Routes
 
@@ -28,6 +29,12 @@ const SigninIndexRoute = SigninIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const MemesIndexRoute = MemesIndexImport.update({
+  id: '/memes/',
+  path: '/memes/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -37,6 +44,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/memes/': {
+      id: '/memes/'
+      path: '/memes'
+      fullPath: '/memes'
+      preLoaderRoute: typeof MemesIndexImport
       parentRoute: typeof rootRoute
     }
     '/sign_in/': {
@@ -53,36 +67,41 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/memes': typeof MemesIndexRoute
   '/sign_in': typeof SigninIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/memes': typeof MemesIndexRoute
   '/sign_in': typeof SigninIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/memes/': typeof MemesIndexRoute
   '/sign_in/': typeof SigninIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sign_in'
+  fullPaths: '/' | '/memes' | '/sign_in'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sign_in'
-  id: '__root__' | '/' | '/sign_in/'
+  to: '/' | '/memes' | '/sign_in'
+  id: '__root__' | '/' | '/memes/' | '/sign_in/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MemesIndexRoute: typeof MemesIndexRoute
   SigninIndexRoute: typeof SigninIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MemesIndexRoute: MemesIndexRoute,
   SigninIndexRoute: SigninIndexRoute,
 }
 
@@ -97,11 +116,15 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/memes/",
         "/sign_in/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/memes/": {
+      "filePath": "memes/index.tsx"
     },
     "/sign_in/": {
       "filePath": "sign_in/index.tsx"
