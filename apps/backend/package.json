@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsup",
-    "dev": "tsx --watch src/index.ts & tsup --watch",
+    "dev": "concurrently \"tsx watch src/index.ts\" \"tsup --watch\"",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "npm run lint --fix"
@@ -18,9 +18,9 @@
     "./hc": "./dist/hc.js"
   },
   "dependencies": {
-    "@repo/db": "workspace:*",
     "@hono/node-server": "^1.14.1",
     "@hono/valibot-validator": "^0.5.2",
+    "@repo/db": "workspace:*",
     "@scalar/hono-api-reference": "^0.8.5",
     "@t3-oss/env-core": "^0.13.0",
     "@valibot/to-json-schema": "^1.0.0",
@@ -28,13 +28,14 @@
     "hono": "^4.7.8",
     "hono-openapi": "^0.4.7",
     "nanoid": "^5.1.5",
-    "valibot": "^1.0.0",
-    "tsup": "8.3.0"
+    "tsup": "8.3.0",
+    "valibot": "^1.0.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",
+    "concurrently": "^9.1.2",
     "eslint": "^9.25.0",
     "tsx": "^4.19.4"
   }
