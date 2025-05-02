@@ -2,10 +2,36 @@ import { createApp } from "#/app";
 import { getUser } from "#/lib/discordRest";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/valibot";
-import { object, parse, string, type InferOutput } from "valibot";
+import {
+  boolean,
+  nullable,
+  number,
+  object,
+  optional,
+  parse,
+  string,
+  type InferOutput,
+} from "valibot";
 
 const responseSchema = object({
+  accent_color: optional(nullable(number())),
+  avatar: nullable(string()),
+  avatar_decoration: optional(nullable(string())),
+  avatar_decoration_data: optional(nullable(object({}))),
+  banner: optional(nullable(string())),
+  bot: optional(boolean()),
+  discriminator: string(),
+  email: optional(nullable(string())),
+  flags: optional(number()),
+  global_name: nullable(string()),
+  id: string(),
+  locale: optional(string()),
+  mfa_enabled: optional(boolean()),
+  premium_type: optional(number()),
+  public_flags: optional(number()),
+  system: optional(boolean()),
   username: string(),
+  verified: optional(boolean()),
 });
 
 const app = createApp();
@@ -28,7 +54,6 @@ const routeMe = createApp().get(
   async (c) => {
     const { discord_user_id } = c.get("jwtPayload");
     const user = await getUser({ discord_user_id });
-    console.log("DEBUG[318]: user=", user);
     return c.json<InferOutput<typeof responseSchema>>(
       parse(responseSchema, user),
     );
