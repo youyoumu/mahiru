@@ -1,8 +1,12 @@
 import {
+  blockQuote,
   bold,
   ChatInputCommandInteraction,
   EmbedBuilder,
+  inlineCode,
+  quote,
   SlashCommandBuilder,
+  subtext,
 } from "discord.js";
 import db, { schema } from "@repo/db";
 import { unique } from "../../utils/unique";
@@ -166,7 +170,7 @@ export default {
           })
 
           .setFooter({
-            text: `Page 1/1. (${allKeys.length} Total)`,
+            text: `Page 1/1 (${allKeys.length} Total)`,
           });
 
         return interaction.reply({ embeds: [exampleEmbed] });
@@ -185,7 +189,9 @@ export default {
 
           if (userMeme) {
             await db.delete(schema.meme).where(eq(schema.meme.id, userMeme.id));
-            return interaction.reply(`${userMeme.key} has been deleted`);
+            return interaction.reply(
+              `${inlineCode(userMeme.key)} has been deleted`,
+            );
           }
 
           return interaction.reply("⚠️ Unknown Key");
