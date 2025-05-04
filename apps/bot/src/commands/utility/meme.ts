@@ -96,25 +96,8 @@ export default {
 
       case "drop": {
         if (key) {
-          const userMeme = await db.query.meme.findFirst({
-            where(fields, { eq, and }) {
-              return and(
-                eq(fields.key, key),
-                eq(fields.discord_user_id, discord_user_id),
-              );
-            },
-          });
-
-          const guildMeme = discord_guild_id
-            ? await db.query.meme.findFirst({
-                where(fields, { eq, and }) {
-                  return and(
-                    eq(fields.key, key),
-                    eq(fields.discord_guild_id, discord_guild_id),
-                  );
-                },
-              })
-            : undefined;
+          const userMeme = await getUserMeme({ discord_user_id, key });
+          const guildMeme = await getGuildMeme({ discord_guild_id, key });
 
           if (userMeme) {
             return interaction.reply(userMeme.value);
@@ -171,3 +154,42 @@ export default {
     return interaction.reply("Something went wrong");
   },
 };
+
+async function getUserMeme({
+  key,
+  discord_user_id,
+}: {
+  key: string;
+  discord_user_id: string;
+}) {
+  const userMeme = await db.query.meme.findFirst({
+    where(fields, { eq, and }) {
+      return and(
+        eq(fields.key, key),
+        eq(fields.discord_user_id, discord_user_id),
+      );
+    },
+  });
+  return userMeme;
+}
+
+async function getGuildMeme({
+  key,
+  discord_guild_id,
+}: {
+  key: string;
+  discord_guild_id: string | undefined | null;
+}) {
+  const guildMeme = discord_guild_id
+    ? await db.query.meme.findFirst({
+        where(fields, { eq, and }) {
+          return and(
+            eq(fields.key, key),
+            eq(fields.discord_guild_id, discord_guild_id),
+          );
+        },
+      })
+    : undefined;
+
+  return guildMeme;
+}
