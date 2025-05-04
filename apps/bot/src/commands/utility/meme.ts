@@ -1,12 +1,9 @@
 import {
-  blockQuote,
   bold,
   ChatInputCommandInteraction,
   EmbedBuilder,
   inlineCode,
-  quote,
   SlashCommandBuilder,
-  subtext,
 } from "discord.js";
 import db, { schema } from "@repo/db";
 import { unique } from "../../utils/unique";
@@ -117,7 +114,7 @@ export default {
             });
           }
 
-          return await interaction.reply(value);
+          return await interaction.reply(bold(key) + "\n\n" + value);
         }
         return interaction.reply("⚠️ Invalid arguments");
       }
@@ -157,7 +154,7 @@ export default {
         const allKeys = unique(allMemes.map((meme) => meme.key));
 
         // inside a command, event listener, etc.
-        const exampleEmbed = new EmbedBuilder()
+        const embed = new EmbedBuilder()
           .setDescription("Showing memes you can drop")
           // .setThumbnail(
           //   "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
@@ -173,7 +170,7 @@ export default {
             text: `Page 1/1 (${allKeys.length} Total)`,
           });
 
-        return interaction.reply({ embeds: [exampleEmbed] });
+        return interaction.reply({ embeds: [embed] });
       }
       case "remove":
         if (key) {
