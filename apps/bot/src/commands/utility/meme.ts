@@ -82,12 +82,31 @@ export default {
     switch (selectedAction) {
       case "add": {
         if (key && value) {
-          await db.insert(schema.meme).values({
-            key,
-            value,
-            discord_user_id,
-            discord_guild_id: discord_guild_id ?? "",
-          });
+          const userMeme = await getUserMeme({ discord_user_id, key });
+          const guildMeme = await getGuildMeme({ discord_guild_id, key });
+
+          // if this guild already has meme with this key, remove it from this server
+          if (guildMeme) {
+            db.update(schema.meme)
+              .set({ discord_guild_id: "" })
+              .where(eq(schema.meme.id, guildMeme.id));
+          }
+
+          // if user already has meme with this key, update it
+          if (userMeme) {
+            db.update(schema.meme)
+              .set({ value })
+              .where(eq(schema.meme.id, userMeme.id));
+          }
+          // else create new meme
+          else {
+            await db.insert(schema.meme).values({
+              key,
+              value,
+              discord_user_id,
+              discord_guild_id: discord_guild_id ?? "",
+            });
+          }
 
           return await interaction.reply(value);
         }
