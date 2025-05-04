@@ -1,4 +1,9 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import {
+  bold,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+  SlashCommandBuilder,
+} from "discord.js";
 import db, { schema } from "@repo/db";
 import { unique } from "../../utils/unique";
 import { eq } from "drizzle-orm";
@@ -146,7 +151,25 @@ export default {
 
         const allMemes = [...userMemes, ...guildMemes];
         const allKeys = unique(allMemes.map((meme) => meme.key));
-        return interaction.reply(allKeys.join("\n"));
+
+        // inside a command, event listener, etc.
+        const exampleEmbed = new EmbedBuilder()
+          .setDescription("Showing memes you can drop")
+          // .setThumbnail(
+          //   "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
+          // )
+          .addFields({
+            name: "\u200B",
+            value: allKeys
+              .map((k, i) => `${bold(i.toString())}. ${k}`)
+              .join("\n"),
+          })
+
+          .setFooter({
+            text: `Page 1/1. (${allKeys.length} Total)`,
+          });
+
+        return interaction.reply({ embeds: [exampleEmbed] });
       }
       case "remove":
         if (key) {
