@@ -150,22 +150,22 @@ export default {
       }
       case "remove":
         if (key) {
-          const userMeme = await db.query.meme.findFirst({
-            where(fields, { eq, and }) {
-              return and(
-                eq(fields.key, key),
-                eq(fields.discord_user_id, discord_user_id),
-              );
-            },
-          });
+          const userMeme = await getUserMeme({ key, discord_user_id });
+          const guildMeme = await getGuildMeme({ discord_guild_id, key });
+
+          // if this guild already has meme with this key, remove it from this server
+          if (guildMeme) {
+            db.update(schema.meme)
+              .set({ discord_guild_id: "" })
+              .where(eq(schema.meme.id, guildMeme.id));
+          }
 
           if (userMeme) {
             await db.delete(schema.meme).where(eq(schema.meme.id, userMeme.id));
             return interaction.reply(`${userMeme.key} has been deleted`);
           }
-          {
-            return interaction.reply("⚠️ Unknown Key");
-          }
+
+          return interaction.reply("⚠️ Unknown Key");
         }
         return interaction.reply("⚠️ Invalid arguments");
     }
