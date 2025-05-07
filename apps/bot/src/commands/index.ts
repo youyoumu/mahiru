@@ -1,3 +1,4 @@
+import help from "./utility/help";
 import login from "./utility/login";
 import meme from "./utility/meme";
 import ping from "./utility/ping";
@@ -8,4 +9,5 @@ export default {
   [meme.data.name]: meme,
   [login.data.name]: login,
   [prefix.data.name]: prefix,
+  [help.data.name]: help,
 };
