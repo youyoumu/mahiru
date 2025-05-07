@@ -121,24 +121,12 @@ export default {
       }
       case "remove":
         if (key) {
-          const userMeme = await getUserMeme({ key, discord_user_id });
-          const guildMeme = await getGuildMeme({ discord_guild_id, key });
-
-          // if this guild already has meme with this key, remove it from this server
-          if (guildMeme) {
-            db.update(schema.meme)
-              .set({ discord_guild_id: "" })
-              .where(eq(schema.meme.id, guildMeme.id));
-          }
-
-          if (userMeme) {
-            await db.delete(schema.meme).where(eq(schema.meme.id, userMeme.id));
-            return interaction.reply(
-              `${inlineCode(userMeme.key)} has been deleted`,
-            );
-          }
-
-          return interaction.reply("⚠️ Unknown Key");
+          return handleRemove({
+            discord_guild_id,
+            discord_user_id,
+            key,
+            interaction,
+          });
         }
         return interaction.reply("⚠️ Invalid arguments");
     }
@@ -182,8 +170,18 @@ export default {
         });
       }
       case action.remove: {
+        const key = args[1];
+        if (key) {
+          return handleRemove({
+            discord_guild_id,
+            discord_user_id,
+            key,
+            message,
+          });
+        }
+
         if (message.channel.isSendable()) {
-          message.channel.send("haven't implemented smh");
+          message.channel.send(codeBlock("remove <key>"));
         }
         break;
       }
@@ -364,4 +362,42 @@ async function handleList({
 
   interaction?.reply({ embeds: [embed] });
   if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+}
+
+async function handleRemove({
+  discord_guild_id,
+  discord_user_id,
+  key,
+  interaction,
+  message,
+}: {
+  discord_guild_id: string | undefined | null;
+  discord_user_id: string;
+  key: string;
+  interaction?: ChatInputCommandInteraction;
+  message?: Message;
+}) {
+  const userMeme = await getUserMeme({ key, discord_user_id });
+  const guildMeme = await getGuildMeme({ discord_guild_id, key });
+
+  // if this guild already has meme with this key, remove it from this server
+  if (guildMeme) {
+    db.update(schema.meme)
+      .set({ discord_guild_id: "" })
+      .where(eq(schema.meme.id, guildMeme.id));
+  }
+
+  if (userMeme) {
+    await db.delete(schema.meme).where(eq(schema.meme.id, userMeme.id));
+  }
+
+  if (guildMeme || userMeme) {
+    interaction?.reply(`${inlineCode(key)} has been deleted`);
+    if (message?.channel.isSendable())
+      message?.channel.send(`${inlineCode(key)} has been deleted`);
+    return;
+  }
+
+  interaction?.reply("⚠️ Unknown Key");
+  if (message?.channel.isSendable()) message?.channel.send("⚠️ Unknown Key");
 }
