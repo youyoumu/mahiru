@@ -6,6 +6,7 @@ import {
 } from "discord.js";
 import db, { schema } from "@repo/db";
 import { eq } from "drizzle-orm";
+import { getPrefixStorage, globalPrefix } from "#/utils/prefixStorage";
 
 const action = {
   current: "current",
@@ -135,15 +136,17 @@ async function handleChange({
   const guildPrefix = await getGuildPrefix({ discord_guild_id });
 
   if (guildPrefix) {
-    db.update(schema.prefixes)
+    await db
+      .update(schema.prefixes)
       .set({ prefix: prefix })
       .where(eq(schema.prefixes.id, guildPrefix.id));
   } else {
-    db.insert(schema.prefixes).values({
+    await db.insert(schema.prefixes).values({
       discord_guild_id: discord_guild_id,
       prefix: prefix,
     });
   }
+  getPrefixStorage().set(discord_guild_id, prefix);
 
   interaction?.reply(codeBlock(prefix));
   if (message?.channel.isSendable()) message.channel.send(codeBlock(prefix));
@@ -158,7 +161,8 @@ async function handleCurrent({
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
-  const prefix = (await getGuildPrefix({ discord_guild_id }))?.prefix ?? "!";
+  const prefix =
+    (await getGuildPrefix({ discord_guild_id }))?.prefix ?? globalPrefix;
 
   interaction?.reply(codeBlock(prefix));
   if (message?.channel.isSendable()) message.channel.send(codeBlock(prefix));
