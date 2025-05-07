@@ -10,6 +10,7 @@ import { Button } from "#/components/ui/button";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import type { ReactNode } from "react";
+import { useDiscordCdn } from "#/hooks/useProxy";
 
 export default function MemesPage() {
   const { data: memes = [] } = useMemes();
@@ -70,6 +71,12 @@ function processValue(value: string): ReactNode {
   const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(value);
 
   if (isImage) {
+    const isDiscordCdn =
+      value.startsWith("https://cdn.discordapp.net/attachments") ||
+      value.startsWith("https://media.discordapp.net/attachments");
+
+    if (isDiscordCdn) return <ProxyCdnImage url={value} />;
+
     return <img src={value} alt="Image" />;
   } else {
     return (
@@ -83,4 +90,10 @@ function processValue(value: string): ReactNode {
       </a>
     );
   }
+}
+
+function ProxyCdnImage({ url }: { url: string }) {
+  const { data } = useDiscordCdn({ url });
+  const newUrl = data?.refreshed_url;
+  return <img src={newUrl} alt="Image" />;
 }
