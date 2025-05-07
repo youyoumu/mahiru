@@ -9,6 +9,7 @@ export const env = createEnv({
     ),
     SECRET_KEY: string(),
     DISCORD_TOKEN: string(),
+    DISCORD_USER_TOKEN: string(),
   },
 
   clientPrefix: "PUBLIC_",
