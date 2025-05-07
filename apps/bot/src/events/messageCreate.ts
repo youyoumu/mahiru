@@ -19,7 +19,7 @@ export default {
       const guildPrefix = await getGuildPrefix({ message });
 
       if (guildPrefix && message.content.startsWith(guildPrefix)) {
-        prefix = globalPrefix;
+        prefix = guildPrefix;
       }
 
       // if we found a prefix, setup args; otherwise, this isn't a command
