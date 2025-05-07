@@ -1,4 +1,8 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import {
+  ChatInputCommandInteraction,
+  Message,
+  SlashCommandBuilder,
+} from "discord.js";
 import db from "@repo/db";
 
 export default {
@@ -9,5 +13,7 @@ export default {
     console.log(await db.query.meme.findMany());
     await interaction.reply("Pong!");
   },
-  async prefixExecute() {},
+  async prefixExecute({ message, args }: { message: Message; args: string[] }) {
+    if (message.channel.isSendable()) message.channel.send("Pong!");
+  },
 };
