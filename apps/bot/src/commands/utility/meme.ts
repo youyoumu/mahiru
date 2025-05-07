@@ -157,8 +157,18 @@ export default {
         break;
       }
       case action.drop: {
+        const key = args[1];
+        if (key) {
+          return handleDrop({
+            discord_guild_id,
+            discord_user_id,
+            key,
+            message,
+          });
+        }
+
         if (message.channel.isSendable()) {
-          message.channel.send("haven't implemented smh");
+          message.channel.send(codeBlock("drop <key>"));
         }
         break;
       }
