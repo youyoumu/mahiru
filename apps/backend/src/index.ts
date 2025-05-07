@@ -8,6 +8,7 @@ import openapi from "./routes/openapi";
 import memes from "./routes/memes";
 import authToken from "./routes/auth/token";
 import authSignIn from "./routes/auth/sign_in/";
+import proxy from "./routes/proxy";
 
 import { env } from "./env";
 import users from "./routes/users";
@@ -22,7 +23,8 @@ export const route = app
   .route("/memes", memes)
   .route("/users", users)
   .route("auth/token", authToken)
-  .route("auth/sign_in", authSignIn);
+  .route("auth/sign_in", authSignIn)
+  .route("/proxy", proxy);
 
 serve({
   fetch: route.fetch,
