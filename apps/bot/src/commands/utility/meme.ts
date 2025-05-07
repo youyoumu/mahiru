@@ -32,7 +32,7 @@ export default {
     .addSubcommand((subCommand) =>
       subCommand
         .setName(action.add)
-        .setDescription("Add a meme to your collections")
+        .setDescription("Add a meme to your collection.")
         .addStringOption((option) =>
           option
             .setName(param.key)
@@ -51,7 +51,9 @@ export default {
     .addSubcommand((subCommand) =>
       subCommand
         .setName(action.drop)
-        .setDescription("Drop a meme from your or server collections")
+        .setDescription(
+          "Drop a meme from your collection or the server's collection.",
+        )
         .addStringOption((option) =>
           option
             .setName(param.key)
@@ -64,13 +66,17 @@ export default {
     .addSubcommand((subCommand) =>
       subCommand
         .setName(action.list)
-        .setDescription("List all memes you can drop"),
+        .setDescription(
+          "List all memes that can be drop, including those from both the user and server collections.",
+        ),
     )
 
     .addSubcommand((subCommand) =>
       subCommand
         .setName(action.remove)
-        .setDescription("Remove a meme from your or server collections")
+        .setDescription(
+          "Remove a meme from your collection and/or the server's collection.",
+        )
         .addStringOption((option) =>
           option
             .setName(param.key)
@@ -439,19 +445,23 @@ function handleHelp({
     )
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> meme add",
-      value: "Add meme to your collections",
+      value:
+        "Add a meme to your collection. If the command is used in a server, the meme will be added to the server's collection. If the same key already exists in the user or server collection, the value will be overwritten.",
     })
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> meme drop",
-      value: "Drop a meme from your or server collections",
+      value:
+        "Drop a meme from your collection or the server's collection. The user's meme will take priority.",
     })
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> meme list",
-      value: "List all memes you can drop",
+      value:
+        "List all memes that can be drop, including those from both the user and server collections.",
     })
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> meme remove",
-      value: "Remove a meme from your or server collections",
+      value:
+        "Remove a meme from your collection and/or the server's collection.",
     })
     .setFooter({
       text: "Mahiru",

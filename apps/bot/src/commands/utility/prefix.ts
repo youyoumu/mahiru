@@ -28,7 +28,7 @@ export default {
     .addSubcommand((subCommand) =>
       subCommand
         .setName(action.change)
-        .setDescription("Change bot prefix for this server")
+        .setDescription("Change the bot prefix for this server")
         .addStringOption((option) =>
           option
             .setName(param["new-prefix"])
@@ -135,9 +135,9 @@ async function handleChange({
   message?: Message;
 }) {
   if (prefix.length > 2) {
-    interaction?.reply("Prefix max length is 2 characters");
+    interaction?.reply("The maximum prefix length is 2 characters.");
     if (message?.channel.isSendable())
-      message.channel.send("Prefix max length is 2 characters");
+      message.channel.send("The maximum prefix length is 2 characters.");
     return;
   }
 

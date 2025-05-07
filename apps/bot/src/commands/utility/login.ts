@@ -7,7 +7,7 @@ import {
 export default {
   data: new SlashCommandBuilder()
     .setName("login")
-    .setDescription("Get link to login to Mahiru web app"),
+    .setDescription("Get a link to log in to the Mahiru web app."),
   async execute(interaction: ChatInputCommandInteraction) {
     const discord_user_id = interaction.user.id;
 

@@ -33,23 +33,23 @@ function handleHelp({
     )
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> help",
-      value: "Show this message",
+      value: "Show this message.",
     })
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> ping",
-      value: "Replies with Pong",
+      value: "Replies with Pong.",
     })
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> login",
-      value: "Get link to login to Mahiru web app",
+      value: "Get a link to log in to the Mahiru web app.",
     })
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> meme",
-      value: `Manage your meme collections. Use ${inlineCode("/meme help")} for details`,
+      value: `Manage your meme collection. Use ${inlineCode("/meme help")} for details`,
     })
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> prefix",
-      value: `Manage bot prefix for this server. Use ${inlineCode("/prefix help")} for details`,
+      value: `Manage the bot prefix for this server. Use ${inlineCode("/prefix help")} for details`,
     })
     .setFooter({
       text: "Mahiru",
