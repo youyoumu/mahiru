@@ -3,6 +3,7 @@ import {
   ChatInputCommandInteraction,
   EmbedBuilder,
   inlineCode,
+  Message,
   SlashCommandBuilder,
 } from "discord.js";
 import db, { schema } from "@repo/db";
@@ -198,6 +199,15 @@ export default {
 
     return interaction.reply("Something went wrong");
   },
+  async prefixExecute({
+    message,
+    args,
+    command,
+  }: {
+    message: Message;
+    args: string[];
+    command: string;
+  }) {},
 };
 
 async function getUserMeme({
