@@ -122,17 +122,12 @@ export default {
 
       case "drop": {
         if (key) {
-          const userMeme = await getUserMeme({ discord_user_id, key });
-          const guildMeme = await getGuildMeme({ discord_guild_id, key });
-
-          if (userMeme) {
-            return interaction.reply(userMeme.value);
-          }
-          if (guildMeme) {
-            return interaction.reply(guildMeme.value);
-          }
-
-          return interaction.reply("⚠️ Unknown Key");
+          return handleDrop({
+            discord_guild_id,
+            discord_user_id,
+            key,
+            interaction,
+          });
         }
         return interaction.reply("⚠️ Invalid arguments");
       }
@@ -199,16 +194,49 @@ export default {
 
     return interaction.reply("Something went wrong");
   },
-  async prefixExecute({
-    message,
-    args,
-    command,
-  }: {
-    message: Message;
-    args: string[];
-    command: string;
-  }) {
-    console.log(command);
+  async prefixExecute({ message, args }: { message: Message; args: string[] }) {
+    const discord_user_id = message.author.id;
+    const discord_guild_id = message.guildId;
+    const subCommand = args[0];
+    switch (subCommand) {
+      case action.add: {
+        if (message.channel.isSendable()) {
+          message.channel.send("haven't implemented smh");
+        }
+        break;
+      }
+      case action.drop: {
+        if (message.channel.isSendable()) {
+          message.channel.send("haven't implemented smh");
+        }
+        break;
+      }
+      case action.list: {
+        if (message.channel.isSendable()) {
+          message.channel.send("haven't implemented smh");
+        }
+        break;
+      }
+      case action.remove: {
+        if (message.channel.isSendable()) {
+          message.channel.send("haven't implemented smh");
+        }
+        break;
+      }
+      default: {
+        if (message.channel.isSendable()) {
+          const key = subCommand;
+          if (key) {
+            return handleDrop({
+              discord_guild_id,
+              discord_user_id,
+              key,
+              message,
+            });
+          }
+        }
+      }
+    }
   },
 };
 
@@ -249,4 +277,38 @@ async function getGuildMeme({
     : undefined;
 
   return guildMeme;
+}
+
+async function handleDrop({
+  discord_guild_id,
+  discord_user_id,
+  key,
+  interaction,
+  message,
+}: {
+  discord_guild_id: string | undefined | null;
+  discord_user_id: string;
+  key: string;
+  interaction?: ChatInputCommandInteraction;
+  message?: Message;
+}) {
+  const userMeme = await getUserMeme({ discord_user_id, key });
+  const guildMeme = await getGuildMeme({ discord_guild_id, key });
+
+  if (userMeme) {
+    interaction?.reply(userMeme.value);
+    if (message?.channel.isSendable()) message?.channel.send(userMeme.value);
+    return;
+  }
+  if (guildMeme) {
+    interaction?.reply(guildMeme.value);
+    if (message?.channel.isSendable()) message?.channel.send(guildMeme.value);
+    return;
+  }
+
+  const unknownKeyMessage = "⚠️ Unknown Key";
+
+  interaction?.reply(unknownKeyMessage);
+  if (message?.channel.isSendable()) message?.channel.send(unknownKeyMessage);
+  return;
 }

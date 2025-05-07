@@ -40,7 +40,6 @@ export default {
     if (command) {
       commands[command]?.prefixExecute({
         message,
-        command,
         args,
       });
     }
