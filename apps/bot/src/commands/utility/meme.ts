@@ -320,6 +320,13 @@ async function handleAdd({
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
+  if (key.length > 32) {
+    interaction?.reply("The maximum key length is 32 characters.");
+    if (message?.channel.isSendable())
+      message.channel.send("The maximum key length is 32 characters.");
+    return;
+  }
+
   const userMeme = await getUserMeme({ discord_user_id, key });
   const guildMeme = await getGuildMeme({ discord_guild_id, key });
 
