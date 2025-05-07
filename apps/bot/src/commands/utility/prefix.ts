@@ -126,7 +126,7 @@ export default {
   },
 };
 
-async function getGuildPrefix({
+async function getGuildPrefixEntry({
   discord_guild_id,
 }: {
   discord_guild_id: string;
@@ -156,7 +156,7 @@ async function handleChange({
     return;
   }
 
-  const guildPrefix = await getGuildPrefix({ discord_guild_id });
+  const guildPrefix = await getGuildPrefixEntry({ discord_guild_id });
 
   if (guildPrefix) {
     await db
@@ -185,7 +185,7 @@ async function handleCurrent({
   message?: Message;
 }) {
   const prefix =
-    (await getGuildPrefix({ discord_guild_id }))?.prefix ?? globalPrefix;
+    (await getGuildPrefixEntry({ discord_guild_id }))?.prefix ?? globalPrefix;
 
   interaction?.reply(inlineCode(prefix));
   if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));

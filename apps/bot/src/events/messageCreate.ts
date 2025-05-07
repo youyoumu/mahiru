@@ -1,6 +1,5 @@
 import commands from "#/commands";
-import { getPrefixStorage, globalPrefix } from "#/utils/prefixStorage";
-import db from "@repo/db";
+import { getGuildPrefix, globalPrefix } from "#/utils/prefixStorage";
 import { Events, Message } from "discord.js";
 
 const shortcut: Record<string, string> = {
@@ -16,7 +15,9 @@ export default {
     if (message.guild) {
       let prefix: string | undefined;
 
-      const guildPrefix = await getGuildPrefix({ message });
+      const guildPrefix = await getGuildPrefix({
+        discord_guild_id: message.guildId,
+      });
 
       if (guildPrefix && message.content.startsWith(guildPrefix)) {
         prefix = guildPrefix;
@@ -44,28 +45,3 @@ export default {
     }
   },
 };
-
-async function getGuildPrefix({
-  message,
-}: {
-  message: Message;
-}): Promise<string | undefined> {
-  const discord_guild_id = message.guild?.id;
-
-  const prefixFromStorage = getPrefixStorage().get(discord_guild_id);
-  if (prefixFromStorage) return prefixFromStorage;
-
-  const prefix =
-    (
-      await db.query.prefixes.findFirst({
-        where(fields, operators) {
-          return operators.eq(fields.discord_guild_id, discord_guild_id ?? "");
-        },
-      })
-    )?.prefix ?? globalPrefix;
-
-  if (prefix && discord_guild_id) {
-    getPrefixStorage().set(discord_guild_id, prefix);
-    return prefix;
-  }
-}
