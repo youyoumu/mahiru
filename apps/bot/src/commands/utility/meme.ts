@@ -1,6 +1,7 @@
 import {
   bold,
   ChatInputCommandInteraction,
+  codeBlock,
   EmbedBuilder,
   inlineCode,
   Message,
@@ -89,33 +90,13 @@ export default {
     switch (selectedAction) {
       case "add": {
         if (key && value) {
-          const userMeme = await getUserMeme({ discord_user_id, key });
-          const guildMeme = await getGuildMeme({ discord_guild_id, key });
-
-          // if this guild already has meme with this key, remove it from this server
-          if (guildMeme) {
-            db.update(schema.meme)
-              .set({ discord_guild_id: "" })
-              .where(eq(schema.meme.id, guildMeme.id));
-          }
-
-          // if user already has meme with this key, update it
-          if (userMeme) {
-            db.update(schema.meme)
-              .set({ value })
-              .where(eq(schema.meme.id, userMeme.id));
-          }
-          // else create new meme
-          else {
-            await db.insert(schema.meme).values({
-              key,
-              value,
-              discord_user_id,
-              discord_guild_id: discord_guild_id ?? "",
-            });
-          }
-
-          return await interaction.reply(bold(key) + "\n\n" + value);
+          return handleAdd({
+            discord_guild_id,
+            discord_user_id,
+            key,
+            value,
+            interaction,
+          });
         }
         return interaction.reply("⚠️ Invalid arguments");
       }
@@ -200,8 +181,20 @@ export default {
     const subCommand = args[0];
     switch (subCommand) {
       case action.add: {
+        const key = args[1];
+        const value = args[2];
+        if (key && value) {
+          return handleAdd({
+            discord_guild_id,
+            discord_user_id,
+            key,
+            value,
+            message,
+          });
+        }
+
         if (message.channel.isSendable()) {
-          message.channel.send("haven't implemented smh");
+          message.channel.send(codeBlock("add <key> <value>"));
         }
         break;
       }
@@ -310,5 +303,50 @@ async function handleDrop({
 
   interaction?.reply(unknownKeyMessage);
   if (message?.channel.isSendable()) message?.channel.send(unknownKeyMessage);
-  return;
+}
+
+async function handleAdd({
+  discord_guild_id,
+  discord_user_id,
+  key,
+  value,
+  interaction,
+  message,
+}: {
+  discord_guild_id: string | undefined | null;
+  discord_user_id: string;
+  key: string;
+  value: string;
+  interaction?: ChatInputCommandInteraction;
+  message?: Message;
+}) {
+  const userMeme = await getUserMeme({ discord_user_id, key });
+  const guildMeme = await getGuildMeme({ discord_guild_id, key });
+
+  // if this guild already has meme with this key, remove it from this server
+  if (guildMeme) {
+    db.update(schema.meme)
+      .set({ discord_guild_id: "" })
+      .where(eq(schema.meme.id, guildMeme.id));
+  }
+
+  // if user already has meme with this key, update it
+  if (userMeme) {
+    db.update(schema.meme)
+      .set({ value })
+      .where(eq(schema.meme.id, userMeme.id));
+  }
+  // else create new meme
+  else {
+    await db.insert(schema.meme).values({
+      key,
+      value,
+      discord_user_id,
+      discord_guild_id: discord_guild_id ?? "",
+    });
+  }
+
+  interaction?.reply(bold(key) + "\n\n" + value);
+  if (message?.channel.isSendable())
+    message.channel.send(bold(key) + "\n\n" + value);
 }
