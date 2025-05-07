@@ -331,7 +331,7 @@ async function handleAdd({
   // if user already has meme with this key, update it
   if (userMeme) {
     db.update(schema.meme)
-      .set({ value })
+      .set({ value, discord_guild_id: discord_guild_id ?? "" })
       .where(eq(schema.meme.id, userMeme.id));
   }
   // else create new meme
