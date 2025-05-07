@@ -16,13 +16,10 @@ export default {
     if (message.guild) {
       let prefix: string | undefined;
 
-      if (message.content.startsWith(globalPrefix)) {
+      const guildPrefix = await getGuildPrefix({ message });
+
+      if (guildPrefix && message.content.startsWith(guildPrefix)) {
         prefix = globalPrefix;
-      } else {
-        const guildPrefix = await getGuildPrefix({ message });
-        if (guildPrefix) {
-          if (message.content.startsWith(guildPrefix)) prefix = guildPrefix;
-        }
       }
 
       // if we found a prefix, setup args; otherwise, this isn't a command
@@ -48,7 +45,11 @@ export default {
   },
 };
 
-async function getGuildPrefix({ message }: { message: Message }) {
+async function getGuildPrefix({
+  message,
+}: {
+  message: Message;
+}): Promise<string | undefined> {
   const discord_guild_id = message.guild?.id;
 
   const prefixFromStorage = getPrefixStorage().get(discord_guild_id);
