@@ -9,4 +9,5 @@ export default {
     console.log(await db.query.meme.findMany());
     await interaction.reply("Pong!");
   },
+  async prefixExecute() {},
 };

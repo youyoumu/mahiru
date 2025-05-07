@@ -21,4 +21,5 @@ export default {
 
     await interaction.reply("Something went wrong");
   },
+  async prefixExecute() {},
 };

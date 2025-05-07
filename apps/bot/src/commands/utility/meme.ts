@@ -207,7 +207,9 @@ export default {
     message: Message;
     args: string[];
     command: string;
-  }) {},
+  }) {
+    console.log(command);
+  },
 };
 
 async function getUserMeme({

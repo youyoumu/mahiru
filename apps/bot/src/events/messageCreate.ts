@@ -1,12 +1,18 @@
+import commands from "#/commands";
 import { Events, Message } from "discord.js";
 const globalPrefix = "!";
+
+const shortcut: Record<string, string> = {
+  m: "meme",
+  meme: "meme",
+};
 
 export default {
   name: Events.MessageCreate as const,
   async execute(message: Message) {
     if (message.author.bot) return;
 
-    let args: string[] | undefined;
+    let args: string[] = [];
     if (message.guild) {
       let prefix: string | undefined;
 
@@ -29,9 +35,14 @@ export default {
       args = message.content.slice(slice).split(/\s+/);
     }
 
-    console.log("DEBUG[330]: args=", args);
     // get the first space-delimited argument after the prefix as the command
-    const command = args?.shift()?.toLowerCase();
-    console.log("DEBUG[327]: command=", command);
+    const command = shortcut[args?.shift()?.toLowerCase() ?? ""];
+    if (command) {
+      commands[command]?.prefixExecute({
+        message,
+        command,
+        args,
+      });
+    }
   },
 };
