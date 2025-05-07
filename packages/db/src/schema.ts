@@ -7,3 +7,9 @@ export const meme = sqliteTable("meme", {
   key: text().notNull(),
   value: text().notNull(),
 });
+
+export const prefixes = sqliteTable("prefixes", {
+  id: int().primaryKey({ autoIncrement: true }),
+  discord_guild_id: text().notNull(),
+  prefix: text().notNull(),
+});

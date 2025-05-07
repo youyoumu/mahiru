@@ -1,10 +1,13 @@
 import commands from "#/commands";
+import db from "@repo/db";
 import { Events, Message } from "discord.js";
 const globalPrefix = "!";
 
 const shortcut: Record<string, string> = {
   m: "meme",
 };
+
+export const prefixStorage = new Map();
 
 export default {
   name: Events.MessageCreate as const,
@@ -18,9 +21,10 @@ export default {
       if (message.content.startsWith(globalPrefix)) {
         prefix = globalPrefix;
       } else {
-        // const guildPrefix = await prefixes.get(message.guild.id);
-        const guildPrefix = "!";
-        if (message.content.startsWith(guildPrefix)) prefix = guildPrefix;
+        const guildPrefix = await getGuildPrefix({ message });
+        if (guildPrefix) {
+          if (message.content.startsWith(guildPrefix)) prefix = guildPrefix;
+        }
       }
 
       // if we found a prefix, setup args; otherwise, this isn't a command
@@ -45,3 +49,24 @@ export default {
     }
   },
 };
+
+async function getGuildPrefix({ message }: { message: Message }) {
+  const discord_guild_id = message.guild?.id;
+
+  const prefixFromStorage = prefixStorage.get(discord_guild_id);
+  if (prefixFromStorage) return prefixFromStorage;
+
+  const prefix =
+    (
+      await db.query.prefixes.findFirst({
+        where(fields, operators) {
+          return operators.eq(fields.discord_guild_id, discord_guild_id ?? "");
+        },
+      })
+    )?.prefix ?? globalPrefix;
+
+  if (prefix && discord_guild_id) {
+    prefixStorage.set(discord_guild_id, prefix);
+    return prefix;
+  }
+}
