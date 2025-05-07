@@ -1,3 +1,4 @@
+import { getGuildPrefix } from "#/utils/prefixStorage";
 import {
   ChatInputCommandInteraction,
   EmbedBuilder,
@@ -18,13 +19,15 @@ export default {
   },
 };
 
-function handleHelp({
+async function handleHelp({
   interaction,
   message,
 }: {
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
+  const discord_guild_id = message?.guildId ?? interaction?.guildId;
+  const prefix = await getGuildPrefix({ discord_guild_id });
   const embed = new EmbedBuilder()
     .setTitle("Help")
     .setColor("#fef3c6")
@@ -53,7 +56,7 @@ function handleHelp({
     })
     .addFields({
       name: "\u200B",
-      value: `Every slash command has its prefix counterpart. For example, ${inlineCode("!meme add")} is the same as ${inlineCode("/meme add")}.`,
+      value: `Every slash command has its prefix counterpart. For example, ${inlineCode(prefix + "meme add")} is the same as ${inlineCode("/meme add")}.`,
     })
     .setFooter({
       text: "Mahiru",

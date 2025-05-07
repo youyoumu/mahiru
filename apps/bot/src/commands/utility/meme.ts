@@ -10,6 +10,7 @@ import {
 import db, { schema } from "@repo/db";
 import { unique } from "../../utils/unique";
 import { eq } from "drizzle-orm";
+import { getGuildPrefix } from "#/utils/prefixStorage";
 
 const action = {
   add: "add",
@@ -430,13 +431,16 @@ async function handleRemove({
   if (message?.channel.isSendable()) message?.channel.send("⚠️ Unknown Key");
 }
 
-function handleHelp({
+async function handleHelp({
   interaction,
   message,
 }: {
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
+  const discord_guild_id = message?.guildId ?? interaction?.guildId;
+  const prefix = await getGuildPrefix({ discord_guild_id });
+
   const embed = new EmbedBuilder()
     .setTitle("Meme Help")
     .setColor("#fef3c6")
@@ -450,7 +454,7 @@ function handleHelp({
     })
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> meme drop",
-      value: `Drop a meme from your collection or the server's collection. The user's meme will take priority. ${inlineCode("!m <key>")} can also be used as shortcut.`,
+      value: `Drop a meme from your collection or the server's collection. The user's meme will take priority. ${inlineCode(prefix + "m <key>")} can also be used as shortcut.`,
     })
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> meme list",
