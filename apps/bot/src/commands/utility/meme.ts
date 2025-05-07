@@ -113,41 +113,11 @@ export default {
         return interaction.reply("⚠️ Invalid arguments");
       }
       case "list": {
-        const userMemes = await db.query.meme.findMany({
-          where(fields, { eq, and }) {
-            return and(eq(fields.discord_user_id, discord_user_id));
-          },
+        return handleList({
+          discord_guild_id,
+          discord_user_id,
+          interaction,
         });
-
-        const guildMemes = discord_guild_id
-          ? await db.query.meme.findMany({
-              where(fields, { eq, and }) {
-                return and(eq(fields.discord_guild_id, discord_guild_id));
-              },
-            })
-          : [];
-
-        const allMemes = [...userMemes, ...guildMemes];
-        const allKeys = unique(allMemes.map((meme) => meme.key));
-
-        // inside a command, event listener, etc.
-        const embed = new EmbedBuilder()
-          .setDescription("Showing memes you can drop")
-          // .setThumbnail(
-          //   "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
-          // )
-          .addFields({
-            name: "\u200B",
-            value: allKeys
-              .map((k, i) => `${bold(i.toString())}. ${k}`)
-              .join("\n"),
-          })
-
-          .setFooter({
-            text: `Page 1/1 (${allKeys.length} Total)`,
-          });
-
-        return interaction.reply({ embeds: [embed] });
       }
       case "remove":
         if (key) {
@@ -205,10 +175,11 @@ export default {
         break;
       }
       case action.list: {
-        if (message.channel.isSendable()) {
-          message.channel.send("haven't implemented smh");
-        }
-        break;
+        return handleList({
+          discord_guild_id,
+          discord_user_id,
+          message,
+        });
       }
       case action.remove: {
         if (message.channel.isSendable()) {
@@ -349,4 +320,48 @@ async function handleAdd({
   interaction?.reply(bold(key) + "\n\n" + value);
   if (message?.channel.isSendable())
     message.channel.send(bold(key) + "\n\n" + value);
+}
+
+async function handleList({
+  discord_guild_id,
+  discord_user_id,
+  interaction,
+  message,
+}: {
+  discord_guild_id: string | undefined | null;
+  discord_user_id: string;
+  interaction?: ChatInputCommandInteraction;
+  message?: Message;
+}) {
+  const userMemes = await db.query.meme.findMany({
+    where(fields, { eq, and }) {
+      return and(eq(fields.discord_user_id, discord_user_id));
+    },
+  });
+
+  const guildMemes = discord_guild_id
+    ? await db.query.meme.findMany({
+        where(fields, { eq, and }) {
+          return and(eq(fields.discord_guild_id, discord_guild_id));
+        },
+      })
+    : [];
+
+  const allMemes = [...userMemes, ...guildMemes];
+  const allKeys = unique(allMemes.map((meme) => meme.key));
+
+  // inside a command, event listener, etc.
+  const embed = new EmbedBuilder()
+    .setDescription("Showing memes you can drop")
+    .addFields({
+      name: "\u200B",
+      value: allKeys.map((k, i) => `${bold(i.toString())}. ${k}`).join("\n"),
+    })
+
+    .setFooter({
+      text: `Page 1/1 (${allKeys.length} Total)`,
+    });
+
+  interaction?.reply({ embeds: [embed] });
+  if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
 }
