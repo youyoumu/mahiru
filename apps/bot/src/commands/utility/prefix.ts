@@ -134,6 +134,13 @@ async function handleChange({
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
+  if (prefix.length > 2) {
+    interaction?.reply("Prefix max length is 2 characters");
+    if (message?.channel.isSendable())
+      message.channel.send("Prefix max length is 2 characters");
+    return;
+  }
+
   const guildPrefix = await getGuildPrefix({ discord_guild_id });
 
   if (guildPrefix) {
