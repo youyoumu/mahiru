@@ -1,6 +1,7 @@
 import {
   ChatInputCommandInteraction,
   codeBlock,
+  inlineCode,
   Message,
   SlashCommandBuilder,
 } from "discord.js";
@@ -148,8 +149,8 @@ async function handleChange({
   }
   getPrefixStorage().set(discord_guild_id, prefix);
 
-  interaction?.reply(codeBlock(prefix));
-  if (message?.channel.isSendable()) message.channel.send(codeBlock(prefix));
+  interaction?.reply(inlineCode(prefix));
+  if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));
 }
 
 async function handleCurrent({
@@ -164,6 +165,6 @@ async function handleCurrent({
   const prefix =
     (await getGuildPrefix({ discord_guild_id }))?.prefix ?? globalPrefix;
 
-  interaction?.reply(codeBlock(prefix));
-  if (message?.channel.isSendable()) message.channel.send(codeBlock(prefix));
+  interaction?.reply(inlineCode(prefix));
+  if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));
 }
