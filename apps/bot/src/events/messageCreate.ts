@@ -1,13 +1,11 @@
 import commands from "#/commands";
+import { getPrefixStorage, globalPrefix } from "#/utils/prefixStorage";
 import db from "@repo/db";
 import { Events, Message } from "discord.js";
-const globalPrefix = "!";
 
 const shortcut: Record<string, string> = {
   m: "meme",
 };
-
-export const prefixStorage = new Map();
 
 export default {
   name: Events.MessageCreate as const,
@@ -53,7 +51,7 @@ export default {
 async function getGuildPrefix({ message }: { message: Message }) {
   const discord_guild_id = message.guild?.id;
 
-  const prefixFromStorage = prefixStorage.get(discord_guild_id);
+  const prefixFromStorage = getPrefixStorage().get(discord_guild_id);
   if (prefixFromStorage) return prefixFromStorage;
 
   const prefix =
@@ -66,7 +64,7 @@ async function getGuildPrefix({ message }: { message: Message }) {
     )?.prefix ?? globalPrefix;
 
   if (prefix && discord_guild_id) {
-    prefixStorage.set(discord_guild_id, prefix);
+    getPrefixStorage().set(discord_guild_id, prefix);
     return prefix;
   }
 }
