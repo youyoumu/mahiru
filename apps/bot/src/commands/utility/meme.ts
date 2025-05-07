@@ -16,6 +16,7 @@ const action = {
   drop: "drop",
   list: "list",
   remove: "remove",
+  help: "help",
 } as const;
 
 const param = {
@@ -77,6 +78,10 @@ export default {
             .setMaxLength(32)
             .setRequired(true),
         ),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand.setName(action.help).setDescription("Explain meme command"),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -119,7 +124,7 @@ export default {
           interaction,
         });
       }
-      case "remove":
+      case "remove": {
         if (key) {
           return handleRemove({
             discord_guild_id,
@@ -129,6 +134,10 @@ export default {
           });
         }
         return interaction.reply("⚠️ Invalid arguments");
+      }
+      case "help": {
+        return handleHelp({ interaction });
+      }
     }
 
     return interaction.reply("Something went wrong");
@@ -194,6 +203,9 @@ export default {
           message.channel.send(codeBlock("remove <key>"));
         }
         break;
+      }
+      case action.help: {
+        return handleHelp({ message });
       }
       default: {
         if (message.channel.isSendable()) {
@@ -410,4 +422,45 @@ async function handleRemove({
 
   interaction?.reply("⚠️ Unknown Key");
   if (message?.channel.isSendable()) message?.channel.send("⚠️ Unknown Key");
+}
+
+function handleHelp({
+  interaction,
+  message,
+}: {
+  interaction?: ChatInputCommandInteraction;
+  message?: Message;
+}) {
+  const embed = new EmbedBuilder()
+    .setTitle("Meme Help")
+    .setColor("#fef3c6")
+    .setThumbnail(
+      "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
+    )
+    .addFields({
+      name: "<:azusarelaxed:1207544782952595508> meme add",
+      value: "Add meme to your collections",
+    })
+    .addFields({
+      name: "<:azusarelaxed:1207544782952595508> meme drop",
+      value: "Drop a meme from your or server collections",
+    })
+    .addFields({
+      name: "<:azusarelaxed:1207544782952595508> meme list",
+      value: "List all memes you can drop",
+    })
+    .addFields({
+      name: "<:azusarelaxed:1207544782952595508> meme remove",
+      value: "Remove a meme from your or server collections",
+    })
+    .setFooter({
+      text: "Mahiru",
+    })
+    .setTimestamp();
+
+  interaction?.reply({ embeds: [embed] });
+  if (message?.channel.isSendable())
+    message.channel.send({
+      embeds: [embed],
+    });
 }
