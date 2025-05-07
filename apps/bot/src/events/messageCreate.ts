@@ -4,7 +4,6 @@ const globalPrefix = "!";
 
 const shortcut: Record<string, string> = {
   m: "meme",
-  meme: "meme",
 };
 
 export default {
@@ -36,9 +35,10 @@ export default {
     }
 
     // get the first space-delimited argument after the prefix as the command
-    const command = shortcut[args?.shift()?.toLowerCase() ?? ""];
+    const command = args?.shift()?.toLowerCase();
+    const commandShortcut = shortcut[command ?? ""];
     if (command) {
-      commands[command]?.prefixExecute({
+      commands[commandShortcut ?? command]?.prefixExecute({
         message,
         args,
       });

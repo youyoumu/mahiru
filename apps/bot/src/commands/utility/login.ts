@@ -1,4 +1,8 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import {
+  ChatInputCommandInteraction,
+  Message,
+  SlashCommandBuilder,
+} from "discord.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -21,5 +25,19 @@ export default {
 
     await interaction.reply("Something went wrong");
   },
-  async prefixExecute() {},
+  async prefixExecute({ message, args }: { message: Message; args: string[] }) {
+    const discord_user_id = message.author.id;
+
+    const res = await message.client.hc.auth.token.$post({
+      json: { discord_user_id },
+    });
+
+    if (res.ok) {
+      const { one_time_token } = await res.json();
+      await message.author.send({
+        content: `http://localhost:3000/sign_in?one_time_token=${one_time_token}`,
+      });
+      await message.reply("Please check your DMs");
+    }
+  },
 };
