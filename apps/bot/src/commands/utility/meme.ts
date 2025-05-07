@@ -11,6 +11,8 @@ import db, { schema } from "@repo/db";
 import { unique } from "../../utils/unique";
 import { eq } from "drizzle-orm";
 import { getGuildPrefix } from "#/utils/prefixStorage";
+import { uniqueBy } from "#/utils/uniqueBy";
+import { getUser } from "#/events/discordRest";
 
 const action = {
   add: "add",
@@ -374,19 +376,33 @@ async function handleList({
       })
     : [];
 
-  const allMemes = [...userMemes, ...guildMemes];
-  const allKeys = unique(allMemes.map((meme) => meme.key));
+  const allMemes = await Promise.all(
+    uniqueBy([...userMemes, ...guildMemes], (item) => item.id).map(
+      async (meme) => {
+        const user = await getUser({ discord_user_id: meme.discord_user_id });
+        return {
+          ...meme,
+          user,
+        };
+      },
+    ),
+  );
 
   // inside a command, event listener, etc.
   const embed = new EmbedBuilder()
     .setDescription("Showing memes you can drop")
     .addFields({
       name: "\u200B",
-      value: allKeys.map((k, i) => `${bold(i.toString())}. ${k}`).join("\n"),
+      value: allMemes
+        .map(
+          (meme, i) =>
+            `${bold(i.toString())}. ${meme.key} - ${meme.user.username}`,
+        )
+        .join("\n"),
     })
 
     .setFooter({
-      text: `Page 1/1 (${allKeys.length} Total)`,
+      text: `Page 1/1 (${allMemes.length} Total)`,
     });
 
   interaction?.reply({ embeds: [embed] });
