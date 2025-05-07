@@ -51,6 +51,10 @@ function handleHelp({
       name: "<:azusarelaxed:1207544782952595508> prefix",
       value: `Manage the bot prefix for this server. Use ${inlineCode("/prefix help")} for details`,
     })
+    .addFields({
+      name: "\u200B",
+      value: `Every slash command has its prefix counterpart. For example, ${inlineCode("!meme add")} is the same as ${inlineCode("/meme add")}.`,
+    })
     .setFooter({
       text: "Mahiru",
     })

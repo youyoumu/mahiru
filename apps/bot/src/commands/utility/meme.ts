@@ -450,8 +450,7 @@ function handleHelp({
     })
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> meme drop",
-      value:
-        "Drop a meme from your collection or the server's collection. The user's meme will take priority.",
+      value: `Drop a meme from your collection or the server's collection. The user's meme will take priority. ${inlineCode("!m <key>")} can also be used as shortcut.`,
     })
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> meme list",
