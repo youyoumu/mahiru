@@ -1,6 +1,7 @@
 import {
   ChatInputCommandInteraction,
   codeBlock,
+  EmbedBuilder,
   inlineCode,
   Message,
   SlashCommandBuilder,
@@ -12,6 +13,7 @@ import { getPrefixStorage, globalPrefix } from "#/utils/prefixStorage";
 const action = {
   current: "current",
   change: "change",
+  help: "help",
 } as const;
 
 const param = {
@@ -42,6 +44,10 @@ export default {
       subCommand
         .setName(action.current)
         .setDescription("Show current bot prefix for this server"),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand.setName(action.help).setDescription("Explain prefix command"),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
     const selectedAction =
@@ -68,6 +74,10 @@ export default {
           discord_guild_id,
           interaction,
         });
+      }
+
+      case "help": {
+        return handleHelp({ interaction });
       }
     }
 
@@ -101,6 +111,11 @@ export default {
           message,
         });
       }
+
+      case action.help: {
+        return handleHelp({ message });
+      }
+
       default: {
         return handleCurrent({
           discord_guild_id,
@@ -174,4 +189,38 @@ async function handleCurrent({
 
   interaction?.reply(inlineCode(prefix));
   if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));
+}
+
+function handleHelp({
+  interaction,
+  message,
+}: {
+  interaction?: ChatInputCommandInteraction;
+  message?: Message;
+}) {
+  const embed = new EmbedBuilder()
+    .setTitle("Prefix Help")
+    .setColor("#fef3c6")
+    .setThumbnail(
+      "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
+    )
+    .addFields({
+      name: "<:azusarelaxed:1207544782952595508> prefix current",
+      value: "Display the current bot prefix for this server.",
+    })
+    .addFields({
+      name: "<:azusarelaxed:1207544782952595508> prefix change",
+      value:
+        "Change the bot prefix for this server. The maximum prefix length is 2 characters.",
+    })
+    .setFooter({
+      text: "Mahiru",
+    })
+    .setTimestamp();
+
+  interaction?.reply({ embeds: [embed] });
+  if (message?.channel.isSendable())
+    message.channel.send({
+      embeds: [embed],
+    });
 }
