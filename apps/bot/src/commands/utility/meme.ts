@@ -158,7 +158,12 @@ export default {
     switch (subCommand) {
       case action.add: {
         const key = args[1];
-        const value = args[2];
+        const value = message.content
+          .split(`${key} `)
+          .slice(1)
+          .join(`${key} `)
+          .trim();
+
         if (key && value) {
           return handleAdd({
             discord_guild_id,
