@@ -27,7 +27,7 @@ export default function MemesPage() {
                 <CardTitle>{meme.key}</CardTitle>
 
                 <Copy
-                  className="w-4 cursor-pointer"
+                  className="w-5 cursor-pointer"
                   onClick={() => {
                     navigator.clipboard.writeText(meme.key);
                     toast(
