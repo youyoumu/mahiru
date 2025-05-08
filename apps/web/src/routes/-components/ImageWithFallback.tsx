@@ -11,7 +11,8 @@ export default function ImageWithFallback({
   return (
     <Image
       width="100%"
-      height="100%"
+      height="200px"
+      className="object-contain"
       src={url}
       fallback="/fallback.png"
       preview={preview}
