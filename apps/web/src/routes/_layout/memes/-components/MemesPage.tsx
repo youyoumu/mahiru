@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useDiscordCdn } from "#/hooks/useProxy";
 import ReactPlayer from "react-player";
+import { Image } from "antd";
 
 export default function MemesPage() {
   const { data: memes = [] } = useMemes();
@@ -108,7 +109,7 @@ function Embed({ value }: { value: string }) {
 function ProxyCdnImage({ url }: { url: string }) {
   const { data } = useDiscordCdn({ url });
   const newUrl = data?.refreshed_url;
-  return <img src={newUrl} alt="Image" />;
+  return <Image src={"asd"} fallback="/fallback.png" />;
 }
 
 function EmbedImgur({ url }: { url: URL }) {
