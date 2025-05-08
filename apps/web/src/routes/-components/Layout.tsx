@@ -8,7 +8,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   const { data: currentUser } = useCurrentUser();
   return (
     <div className="h-svh">
-      <div className="h-16 bg-amber-100 flex justify-center border-b">
+      <div className="h-16 bg-orange-200 flex justify-center border-b">
         <div className="max-w-7xl grow justify-end flex items-center px-4">
           {currentUser && (
             <Avatar>
