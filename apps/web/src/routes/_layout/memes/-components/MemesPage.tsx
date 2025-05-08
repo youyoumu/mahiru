@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useDiscordCdn } from "#/hooks/useProxy";
 import ReactPlayer from "react-player";
 import ImageWithFallback from "#/routes/-components/ImageWithFallback";
+import { Textarea } from "#/components/ui/textarea";
 
 export default function MemesPage() {
   const { data: memes = [] } = useMemes();
@@ -73,7 +74,7 @@ function Embed({ value }: { value: string }) {
   try {
     url = new URL(value);
   } catch {
-    return <div>{value}</div>;
+    return <Textarea value={value} className="max-h-52 resize-none" readOnly />;
   }
 
   const pathnameSplit = url.pathname.split("/");
