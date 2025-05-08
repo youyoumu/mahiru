@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useDiscordCdn } from "#/hooks/useProxy";
 import ReactPlayer from "react-player";
 import { Image } from "antd";
+import ImageWithFallback from "#/routes/-components/ImageWithFallback";
 
 export default function MemesPage() {
   const { data: memes = [] } = useMemes();
@@ -109,7 +110,7 @@ function Embed({ value }: { value: string }) {
 function ProxyCdnImage({ url }: { url: string }) {
   const { data } = useDiscordCdn({ url });
   const newUrl = data?.refreshed_url;
-  return <Image src={"asd"} fallback="/fallback.png" />;
+  return <ImageWithFallback url={newUrl} />;
 }
 
 function EmbedImgur({ url }: { url: URL }) {
