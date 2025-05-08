@@ -116,21 +116,27 @@ function Embed({ value }: { value: string }) {
     pathnameSplit.length === 2 &&
     lastPathname === "watch";
   if (isYoutube) {
-    return <YouTubeEmbed url={url.href} width="100%" height="210px" />;
+    return (
+      <div>
+        <YouTubeEmbed url={url.href} width="100%" height="210px" />
+        <ALink url={value} />
+      </div>
+    );
   }
 
   const isTwitter =
     (url.hostname === "x.com" || url.hostname === "twitter.com") &&
     pathnameSplit[2] === "status";
   if (isTwitter) {
-    return <XEmbed url={url.href} width="100%" height="240px" />;
+    return (
+      <div>
+        <XEmbed url={url.href} width="100%" height="230px" />
+        <ALink url={value} />
+      </div>
+    );
   }
 
-  return (
-    <a href={value} target="_blank" rel="noopener noreferrer">
-      {value}
-    </a>
-  );
+  return <ALink url={value} />;
 }
 
 function ProxyCdnImage({ url }: { url: string }) {
@@ -139,9 +145,7 @@ function ProxyCdnImage({ url }: { url: string }) {
   return (
     <div>
       <ImageWithFallback url={newUrl} />
-      <a href={url} className="line-clamp-1" target="_blank">
-        {url}
-      </a>
+      <ALink url={url} />
     </div>
   );
 }
@@ -168,18 +172,23 @@ function EmbedImgur({ url }: { url: URL }) {
           width="100%"
           height="100%"
         />
-        <a href={url.href} className="line-clamp-1" target="_blank">
-          {url.href}
-        </a>
+
+        <ALink url={url.href} />
       </div>
     );
 
   return (
     <div>
       <ImageWithFallback url={urlCopy.href} />
-      <a href={url.href} className="line-clamp-1" target="_blank">
-        {url.href}
-      </a>
+      <ALink url={url.href} />
     </div>
+  );
+}
+
+function ALink({ url }: { url: string }) {
+  return (
+    <a href={url} className="line-clamp-1 break-words" target="_blank">
+      {url}
+    </a>
   );
 }
