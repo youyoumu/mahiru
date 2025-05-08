@@ -14,7 +14,7 @@ import { useDiscordCdn } from "#/hooks/useProxy";
 import ReactPlayer from "react-player";
 import ImageWithFallback from "#/routes/-components/ImageWithFallback";
 import { Textarea } from "#/components/ui/textarea";
-import { YouTubeEmbed } from "react-social-media-embed";
+import { XEmbed, YouTubeEmbed } from "react-social-media-embed";
 
 export default function MemesPage() {
   const { data: memes = [] } = useMemes();
@@ -117,6 +117,13 @@ function Embed({ value }: { value: string }) {
     lastPathname === "watch";
   if (isYoutube) {
     return <YouTubeEmbed url={url.href} width="100%" height="210px" />;
+  }
+
+  const isTwitter =
+    (url.hostname === "x.com" || url.hostname === "twitter.com") &&
+    pathnameSplit[2] === "status";
+  if (isTwitter) {
+    return <XEmbed url={url.href} width="100%" height="240px" />;
   }
 
   return (
