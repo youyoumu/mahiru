@@ -9,28 +9,14 @@ import {
 import { Button } from "#/components/ui/button";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
-import type { ReactNode } from "react";
+import { useState } from "react";
 import { useDiscordCdn } from "#/hooks/useProxy";
 import ReactPlayer from "react-player";
 
 export default function MemesPage() {
   const { data: memes = [] } = useMemes();
-  console.log("DEBUG[342]: memes=", memes);
-  const url = new URL("https://imgur.com/msw9Al2/asdasd");
-  console.log("DEBUG[345]: url=", url);
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
-      {/* <ReactPlayer */}
-      {/*   url="https://i.imgur.com/msw9Al2.mp4" */}
-      {/*   playing */}
-      {/*   loop */}
-      {/*   playsinline */}
-      {/*   muted */}
-      {/*   controls */}
-      {/*   onError={() => { */}
-      {/*     console.log("asdasd"); */}
-      {/*   }} */}
-      {/* /> */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {memes.map((meme) => (
           <Card key={meme.id}>
@@ -102,6 +88,11 @@ function Embed({ value }: { value: string }) {
     return <img src={url.href} alt="Image" />;
   }
 
+  const isImgur = url.hostname === "imgur.com" && pathnameSplit.length === 2;
+  if (isImgur) {
+    return <EmbedImgur url={url} />;
+  }
+
   return (
     <a
       href={value}
@@ -118,4 +109,30 @@ function ProxyCdnImage({ url }: { url: string }) {
   const { data } = useDiscordCdn({ url });
   const newUrl = data?.refreshed_url;
   return <img src={newUrl} alt="Image" />;
+}
+
+function EmbedImgur({ url }: { url: URL }) {
+  const [suffix, setSuffix] = useState<".mp4" | ".jpeg">(".mp4");
+  const urlCopy = new URL(url.href);
+  urlCopy.hostname = "i.imgur.com";
+  urlCopy.pathname = url.pathname + suffix;
+
+  if (suffix === ".mp4")
+    return (
+      <ReactPlayer
+        url={urlCopy.href}
+        playing
+        loop
+        playsinline
+        muted
+        controls
+        onError={() => {
+          setSuffix(".jpeg");
+        }}
+        width="100%"
+        height="100%"
+      />
+    );
+
+  return <img src={url.href} alt="Image" />;
 }
