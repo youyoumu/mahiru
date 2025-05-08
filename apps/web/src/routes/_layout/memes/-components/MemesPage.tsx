@@ -12,7 +12,6 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useDiscordCdn } from "#/hooks/useProxy";
 import ReactPlayer from "react-player";
-import { Image } from "antd";
 import ImageWithFallback from "#/routes/-components/ImageWithFallback";
 
 export default function MemesPage() {
@@ -41,10 +40,12 @@ export default function MemesPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <Embed value={meme.value} />
+              <div className="max-h-52 overflow-auto">
+                <Embed value={meme.value} />
+              </div>
             </CardContent>
-            <CardFooter>
-              <div className="flex gap-2 justify-end grow">
+            <CardFooter className="grow items-end">
+              <div className="flex gap-2 justify-end grow items-end">
                 <Button
                   onClick={() => {
                     navigator.clipboard.writeText(meme.value);
@@ -87,7 +88,7 @@ function Embed({ value }: { value: string }) {
       url.hostname === "media.discordapp.net" ||
       url.hostname === "cdn.discordapp.com";
     if (isDiscordCdn) return <ProxyCdnImage url={url.href} />;
-    return <img src={url.href} alt="Image" />;
+    return <ImageWithFallback url={url.href} />;
   }
 
   const isImgur = url.hostname === "imgur.com" && pathnameSplit.length === 2;
@@ -136,5 +137,5 @@ function EmbedImgur({ url }: { url: URL }) {
       />
     );
 
-  return <img src={url.href} alt="Image" />;
+  return <ImageWithFallback url={url.href} />;
 }
