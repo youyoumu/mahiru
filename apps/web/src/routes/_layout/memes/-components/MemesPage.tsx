@@ -74,7 +74,13 @@ function Embed({ value }: { value: string }) {
   try {
     url = new URL(value);
   } catch {
-    return <Textarea value={value} className="max-h-64 resize-none" readOnly />;
+    return (
+      <Textarea
+        value={value}
+        className="max-h-64 resize-none bg-secondary"
+        readOnly
+      />
+    );
   }
 
   const pathnameSplit = url.pathname.split("/");
