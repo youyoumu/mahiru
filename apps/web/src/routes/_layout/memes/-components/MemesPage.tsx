@@ -21,7 +21,7 @@ export default function MemesPage() {
     <div className="w-full max-w-7xl mx-auto p-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {memes.map((meme) => (
-          <Card key={meme.id} className="max-h-96">
+          <Card key={meme.id} className="max-h-[420px]">
             <CardHeader>
               <div className="flex items-center justify-between gap-1">
                 <CardTitle>{meme.key}</CardTitle>
@@ -41,7 +41,7 @@ export default function MemesPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="max-h-52 overflow-auto">
+              <div className="max-h-64 overflow-auto">
                 <Embed value={meme.value} />
               </div>
             </CardContent>
@@ -74,7 +74,7 @@ function Embed({ value }: { value: string }) {
   try {
     url = new URL(value);
   } catch {
-    return <Textarea value={value} className="max-h-52 resize-none" readOnly />;
+    return <Textarea value={value} className="max-h-64 resize-none" readOnly />;
   }
 
   const pathnameSplit = url.pathname.split("/");
@@ -89,7 +89,14 @@ function Embed({ value }: { value: string }) {
       url.hostname === "media.discordapp.net" ||
       url.hostname === "cdn.discordapp.com";
     if (isDiscordCdn) return <ProxyCdnImage url={url.href} />;
-    return <ImageWithFallback url={url.href} />;
+    return (
+      <div>
+        <ImageWithFallback url={url.href} />
+        <a href={value} className="line-clamp-1" target="_blank">
+          {value}
+        </a>
+      </div>
+    );
   }
 
   const isImgur = url.hostname === "imgur.com" && pathnameSplit.length === 2;
@@ -98,12 +105,7 @@ function Embed({ value }: { value: string }) {
   }
 
   return (
-    <a
-      href={value}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-500"
-    >
+    <a href={value} target="_blank" rel="noopener noreferrer">
       {value}
     </a>
   );
@@ -112,7 +114,14 @@ function Embed({ value }: { value: string }) {
 function ProxyCdnImage({ url }: { url: string }) {
   const { data } = useDiscordCdn({ url });
   const newUrl = data?.refreshed_url;
-  return <ImageWithFallback url={newUrl} />;
+  return (
+    <div>
+      <ImageWithFallback url={newUrl} />
+      <a href={url} className="line-clamp-1" target="_blank">
+        {url}
+      </a>
+    </div>
+  );
 }
 
 function EmbedImgur({ url }: { url: URL }) {
@@ -123,20 +132,32 @@ function EmbedImgur({ url }: { url: URL }) {
 
   if (suffix === ".mp4")
     return (
-      <ReactPlayer
-        url={urlCopy.href}
-        playing
-        loop
-        playsinline
-        muted
-        controls
-        onError={() => {
-          setSuffix(".jpeg");
-        }}
-        width="100%"
-        height="100%"
-      />
+      <div>
+        <ReactPlayer
+          url={urlCopy.href}
+          playing
+          loop
+          playsinline
+          muted
+          controls
+          onError={() => {
+            setSuffix(".jpeg");
+          }}
+          width="100%"
+          height="100%"
+        />
+        <a href={url.href} className="line-clamp-1" target="_blank">
+          {url.href}
+        </a>
+      </div>
     );
 
-  return <ImageWithFallback url={url.href} />;
+  return (
+    <div>
+      <ImageWithFallback url={urlCopy.href} />
+      <a href={url.href} className="line-clamp-1" target="_blank">
+        {url.href}
+      </a>
+    </div>
+  );
 }
