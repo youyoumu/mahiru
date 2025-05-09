@@ -10,7 +10,11 @@ import "./styles.css";
 import reportWebVitals from "./reportWebVitals.ts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { staleTime: 1000 * 60 * 60 },
+  },
+});
 
 // Create a new router instance
 const router = createRouter({
