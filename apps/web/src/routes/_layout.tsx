@@ -5,13 +5,16 @@ import { currentUserQueryOptions } from "#/hooks/useCurrentUser";
 export const Route = createFileRoute("/_layout")({
   component: RouteComponent,
   async beforeLoad({ context: { queryClient } }) {
+    let currentUser;
     try {
-      await queryClient.fetchQuery({
+      currentUser = await queryClient.fetchQuery({
         ...currentUserQueryOptions,
       });
     } catch {
       throw redirect({ to: "/" });
     }
+
+    if (!currentUser) throw redirect({ to: "/" });
   },
 });
 
