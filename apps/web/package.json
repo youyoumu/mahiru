@@ -31,6 +31,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.10.4",
+    "fuzzysort": "^3.1.0",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.503.0",
     "next-themes": "^0.4.6",

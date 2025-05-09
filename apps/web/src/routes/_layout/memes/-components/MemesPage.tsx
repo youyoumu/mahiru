@@ -24,6 +24,7 @@ import {
   FormMessage,
 } from "#/components/ui/form";
 import { Input } from "#/components/ui/input";
+import fuzzysort from "fuzzysort";
 
 export default function MemesPage() {
   const { data: memes = [] } = useMemes();
@@ -35,6 +36,13 @@ export default function MemesPage() {
   });
 
   const searchText = form.watch("searchText");
+
+  const filteredMemes = fuzzysort
+    .go(searchText, memes, {
+      keys: ["value", "key"],
+      all: !searchText,
+    })
+    .map((result) => result.obj);
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 flex flex-col gap-4">
@@ -53,7 +61,7 @@ export default function MemesPage() {
         />
       </Form>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {memes.map((meme) => (
+        {filteredMemes.map((meme) => (
           <Card key={meme.id} className="max-h-[420px]">
             <CardHeader>
               <div className="flex items-center justify-between gap-1">
