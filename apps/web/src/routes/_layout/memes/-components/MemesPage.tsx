@@ -27,6 +27,8 @@ import { Input } from "#/components/ui/input";
 import fuzzysort from "fuzzysort";
 import { getRouteApi } from "@tanstack/react-router";
 import { useUser } from "#/hooks/useUsers";
+import { digits, pipe, safeParse, string } from "valibot";
+import { useTenorPost } from "#/hooks/useTenor";
 
 export default function MemesPage() {
   const form = useForm({
@@ -190,6 +192,25 @@ function Embed({ value }: { value: string }) {
     );
   }
 
+  const pathname2Split = pathnameSplit[2]?.split("-");
+  const tenorId = pathname2Split?.[pathname2Split.length - 1];
+  const tenorIdSchema = pipe(string(), digits());
+  const parsedTenorId = safeParse(tenorIdSchema, tenorId);
+
+  const isTenor =
+    url.hostname === "tenor.com" &&
+    pathnameSplit.length === 3 &&
+    parsedTenorId.success;
+
+  if (isTenor) {
+    return (
+      <div>
+        <TenorEmbed post_id={parsedTenorId.output} />
+        <ALink url={value} />
+      </div>
+    );
+  }
+
   return <ALink url={value} />;
 }
 
@@ -236,6 +257,23 @@ function EmbedImgur({ url }: { url: URL }) {
       <ImageWithFallback url={urlCopy.href} />
       <ALink url={url.href} />
     </div>
+  );
+}
+
+function TenorEmbed({ post_id }: { post_id: string }) {
+  const { data: post } = useTenorPost({ post_id });
+
+  return (
+    <ReactPlayer
+      url={post?.media_formats.webm.url}
+      playing
+      loop
+      playsinline
+      muted
+      controls
+      width="100%"
+      height="100%"
+    />
   );
 }
 
