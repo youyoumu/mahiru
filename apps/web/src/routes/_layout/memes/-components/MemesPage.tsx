@@ -9,7 +9,7 @@ import {
 import { Button } from "#/components/ui/button";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
-import { useState } from "react";
+import { memo, useDeferredValue, useState } from "react";
 import { useDiscordCdn } from "#/hooks/useProxy";
 import ReactPlayer from "react-player";
 import ImageWithFallback from "#/routes/-components/ImageWithFallback";
@@ -27,8 +27,6 @@ import { Input } from "#/components/ui/input";
 import fuzzysort from "fuzzysort";
 
 export default function MemesPage() {
-  const { data: memes = [] } = useMemes();
-
   const form = useForm({
     defaultValues: {
       searchText: "",
@@ -36,13 +34,7 @@ export default function MemesPage() {
   });
 
   const searchText = form.watch("searchText");
-
-  const filteredMemes = fuzzysort
-    .go(searchText, memes, {
-      keys: ["value", "key"],
-      all: !searchText,
-    })
-    .map((result) => result.obj);
+  const defferedSearchText = useDeferredValue(searchText);
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 flex flex-col gap-4">
@@ -60,57 +52,70 @@ export default function MemesPage() {
           )}
         />
       </Form>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredMemes.map((meme) => (
-          <Card key={meme.id} className="max-h-[420px]">
-            <CardHeader>
-              <div className="flex items-center justify-between gap-1">
-                <CardTitle>{meme.key}</CardTitle>
-
-                <Copy
-                  className="w-5 cursor-pointer"
-                  onClick={() => {
-                    navigator.clipboard.writeText(meme.key);
-                    toast(
-                      <div>
-                        <div>Copied key to clipboard:</div>
-                        <div className="text-muted-foreground">{meme.key}</div>
-                      </div>,
-                    );
-                  }}
-                />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="max-h-64 overflow-auto">
-                <Embed value={meme.value} />
-              </div>
-            </CardContent>
-            <CardFooter className="grow items-end">
-              <div className="flex gap-2 justify-end grow items-end">
-                <Button
-                  onClick={() => {
-                    navigator.clipboard.writeText(meme.value);
-                    toast(
-                      <div>
-                        <div>Copied value to clipboard:</div>
-                        <div className="text-muted-foreground">
-                          {meme.value}
-                        </div>
-                      </div>,
-                    );
-                  }}
-                >
-                  Copy value
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+      <Memes searchText={defferedSearchText} />
     </div>
   );
 }
+
+const Memes = memo(function ({ searchText }: { searchText: string }) {
+  const { data: memes = [] } = useMemes();
+
+  const filteredMemes = fuzzysort
+    .go(searchText, memes, {
+      keys: ["value", "key"],
+      all: !searchText,
+    })
+    .map((result) => result.obj);
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {filteredMemes.map((meme) => (
+        <Card key={meme.id} className="max-h-[420px]">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-1">
+              <CardTitle>{meme.key}</CardTitle>
+
+              <Copy
+                className="w-5 cursor-pointer"
+                onClick={() => {
+                  navigator.clipboard.writeText(meme.key);
+                  toast(
+                    <div>
+                      <div>Copied key to clipboard:</div>
+                      <div className="text-muted-foreground">{meme.key}</div>
+                    </div>,
+                  );
+                }}
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="max-h-64 overflow-auto">
+              <Embed value={meme.value} />
+            </div>
+          </CardContent>
+          <CardFooter className="grow items-end">
+            <div className="flex gap-2 justify-end grow items-end">
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(meme.value);
+                  toast(
+                    <div>
+                      <div>Copied value to clipboard:</div>
+                      <div className="text-muted-foreground">{meme.value}</div>
+                    </div>,
+                  );
+                }}
+              >
+                Copy value
+              </Button>
+            </div>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
+});
 
 function Embed({ value }: { value: string }) {
   let url;
