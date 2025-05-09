@@ -15,12 +15,9 @@ import { sign, verify } from "hono/jwt";
 import { env } from "#/env";
 
 const responseSchema = array(valibot.selectMemesSchema);
-const querySchema = optional(
-  object({
-    meme_ids_token: string(),
-  }),
-);
-
+const querySchema = object({
+  meme_ids_token: optional(string()),
+});
 const app = createApp();
 
 const route = createApp().get(

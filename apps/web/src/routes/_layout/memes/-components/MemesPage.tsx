@@ -25,6 +25,7 @@ import {
 } from "#/components/ui/form";
 import { Input } from "#/components/ui/input";
 import fuzzysort from "fuzzysort";
+import { getRouteApi } from "@tanstack/react-router";
 
 export default function MemesPage() {
   const form = useForm({
@@ -58,7 +59,9 @@ export default function MemesPage() {
 }
 
 const Memes = memo(function ({ searchText }: { searchText: string }) {
-  const { data: memes = [] } = useMemes();
+  const routeApi = getRouteApi("/_layout/memes/");
+  const { token } = routeApi.useSearch();
+  const { data: memes = [] } = useMemes({ meme_ids_token: token });
 
   const filteredMemes = fuzzysort
     .go(searchText, memes, {
