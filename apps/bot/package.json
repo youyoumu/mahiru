@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "lint:fix": "npm run lint --fix",
     "build": "tsup",
-    "deploy-command": "tsx src/deploy-command.ts"
+    "deploy-command": "tsx src/deploy-command.ts",
+    "deploy-command:all": "tsx src/deploy-command.ts --all-guilds"
   },
   "keywords": [],
   "type": "module",

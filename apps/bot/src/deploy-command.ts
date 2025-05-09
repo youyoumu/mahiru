@@ -5,6 +5,8 @@ import commands from "./commands";
 
 const validCommands = [];
 
+const isAllGuilds = process.argv.includes("--all-guilds");
+
 for (const command of Object.values(commands)) {
   if ("data" in command && "execute" in command) {
     validCommands.push(command.data.toJSON());
@@ -25,15 +27,15 @@ try {
   );
 
   // The put method is used to fully refresh all commands in the guild with the current set
-  const data = await rest.put(
-    Routes.applicationGuildCommands(env.CLIENT_ID, env.GUILD_ID),
-    { body: validCommands },
-  );
-
-  // for all guilds
-  // const data2 = (await rest.put(Routes.applicationCommands(env.CLIENT_ID), {
-  //   body: commands,
-  // })) as any[];
+  console.log("DEBUG[374]: isAllGuilds=", isAllGuilds);
+  const data = isAllGuilds
+    ? await rest.put(Routes.applicationCommands(env.CLIENT_ID), {
+        body: validCommands,
+      })
+    : await rest.put(
+        Routes.applicationGuildCommands(env.CLIENT_ID, env.GUILD_ID),
+        { body: validCommands },
+      );
 
   if (Array.isArray(data)) {
     console.log(
