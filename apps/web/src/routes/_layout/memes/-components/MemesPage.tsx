@@ -34,7 +34,7 @@ export default function MemesPage() {
                     toast(
                       <div>
                         <div>Copied key to clipboard:</div>
-                        <div className="text-neutral-500">{meme.key}</div>
+                        <div className="text-muted-foreground">{meme.key}</div>
                       </div>,
                     );
                   }}
@@ -54,7 +54,9 @@ export default function MemesPage() {
                     toast(
                       <div>
                         <div>Copied value to clipboard:</div>
-                        <div className="text-neutral-500">{meme.value}</div>
+                        <div className="text-muted-foreground">
+                          {meme.value}
+                        </div>
                       </div>,
                     );
                   }}

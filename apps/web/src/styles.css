@@ -123,7 +123,7 @@
     cursor: pointer;
   }
   a {
-    @apply text-blue-500;
+    @apply text-primary-foreground;
     @apply cursor-pointer;
   }
 }
