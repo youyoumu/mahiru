@@ -1,6 +1,6 @@
 import { useCurrentUser } from "#/hooks/useCurrentUser";
 import { Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function HomePage() {
@@ -44,32 +44,46 @@ const LoveEmojiBubbles = () => {
     }[]
   >([]);
 
+  function handleMove(
+    e:
+      | MouseEvent<HTMLDivElement, globalThis.MouseEvent>
+      | TouchEvent<HTMLDivElement>,
+  ) {
+    const bounds = parentRef.current?.getBoundingClientRect();
+    if (!bounds) return;
+    const isTouch = e.type === "touchmove";
+    const clientX = isTouch
+      ? ((e as TouchEvent).touches[0]?.clientX ?? 0)
+      : (e as MouseEvent<HTMLDivElement, globalThis.MouseEvent>).clientX;
+    const clientY = isTouch
+      ? ((e as TouchEvent).touches[0]?.clientY ?? 0)
+      : (e as MouseEvent<HTMLDivElement, globalThis.MouseEvent>).clientY;
+
+    const x = clientX - bounds.left;
+    const y = clientY - bounds.top;
+
+    if (y > 90) return;
+    if (x < 50) return;
+
+    const newEmoji = {
+      id: crypto.randomUUID(),
+      x: 0 + Math.random() * 200,
+      y: 0 + Math.random() * 50,
+    };
+    const randomNumber = Math.random();
+    if (randomNumber > 0.05) return;
+    setEmojis((prev) => [...prev, newEmoji]);
+    setTimeout(() => {
+      setEmojis((prev) => prev.filter((emoji) => emoji.id !== newEmoji.id));
+    }, 1000);
+  }
+
   return (
     <div
       ref={parentRef}
       className="relative group cursor-grab"
-      onMouseMove={(e) => {
-        const bounds = parentRef.current?.getBoundingClientRect();
-        if (!bounds) return;
-
-        const x = e.clientX - bounds.left;
-        const y = e.clientY - bounds.top;
-
-        if (y > 90) return;
-        if (x < 50) return;
-
-        const newEmoji = {
-          id: crypto.randomUUID(),
-          x: 0 + Math.random() * 200,
-          y: 0 + Math.random() * 50,
-        };
-        const randomNumber = Math.random();
-        if (randomNumber > 0.05) return;
-        setEmojis((prev) => [...prev, newEmoji]);
-        setTimeout(() => {
-          setEmojis((prev) => prev.filter((emoji) => emoji.id !== newEmoji.id));
-        }, 1000);
-      }}
+      onMouseMove={handleMove}
+      onTouchMove={handleMove}
     >
       <img src="/azusa.webp" className="size-64" />
       <AnimatePresence>
