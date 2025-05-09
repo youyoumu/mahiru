@@ -8,7 +8,6 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import db, { schema } from "@repo/db";
-import { unique } from "../../utils/unique";
 import { eq } from "drizzle-orm";
 import { getGuildPrefix } from "#/utils/prefixStorage";
 import { uniqueBy } from "#/utils/uniqueBy";
@@ -337,14 +336,16 @@ async function handleAdd({
 
   // if this guild already has meme with this key, remove it from this server
   if (guildMeme) {
-    db.update(schema.meme)
+    await db
+      .update(schema.meme)
       .set({ discord_guild_id: "" })
       .where(eq(schema.meme.id, guildMeme.id));
   }
 
   // if user already has meme with this key, update it
   if (userMeme) {
-    db.update(schema.meme)
+    await db
+      .update(schema.meme)
       .set({ value, discord_guild_id: discord_guild_id ?? "" })
       .where(eq(schema.meme.id, userMeme.id));
   }
@@ -439,7 +440,8 @@ async function handleRemove({
 
   // if this guild already has meme with this key, remove it from this server
   if (guildMeme) {
-    db.update(schema.meme)
+    await db
+      .update(schema.meme)
       .set({ discord_guild_id: "" })
       .where(eq(schema.meme.id, guildMeme.id));
   }
