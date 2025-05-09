@@ -61,7 +61,7 @@ const routeMe = createApp().get(
 );
 
 const routeUserId = createApp().get(
-  "/:user_id",
+  "/:discord_user_id",
   describeRoute({
     description: "Get user data",
     responses: {
@@ -75,10 +75,18 @@ const routeUserId = createApp().get(
       },
     },
   }),
-  validator("param", string()),
-  (c) => {
-    const { user_id } = c.req.param();
-    return c.json({ name: "asd" });
+  validator(
+    "param",
+    object({
+      discord_user_id: string(),
+    }),
+  ),
+  async (c) => {
+    const { discord_user_id } = c.req.param();
+    const user = await getUser({ discord_user_id });
+    return c.json<InferOutput<typeof responseSchema>>(
+      parse(responseSchema, user),
+    );
   },
 );
 

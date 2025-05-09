@@ -26,6 +26,7 @@ import {
 import { Input } from "#/components/ui/input";
 import fuzzysort from "fuzzysort";
 import { getRouteApi } from "@tanstack/react-router";
+import { useUser } from "#/hooks/useUsers";
 
 export default function MemesPage() {
   const form = useForm({
@@ -98,7 +99,10 @@ const Memes = memo(function ({ searchText }: { searchText: string }) {
             </div>
           </CardContent>
           <CardFooter className="grow items-end">
-            <div className="flex gap-2 justify-end grow items-end">
+            <div className="flex gap-2 justify-between grow items-end">
+              <div className="text-muted-foreground">
+                <DiscordUsername discord_user_id={meme.discord_user_id} />
+              </div>
               <Button
                 onClick={() => {
                   navigator.clipboard.writeText(meme.value);
@@ -241,4 +245,9 @@ function ALink({ url }: { url: string }) {
       {url}
     </a>
   );
+}
+
+function DiscordUsername({ discord_user_id }: { discord_user_id: string }) {
+  const { data: user } = useUser({ discord_user_id });
+  return user?.username;
 }
