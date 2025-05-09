@@ -1,8 +1,13 @@
+import { env } from "#/env";
 import {
   ChatInputCommandInteraction,
   Message,
   SlashCommandBuilder,
 } from "discord.js";
+
+const webUrl = new URL(
+  env.DEV ? "http://localhost:3000" : "https://mahiru.youyoumu.my.id",
+);
 
 export default {
   data: new SlashCommandBuilder()
@@ -18,9 +23,7 @@ export default {
     if (res.ok) {
       const { one_time_token } = await res.json();
 
-      return await interaction.reply(
-        `http://localhost:3000/sign_in?one_time_token=${one_time_token}`,
-      );
+      return await interaction.reply(getLoginUrl(one_time_token));
     }
 
     await interaction.reply("Something went wrong");
@@ -35,9 +38,16 @@ export default {
     if (res.ok) {
       const { one_time_token } = await res.json();
       await message.author.send({
-        content: `http://localhost:3000/sign_in?one_time_token=${one_time_token}`,
+        content: getLoginUrl(one_time_token),
       });
       await message.reply("Please check your DMs");
     }
   },
 };
+
+function getLoginUrl(token: string) {
+  const url = new URL(webUrl);
+  url.pathname = "/sign_in";
+  url.searchParams.set("one_time_token", token);
+  return url.toString();
+}

@@ -1,5 +1,5 @@
 import { createEnv } from "@t3-oss/env-core";
-import { string } from "valibot";
+import { boolean, pipe, string, transform, unknown } from "valibot";
 
 export const env = createEnv({
   server: {
@@ -8,6 +8,16 @@ export const env = createEnv({
     GUILD_ID: string(),
     DATABASE_URL: string(),
     SECRET_KEY: string(),
+    DEV: pipe(
+      unknown(),
+      transform((input) => !!input),
+      boolean(),
+    ),
+    PROD: pipe(
+      unknown(),
+      transform((input) => !!input),
+      boolean(),
+    ),
   },
 
   clientPrefix: "PUBLIC_",

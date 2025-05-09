@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "start": "node ./dist/src/index.js",
+    "dev": "DEV=1 PROD=0 tsx watch src/index.ts",
+    "start": "DEV=0 PROD=1 node ./dist/src/index.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "npm run lint --fix",
