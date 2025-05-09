@@ -10,12 +10,12 @@ export const env = createEnv({
     SECRET_KEY: string(),
     DEV: pipe(
       unknown(),
-      transform((input) => !!input),
+      transform((input) => !!Number(input)),
       boolean(),
     ),
     PROD: pipe(
       unknown(),
-      transform((input) => !!input),
+      transform((input) => !!Number(input)),
       boolean(),
     ),
   },
