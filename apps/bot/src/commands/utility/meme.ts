@@ -410,7 +410,7 @@ async function handleList({
       value: allMemes
         .map(
           (meme, i) =>
-            `${bold(i.toString())}. ${meme.key} - <@${meme.discord_user_id}>`,
+            `${bold((i + 1).toString())}. ${meme.key} - <@${meme.discord_user_id}>`,
         )
         .join("\n"),
     })
