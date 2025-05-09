@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsup",
+    "start": "node ./dist/index.js",
     "dev": "concurrently \"tsx watch src/index.ts\" \"tsup --watch\"",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",

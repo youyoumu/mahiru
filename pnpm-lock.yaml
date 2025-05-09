@@ -318,6 +318,9 @@ importers:
       eslint:
         specifier: ^9.25.0
         version: 9.25.0(jiti@2.4.2)
+      tsup:
+        specifier: 8.3.0
+        version: 8.3.0(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(typescript@5.8.2)
       tsx:
         specifier: ^4.19.4
         version: 4.19.4
@@ -390,6 +393,9 @@ importers:
       eslint:
         specifier: ^9.25.0
         version: 9.25.0(jiti@2.4.2)
+      tsup:
+        specifier: 8.3.0
+        version: 8.3.0(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(typescript@5.8.2)
       typescript:
         specifier: 5.8.2
         version: 5.8.2
@@ -405,6 +411,10 @@ importers:
       hono:
         specifier: ^4.7.8
         version: 4.7.8
+    devDependencies:
+      tsup:
+        specifier: 8.3.0
+        version: 8.3.0(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.4)(typescript@5.8.2)
 
 packages:
 

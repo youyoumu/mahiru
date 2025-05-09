@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "tsup",
     "push": "drizzle-kit push",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
@@ -25,7 +26,8 @@
     "@types/node": "^22.15.3",
     "drizzle-kit": "^0.31.0",
     "eslint": "^9.25.0",
-    "tsx": "^4.19.4"
+    "tsx": "^4.19.4",
+    "tsup": "8.3.0"
   },
   "dependencies": {
     "@libsql/client": "^0.15.4",
