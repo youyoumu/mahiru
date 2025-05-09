@@ -47,9 +47,12 @@ const route = createApp().get(
   async (c) => {
     const { discord_user_id } = c.get("jwtPayload");
     const meme_ids_token = c.req.valid("query")?.meme_ids_token;
-    const decoded = meme_ids_token
-      ? await verify(meme_ids_token, env.SECRET_KEY)
-      : null;
+    let decoded;
+    try {
+      decoded = await verify(meme_ids_token ?? "", env.SECRET_KEY);
+    } catch {
+      decoded = null;
+    }
 
     const parsedDecodedPayload = safeParse(decodedPayloadSchema, decoded);
     let meme_ids: number[] = [];
