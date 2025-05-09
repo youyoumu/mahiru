@@ -7,6 +7,7 @@ import {
   object,
   optional,
   parse,
+  safeParse,
   string,
   type InferOutput,
 } from "valibot";
@@ -19,6 +20,11 @@ const querySchema = object({
   meme_ids_token: optional(string()),
 });
 const app = createApp();
+
+const decodedPayloadSchema = object({
+  meme_ids: array(number()),
+  exp: number(),
+});
 
 const route = createApp().get(
   "/",
@@ -44,10 +50,19 @@ const route = createApp().get(
     const decoded = meme_ids_token
       ? await verify(meme_ids_token, env.SECRET_KEY)
       : null;
-    console.log("DEBUG[381]: decoded=", decoded);
+
+    const parsedDecodedPayload = safeParse(decodedPayloadSchema, decoded);
+    let meme_ids: number[] = [];
+    if (parsedDecodedPayload.success) {
+      meme_ids = parsedDecodedPayload.output.meme_ids;
+    }
+
     const memes = await db.query.meme.findMany({
-      where(fields, { eq }) {
-        return eq(fields.discord_user_id, discord_user_id);
+      where(fields, { eq, or, inArray }) {
+        return or(
+          eq(fields.discord_user_id, discord_user_id),
+          inArray(fields.id, meme_ids),
+        );
       },
     });
 
