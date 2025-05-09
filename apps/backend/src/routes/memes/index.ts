@@ -7,10 +7,7 @@ import {
   object,
   optional,
   parse,
-  pipe,
   string,
-  transform,
-  unknown,
   type InferOutput,
 } from "valibot";
 import db, { valibot } from "@repo/db";
@@ -72,17 +69,10 @@ const responseSchemaToken = object({
   token: string(),
 });
 const jsonSchemaToken = object({
-  meme_ids: pipe(
-    unknown(),
-    transform((input) => {
-      console.log("DEBUG[385]: input=", input);
-      return input;
-    }),
-    array(number()),
-  ),
+  meme_ids: array(number()),
 });
 
-const routeToken = createApp().get(
+const routeToken = createApp().post(
   "/token",
   describeRoute({
     description: "Generate token to get list of memes",
@@ -107,7 +97,6 @@ const routeToken = createApp().get(
       return c.body(null, 401);
     }
 
-    console.log("DEBUG[384]: c.req=", c.req);
     const { meme_ids } = c.req.valid("json");
     console.log("DEBUG[383]: meme_ids=", meme_ids);
 
