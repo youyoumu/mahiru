@@ -5,9 +5,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 
-const webUrl = new URL(
-  env.DEV ? "http://localhost:3000" : "https://mahiru.youyoumu.my.id",
-);
+const webUrl = new URL(env.DEV ? env.WEB_URL_DEV : env.WEB_URL);
 
 export default {
   data: new SlashCommandBuilder()

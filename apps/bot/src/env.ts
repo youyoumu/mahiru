@@ -18,6 +18,9 @@ export const env = createEnv({
       transform((input) => !!Number(input)),
       boolean(),
     ),
+    BE_URL: string(),
+    WEB_URL_DEV: string(),
+    WEB_URL: string(),
   },
 
   clientPrefix: "PUBLIC_",

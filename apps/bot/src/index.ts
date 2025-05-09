@@ -4,7 +4,6 @@ import { Client, GatewayIntentBits } from "discord.js";
 import { env } from "./env";
 import events from "./events";
 import { hcWithType } from "@repo/backend/hc";
-import { localhost } from "./utils/domain";
 
 // Create a new client instance
 const client = new Client({
@@ -21,7 +20,7 @@ declare module "discord.js" {
   }
 }
 
-const hc = hcWithType(localhost);
+const hc = hcWithType(env.BE_URL);
 client.hc = hc;
 
 // Log in to Discord with your client's token
