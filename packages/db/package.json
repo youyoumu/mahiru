@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsup",
+    "dev": "tsup --watch",
     "push": "drizzle-kit push",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
@@ -17,7 +18,7 @@
   "type": "module",
   "exports": {
     ".": {
-      "default": "./src/index.ts"
+      "default": "./dist/index.js"
     }
   },
   "devDependencies": {
