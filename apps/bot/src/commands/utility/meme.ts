@@ -374,6 +374,8 @@ async function handleList({
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
+  const client = interaction?.client ?? message?.client;
+  const hc = client?.hc;
   const userMemes = await db.query.meme.findMany({
     where(fields, { eq, and }) {
       return and(eq(fields.discord_user_id, discord_user_id));
@@ -389,6 +391,13 @@ async function handleList({
     : [];
 
   const allMemes = uniqueBy([...userMemes, ...guildMemes], (item) => item.id);
+  const meme_ids = allMemes.map((meme) => meme.id);
+
+  console.log(JSON.stringify(meme_ids));
+  const res = await hc?.memes.token.$get({
+    json: { meme_ids },
+  });
+  console.log("DEBUG[382]: res=", res);
 
   // inside a command, event listener, etc.
   const embed = new EmbedBuilder()

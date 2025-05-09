@@ -1,12 +1,32 @@
 import { createApp } from "#/app";
 import { describeRoute } from "hono-openapi";
-import { resolver } from "hono-openapi/valibot";
-import { array, parse, type InferOutput } from "valibot";
+import { resolver, validator } from "hono-openapi/valibot";
+import {
+  array,
+  number,
+  object,
+  optional,
+  parse,
+  pipe,
+  string,
+  transform,
+  unknown,
+  type InferOutput,
+} from "valibot";
 import db, { valibot } from "@repo/db";
+import { sign, verify } from "hono/jwt";
+import { env } from "#/env";
 
 const responseSchema = array(valibot.selectMemesSchema);
+const querySchema = optional(
+  object({
+    meme_ids_token: string(),
+  }),
+);
 
-export default createApp().get(
+const app = createApp();
+
+const route = createApp().get(
   "/",
   describeRoute({
     description: "Get all user's memes collections",
@@ -20,10 +40,17 @@ export default createApp().get(
         },
       },
     },
+
     validateResponse: true,
   }),
+  validator("query", querySchema),
   async (c) => {
     const { discord_user_id } = c.get("jwtPayload");
+    const meme_ids_token = c.req.valid("query")?.meme_ids_token;
+    const decoded = meme_ids_token
+      ? await verify(meme_ids_token, env.SECRET_KEY)
+      : null;
+    console.log("DEBUG[381]: decoded=", decoded);
     const memes = await db.query.meme.findMany({
       where(fields, { eq }) {
         return eq(fields.discord_user_id, discord_user_id);
@@ -40,3 +67,58 @@ export default createApp().get(
     return c.json<InferOutput<typeof responseSchema>>(data);
   },
 );
+
+const responseSchemaToken = object({
+  token: string(),
+});
+const jsonSchemaToken = object({
+  meme_ids: pipe(
+    unknown(),
+    transform((input) => {
+      console.log("DEBUG[385]: input=", input);
+      return input;
+    }),
+    array(number()),
+  ),
+});
+
+const routeToken = createApp().get(
+  "/token",
+  describeRoute({
+    description: "Generate token to get list of memes",
+    responses: {
+      200: {
+        description: "Token to get list of memes",
+        content: {
+          "application/json": {
+            schema: resolver(responseSchemaToken),
+          },
+        },
+      },
+    },
+
+    validateResponse: true,
+  }),
+  validator("json", jsonSchemaToken),
+  async (c) => {
+    const { admin } = c.get("jwtPayload");
+
+    if (!admin) {
+      return c.body(null, 401);
+    }
+
+    console.log("DEBUG[384]: c.req=", c.req);
+    const { meme_ids } = c.req.valid("json");
+    console.log("DEBUG[383]: meme_ids=", meme_ids);
+
+    const payload = {
+      meme_ids,
+      exp: Math.floor(Date.now() / 1000) + 60 * 60, // Token expires in 60 minutes
+    };
+    const token = await sign(payload, env.SECRET_KEY);
+
+    return c.json<InferOutput<typeof responseSchemaToken>>({ token });
+  },
+);
+
+export default app.route("/", route).route("/", routeToken);
