@@ -1,8 +1,11 @@
+import { env } from "#/env";
 import { hcWithType } from "@repo/backend/hc";
 import Cookies from "js-cookie";
 
+const beUrl = env.DEV ? env.VITE_BE_URL_DEV : env.VITE_BE_URL;
+
 export const hc = () =>
-  hcWithType("http://localhost:8100", {
+  hcWithType(beUrl, {
     headers: {
       Authorization: `Bearer ${Cookies.get("token")}`,
     },
