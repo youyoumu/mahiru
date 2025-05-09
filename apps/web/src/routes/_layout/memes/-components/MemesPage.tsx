@@ -15,11 +15,43 @@ import ReactPlayer from "react-player";
 import ImageWithFallback from "#/routes/-components/ImageWithFallback";
 import { Textarea } from "#/components/ui/textarea";
 import { XEmbed, YouTubeEmbed } from "react-social-media-embed";
+import { useForm } from "react-hook-form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "#/components/ui/form";
+import { Input } from "#/components/ui/input";
 
 export default function MemesPage() {
   const { data: memes = [] } = useMemes();
+
+  const form = useForm({
+    defaultValues: {
+      searchText: "",
+    },
+  });
+
+  const searchText = form.watch("searchText");
+
   return (
-    <div className="w-full max-w-7xl mx-auto p-4">
+    <div className="w-full max-w-7xl mx-auto p-4 flex flex-col gap-4">
+      <Form {...form}>
+        <FormField
+          control={form.control}
+          name="searchText"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input placeholder="search" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </Form>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {memes.map((meme) => (
           <Card key={meme.id} className="max-h-[420px]">
