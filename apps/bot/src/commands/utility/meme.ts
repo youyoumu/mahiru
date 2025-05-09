@@ -11,7 +11,6 @@ import db, { schema } from "@repo/db";
 import { eq } from "drizzle-orm";
 import { getGuildPrefix } from "#/utils/prefixStorage";
 import { uniqueBy } from "#/utils/uniqueBy";
-import { getUser } from "#/events/discordRest";
 
 const action = {
   add: "add",
@@ -389,17 +388,7 @@ async function handleList({
       })
     : [];
 
-  const allMemes = await Promise.all(
-    uniqueBy([...userMemes, ...guildMemes], (item) => item.id).map(
-      async (meme) => {
-        const user = await getUser({ discord_user_id: meme.discord_user_id });
-        return {
-          ...meme,
-          user,
-        };
-      },
-    ),
-  );
+  const allMemes = uniqueBy([...userMemes, ...guildMemes], (item) => item.id);
 
   // inside a command, event listener, etc.
   const embed = new EmbedBuilder()
@@ -409,7 +398,7 @@ async function handleList({
       value: allMemes
         .map(
           (meme, i) =>
-            `${bold(i.toString())}. ${meme.key} - ${meme.user.username}`,
+            `${bold(i.toString())}. ${meme.key} - <@${meme.discord_user_id}>`,
         )
         .join("\n"),
     })
