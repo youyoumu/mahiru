@@ -98,7 +98,6 @@ const routeToken = createApp().post(
     }
 
     const { meme_ids } = c.req.valid("json");
-    console.log("DEBUG[383]: meme_ids=", meme_ids);
 
     const payload = {
       meme_ids,

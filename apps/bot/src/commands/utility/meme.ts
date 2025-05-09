@@ -11,6 +11,7 @@ import db, { schema } from "@repo/db";
 import { eq } from "drizzle-orm";
 import { getGuildPrefix } from "#/utils/prefixStorage";
 import { uniqueBy } from "#/utils/uniqueBy";
+import { webUrl } from "#/utils/webUrl";
 
 const action = {
   add: "add",
@@ -396,7 +397,10 @@ async function handleList({
   const res = await hc?.memes.token.$post({
     json: { meme_ids },
   });
-  console.log("DEBUG[382]: res=", res);
+  let token = "";
+  if (res?.ok) {
+    token = (await res.json()).token;
+  }
 
   // inside a command, event listener, etc.
   const embed = new EmbedBuilder()
@@ -409,6 +413,11 @@ async function handleList({
             `${bold(i.toString())}. ${meme.key} - <@${meme.discord_user_id}>`,
         )
         .join("\n"),
+    })
+
+    .addFields({
+      name: "\u200B",
+      value: getListUrl(token),
     })
 
     .setFooter({
@@ -503,4 +512,11 @@ async function handleHelp({
     message.channel.send({
       embeds: [embed],
     });
+}
+
+function getListUrl(token: string) {
+  const url = new URL(webUrl);
+  url.pathname = "/memes";
+  url.searchParams.set("token", token);
+  return url.toString();
 }

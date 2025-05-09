@@ -1,11 +1,9 @@
-import { env } from "#/env";
+import { webUrl } from "#/utils/webUrl";
 import {
   ChatInputCommandInteraction,
   Message,
   SlashCommandBuilder,
 } from "discord.js";
-
-const webUrl = new URL(env.DEV ? env.WEB_URL_DEV : env.WEB_URL);
 
 export default {
   data: new SlashCommandBuilder()
