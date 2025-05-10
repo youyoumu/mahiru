@@ -8,9 +8,16 @@ import {
   type PartialMessage,
 } from "discord.js";
 import { API } from "nhentai-api";
-import { digits, number, pipe, safeParse, string, transform } from "valibot";
+import { digits, number, parse, pipe, string, transform } from "valibot";
 
 const nH = new API();
+const buttonId = {
+  next: "next",
+  prev: "prev",
+  first: "first",
+  last: "last",
+} as const;
+type ButtonId = keyof typeof buttonId;
 
 export async function handleNhenLink({
   code,
@@ -42,7 +49,7 @@ export async function handleNHenButtonInteraction({
   if (!str) return;
   const [codeString, pageInfo] = str.split("-").map((part) => part.trim());
   if (!pageInfo) return;
-  const [currentPageString] = pageInfo.split("/");
+  const [currentPageString, totalPagesString] = pageInfo.split("/");
 
   const numberSchema = pipe(
     string(),
@@ -51,15 +58,48 @@ export async function handleNHenButtonInteraction({
     number(),
   );
 
-  const code = safeParse(numberSchema, codeString);
-  const currentPage = safeParse(numberSchema, currentPageString);
-  if (!code.success || !currentPage.success) return;
+  let code: number;
+  let currentPage: number;
+  let totalPages: number;
+
+  try {
+    code = parse(numberSchema, codeString);
+    currentPage = parse(numberSchema, currentPageString);
+    totalPages = parse(numberSchema, totalPagesString);
+  } catch {
+    return;
+  }
+
+  function getPageNumber() {
+    let selectedButtonId: ButtonId = "next";
+    if (
+      "data" in interaction.component &&
+      "custom_id" in interaction.component.data
+    ) {
+      selectedButtonId = interaction.component.data.custom_id as ButtonId;
+    }
+
+    switch (selectedButtonId) {
+      case buttonId.next: {
+        return currentPage + 1;
+      }
+      case buttonId.prev: {
+        return currentPage - 1;
+      }
+      case buttonId.first: {
+        return 1;
+      }
+      case buttonId.last: {
+        return totalPages;
+      }
+    }
+  }
 
   try {
     interaction.update(
       await createMessage({
-        code: code.output,
-        pageNumber: currentPage.output + 1,
+        code: code,
+        pageNumber: getPageNumber(),
       }),
     );
   } catch {
@@ -90,13 +130,13 @@ async function createMessage({
     })
     .setImage(newPage.toString());
 
-  const next = new ButtonBuilder()
-    .setCustomId("next")
-    .setEmoji("➡️")
-    .setStyle(ButtonStyle.Secondary);
   const prev = new ButtonBuilder()
-    .setCustomId("prev")
+    .setCustomId(buttonId.prev)
     .setEmoji("⬅️")
+    .setStyle(ButtonStyle.Secondary);
+  const next = new ButtonBuilder()
+    .setCustomId(buttonId.next)
+    .setEmoji("➡️")
     .setStyle(ButtonStyle.Secondary);
   const row = new ActionRowBuilder<ButtonBuilder>()
     .addComponents(prev)
