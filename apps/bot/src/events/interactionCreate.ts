@@ -4,26 +4,29 @@ import commands from "../commands";
 export default {
   name: Events.InteractionCreate as const,
   async execute(interaction: BaseInteraction) {
-    if (!interaction.isChatInputCommand()) return;
+    if (interaction.isChatInputCommand()) {
+      const command = commands[interaction.commandName];
+      if (!command) return;
 
-    const command = commands[interaction.commandName];
-    if (!command) return;
-
-    try {
-      await command.execute(interaction);
-    } catch (error) {
-      console.error(error);
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({
-          content: "There was an error while executing this command!",
-          flags: MessageFlags.Ephemeral,
-        });
-      } else {
-        await interaction.reply({
-          content: "There was an error while executing this command!",
-          flags: MessageFlags.Ephemeral,
-        });
+      try {
+        await command.execute(interaction);
+      } catch (error) {
+        console.error(error);
+        if (interaction.replied || interaction.deferred) {
+          await interaction.followUp({
+            content: "There was an error while executing this command!",
+            flags: MessageFlags.Ephemeral,
+          });
+        } else {
+          await interaction.reply({
+            content: "There was an error while executing this command!",
+            flags: MessageFlags.Ephemeral,
+          });
+        }
       }
+    } else if (interaction.isButton()) {
+      console.log("DEBUG[427]: interaction=", interaction.component);
+      interaction.update("asdsa");
     }
   },
 };

@@ -1,20 +1,11 @@
 import { env } from "#/env";
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  type Message,
-  type PartialMessage,
-} from "discord.js";
+import { type Message, type PartialMessage } from "discord.js";
 import { digits, pipe, safeParse, string } from "valibot";
-import { API } from "nhentai-api";
+import { handleNhenLink } from "#/feature/nhen";
 
 export const LINK_EMOJI = "🔗";
 
 export const embededMessageStorage = new Map<string, boolean>();
-
-const nH = new API();
 
 export async function handleLink({
   message,
@@ -121,29 +112,7 @@ export async function handleLink({
     pathnameSplit[1] === "g" &&
     nhenCode.success;
   if (isNhen) {
-    const book = await nH.getBook(Number(nhenCode.output));
-    const page1 = book.pages[0] ? nH.getImageURL(book.pages[0]) : null;
-    const newPage1 = new URL(page1 ?? "");
-    newPage1.hostname = "i4.nhentai.net";
-
-    const embed = new EmbedBuilder()
-      .setTitle(book.title.pretty)
-      .setColor("#fef3c6")
-      .setImage(newPage1.toString());
-
-    const next = new ButtonBuilder()
-      .setCustomId("next")
-      .setEmoji("➡️")
-      .setStyle(ButtonStyle.Secondary);
-    const prev = new ButtonBuilder()
-      .setCustomId("prev")
-      .setEmoji("⬅️")
-      .setStyle(ButtonStyle.Secondary);
-    const row = new ActionRowBuilder<ButtonBuilder>()
-      .addComponents(prev)
-      .addComponents(next);
-
-    message.channel.send({ embeds: [embed], components: [row] });
+    handleNhenLink({ nhenCode: Number(nhenCode.output), message });
   }
 }
 
