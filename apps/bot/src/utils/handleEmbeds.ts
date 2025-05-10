@@ -4,6 +4,8 @@ import { digits, pipe, safeParse, string } from "valibot";
 
 export const LINK_EMOJI = "🔗";
 
+export const embededMessageStorage = new Map<string, boolean>();
+
 export function handleEmbeds({
   message,
   react,
@@ -68,6 +70,12 @@ export function handleEmbeds({
       const newUrl = new URL("https://fxtwitter.com");
       newUrl.pathname = url.pathname;
       message.channel.send(newUrl.toString());
+
+      if (embededMessageStorage.size >= 10000) {
+        const firstKey = embededMessageStorage.keys().next().value;
+        if (firstKey) embededMessageStorage.delete(firstKey);
+      }
+      embededMessageStorage.set(message.id, true);
     }
   }
 }

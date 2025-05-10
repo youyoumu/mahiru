@@ -1,5 +1,9 @@
 import { env } from "#/env";
-import { handleEmbeds, LINK_EMOJI } from "#/utils/handleEmbeds";
+import {
+  embededMessageStorage,
+  handleEmbeds,
+  LINK_EMOJI,
+} from "#/utils/handleEmbeds";
 import {
   Events,
   MessageReaction,
@@ -29,6 +33,7 @@ export default {
     }
 
     if (reaction.emoji.name === LINK_EMOJI) {
+      if (embededMessageStorage.get(reaction.message.id)) return;
       handleEmbeds({ message: reaction.message, react: false, embed: true });
     }
   },
