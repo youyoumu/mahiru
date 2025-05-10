@@ -114,7 +114,7 @@ export async function handleLink({
   if (isNhen) {
     if (react) handleReact({ message });
     if (embed) {
-      handleNhenLink({ nhenCode: Number(nhenCode.output), message });
+      handleNhenLink({ code: Number(nhenCode.output), message });
     }
   }
 }

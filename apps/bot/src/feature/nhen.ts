@@ -13,10 +13,10 @@ import { digits, number, pipe, safeParse, string, transform } from "valibot";
 const nH = new API();
 
 export async function handleNhenLink({
-  nhenCode,
+  code,
   message,
 }: {
-  nhenCode: number;
+  code: number;
   message: Message | PartialMessage;
 }) {
   if (!message.channel.isSendable()) return;
@@ -24,8 +24,8 @@ export async function handleNhenLink({
   try {
     message.channel.send(
       await createMessage({
-        code: nhenCode,
-        currentPage: 1,
+        code,
+        pageNumber: 1,
       }),
     );
   } catch {
@@ -38,13 +38,11 @@ export async function handleNHenButtonInteraction({
 }: {
   interaction: ButtonInteraction;
 }) {
-  console.log("DEBUG[429]: interaction=", interaction.message.embeds);
-
   const str = interaction.message.embeds[0]?.footer?.text;
   if (!str) return;
-  const [code, pageInfo] = str.split("-").map((part) => part.trim());
+  const [codeString, pageInfo] = str.split("-").map((part) => part.trim());
   if (!pageInfo) return;
-  const [currentPage] = pageInfo.split("/");
+  const [currentPageString] = pageInfo.split("/");
 
   const numberSchema = pipe(
     string(),
@@ -53,15 +51,15 @@ export async function handleNHenButtonInteraction({
     number(),
   );
 
-  const parsedCode = safeParse(numberSchema, code);
-  const parsedCurrentPage = safeParse(numberSchema, currentPage);
-  if (!parsedCode.success || !parsedCurrentPage.success) return;
+  const code = safeParse(numberSchema, codeString);
+  const currentPage = safeParse(numberSchema, currentPageString);
+  if (!code.success || !currentPage.success) return;
 
   try {
     interaction.update(
       await createMessage({
-        code: parsedCode.output,
-        currentPage: parsedCurrentPage.output,
+        code: code.output,
+        pageNumber: currentPage.output + 1,
       }),
     );
   } catch {
@@ -71,14 +69,14 @@ export async function handleNHenButtonInteraction({
 
 async function createMessage({
   code,
-  currentPage,
+  pageNumber,
 }: {
   code: number;
-  currentPage: number;
+  pageNumber: number;
 }) {
   const book = await nH.getBook(code);
   const totalPages = book.pages.length;
-  const index = currentPage - 1;
+  const index = pageNumber - 1;
   const page = book.pages[index] ? nH.getImageURL(book.pages[index]) : null;
   if (!page) throw new Error("No page found");
   const newPage = new URL(page);
@@ -88,7 +86,7 @@ async function createMessage({
     .setTitle(book.title.pretty)
     .setColor("#fef3c6")
     .setFooter({
-      text: `${code} - ${currentPage}/${totalPages}`,
+      text: `${code} - ${pageNumber}/${totalPages}`,
     })
     .setImage(newPage.toString());
 
