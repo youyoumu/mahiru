@@ -7,7 +7,7 @@ import {
   Message,
   type PartialMessage,
 } from "discord.js";
-import { API } from "nhentai-api";
+import { API, Book } from "nhentai-api";
 
 const nH = new API();
 
@@ -19,7 +19,12 @@ export async function handleNhenLink({
   message: Message | PartialMessage;
 }) {
   if (!message.channel.isSendable()) return;
-  const book = await nH.getBook(nhenCode);
+  let book: Book;
+  try {
+    book = await nH.getBook(nhenCode);
+  } catch {
+    return;
+  }
   const totalPages = book.pages.length;
   const page1 = book.pages[0] ? nH.getImageURL(book.pages[0]) : null;
   const newPage1 = new URL(page1 ?? "");
