@@ -108,6 +108,9 @@ importers:
       drizzle-orm:
         specifier: ^0.43.1
         version: 0.43.1(@libsql/client@0.15.4)
+      nhentai-api:
+        specifier: ^3.4.3
+        version: 3.4.3
       valibot:
         specifier: ^1.0.0
         version: 1.0.0(typescript@5.8.2)
@@ -3683,6 +3686,10 @@ packages:
     peerDependencies:
       react: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
       react-dom: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
+
+  nhentai-api@3.4.3:
+    resolution: {integrity: sha512-IPzoB9/GRVF/wofyao6SfpFIak2GyE8+4F7ipDJXK/vmxV3QPa+7E7+cst2zsXis5j9Yxk3Cf/zodktaM9UU9w==}
+    engines: {node: '>=12'}
 
   no-case@2.3.2:
     resolution: {integrity: sha512-rmTZ9kz+f3rCvK2TD1Ue/oZlns7OGoIWP4fc3llxxRXlOkHKoWPPWJOfFYpITabSow43QJbRIoHQXtt10VldyQ==}
@@ -8329,6 +8336,8 @@ snapshots:
     dependencies:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
+
+  nhentai-api@3.4.3: {}
 
   no-case@2.3.2:
     dependencies:

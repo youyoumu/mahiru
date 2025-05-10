@@ -1,16 +1,12 @@
 import { env } from "#/env";
-import type {
-  Message,
-  PartialMessage,
-  PartialMessageReaction,
-} from "discord.js";
+import type { Message, PartialMessage } from "discord.js";
 import { digits, pipe, safeParse, string } from "valibot";
 
 export const LINK_EMOJI = "🔗";
 
 export const embededMessageStorage = new Map<string, boolean>();
 
-export function handleEmbeds({
+export function handleLink({
   message,
   react,
   embed,
@@ -107,6 +103,15 @@ export function handleEmbeds({
       handleSendEmbed({ message, url: newUrl.toString() });
     }
     return;
+  }
+
+  const nhenCode = safeParse(digitsSchema, pathnameSplit[2]);
+  const isNhen =
+    url.hostname === "nhentai.net" &&
+    pathnameSplit[1] === "g" &&
+    nhenCode.success;
+  if (isNhen) {
+    console.log(url.toString());
   }
 }
 

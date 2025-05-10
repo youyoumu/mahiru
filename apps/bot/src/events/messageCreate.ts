@@ -1,5 +1,5 @@
 import commands from "#/commands";
-import { handleEmbeds } from "#/utils/handleEmbeds";
+import { handleLink } from "#/utils/handleLink";
 import { getGuildPrefix, globalPrefix } from "#/utils/prefixStorage";
 import { Events, Message } from "discord.js";
 
@@ -12,7 +12,7 @@ export default {
   async execute(message: Message) {
     if (message.author.bot) return;
 
-    handleEmbeds({ message, react: true, embed: false });
+    handleLink({ message, react: true, embed: false });
 
     let args: string[] = [];
     if (message.guild) {

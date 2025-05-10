@@ -1,9 +1,9 @@
 import { env } from "#/env";
 import {
   embededMessageStorage,
-  handleEmbeds,
+  handleLink,
   LINK_EMOJI,
-} from "#/utils/handleEmbeds";
+} from "#/utils/handleLink";
 import {
   Events,
   MessageReaction,
@@ -37,7 +37,7 @@ export default {
       const hasBotReaction = reaction.users.cache.has(env.CLIENT_ID);
       if (!hasBotReaction) return;
 
-      handleEmbeds({ message: reaction.message, react: false, embed: true });
+      handleLink({ message: reaction.message, react: false, embed: true });
     }
   },
 };
