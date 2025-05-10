@@ -7,7 +7,7 @@ import {
   Message,
   type PartialMessage,
 } from "discord.js";
-import { API } from "nhentai-api";
+import { API, TagTypes } from "nhentai-api";
 import { digits, number, parse, pipe, string, transform } from "valibot";
 
 const nH = new API();
@@ -123,9 +123,23 @@ async function createMessage({
   if (!page) throw new Error("No page found");
   const newPage = new URL(page);
   newPage.hostname = "i4.nhentai.net";
+  const url = new URL("https://nhentai.net");
+  const tags = book.tags.map((tag) => tag.name).join(", ");
+  const artist = book.tags.find((tag) => tag.type === TagTypes.Artist)?.name;
+
+  const artistUrl = new URL(url);
+  artistUrl.pathname = `/artist/${artist ?? "unknown"}/`;
+  url.pathname = `/g/${code}/`;
 
   const embed = new EmbedBuilder()
     .setTitle(book.title.pretty)
+    .setURL(url.toString())
+    .setDescription(tags)
+    .setAuthor({
+      name: artist ?? "unknown",
+      url: artistUrl.toString(),
+      iconURL: "https://i.imgur.com/uLAimaY.png",
+    })
     .setColor("#fef3c6")
     .setFooter({
       text: `${code} - ${pageNumber}/${totalPages}`,
