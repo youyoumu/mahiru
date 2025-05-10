@@ -4,6 +4,7 @@ import { digits, pipe, safeParse, string } from "valibot";
 import { handleNhenLink } from "#/feature/nhen";
 
 export const LINK_EMOJI = "🔗";
+export const BOOK_EMOJI = "📖";
 
 export const embededMessageStorage = new Map<string, boolean>();
 
@@ -112,15 +113,21 @@ export async function handleLink({
     pathnameSplit[1] === "g" &&
     nhenCode.success;
   if (isNhen) {
-    if (react) handleReact({ message });
+    if (react) handleReact({ message, emoji: BOOK_EMOJI });
     if (embed) {
       handleNhenLink({ code: Number(nhenCode.output), message });
     }
   }
 }
 
-function handleReact({ message }: { message: Message | PartialMessage }) {
-  message.react(LINK_EMOJI);
+function handleReact({
+  message,
+  emoji,
+}: {
+  message: Message | PartialMessage;
+  emoji?: string;
+}) {
+  message.react(emoji ?? LINK_EMOJI);
   setTimeout(async () => {
     const myReactions = message.reactions.cache.filter((reaction) =>
       reaction.users.cache.has(env.CLIENT_ID),

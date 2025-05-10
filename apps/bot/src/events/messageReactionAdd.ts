@@ -1,5 +1,6 @@
 import { env } from "#/env";
 import {
+  BOOK_EMOJI,
   embededMessageStorage,
   handleLink,
   LINK_EMOJI,
@@ -32,7 +33,10 @@ export default {
       }
     }
 
-    if (reaction.emoji.name === LINK_EMOJI) {
+    if (
+      reaction.emoji.name === LINK_EMOJI ||
+      reaction.emoji.name === BOOK_EMOJI
+    ) {
       if (embededMessageStorage.get(reaction.message.id)) return;
       const hasBotReaction = reaction.users.cache.has(env.CLIENT_ID);
       if (!hasBotReaction) return;
