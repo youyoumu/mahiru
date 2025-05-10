@@ -1,5 +1,9 @@
 import { env } from "#/env";
-import type { Message, PartialMessage } from "discord.js";
+import type {
+  Message,
+  PartialMessage,
+  PartialMessageReaction,
+} from "discord.js";
 import { digits, pipe, safeParse, string } from "valibot";
 
 export const LINK_EMOJI = "🔗";
@@ -42,40 +46,72 @@ export function handleEmbeds({
 
   const url = new URL(urlString);
   const pathnameSplit = url.pathname.split("/");
-  const twitterIdSchema = pipe(string(), digits());
-  const tweetId = safeParse(twitterIdSchema, pathnameSplit[3]);
+  const digitsSchema = pipe(string(), digits());
 
+  const tweetId = safeParse(digitsSchema, pathnameSplit[3]);
   const isTwitter =
     (url.hostname === "x.com" || url.hostname === "twitter.com") &&
     pathnameSplit[2] === "status" &&
     tweetId.success;
   if (isTwitter) {
-    if (react) {
-      message.react(LINK_EMOJI);
-      setTimeout(async () => {
-        const myReactions = message.reactions.cache.filter((reaction) =>
-          reaction.users.cache.has(env.CLIENT_ID),
-        );
-        try {
-          for (const reaction of myReactions.values()) {
-            await reaction.users.remove(env.CLIENT_ID);
-          }
-        } catch {
-          console.error("Failed to remove reactions.");
-        }
-      }, 10000);
-    }
+    if (react) handleReact({ message });
 
     if (embed) {
       const newUrl = new URL("https://fxtwitter.com");
       newUrl.pathname = url.pathname;
-      message.channel.send(newUrl.toString());
-
-      if (embededMessageStorage.size >= 10000) {
-        const firstKey = embededMessageStorage.keys().next().value;
-        if (firstKey) embededMessageStorage.delete(firstKey);
-      }
-      embededMessageStorage.set(message.id, true);
+      handleSendEmbed({ message, url: newUrl.toString() });
     }
+    return;
   }
+
+  const pixivPostId = safeParse(
+    digitsSchema,
+    pathnameSplit[pathnameSplit.length - 1],
+  );
+  const isPixiv =
+    (url.hostname === "pixiv.net" || url.hostname === "www.pixiv.net") &&
+    (pathnameSplit[1] === "artworks" || pathnameSplit[2] === "artworks") &&
+    pixivPostId.success;
+  if (isPixiv) {
+    if (react) handleReact({ message });
+    if (embed) {
+      const newUrl = new URL("https://phixiv.net");
+      newUrl.pathname = url.pathname;
+      handleSendEmbed({ message, url: newUrl.toString() });
+    }
+    return;
+  }
+}
+
+function handleReact({ message }: { message: Message | PartialMessage }) {
+  message.react(LINK_EMOJI);
+  setTimeout(async () => {
+    const myReactions = message.reactions.cache.filter((reaction) =>
+      reaction.users.cache.has(env.CLIENT_ID),
+    );
+    try {
+      for (const reaction of myReactions.values()) {
+        await reaction.users.remove(env.CLIENT_ID);
+      }
+    } catch {
+      console.error("Failed to remove reactions.");
+    }
+  }, 10000);
+}
+
+function handleSendEmbed({
+  message,
+  url,
+}: {
+  message: Message | PartialMessage;
+  url: string;
+}) {
+  if (!message.channel.isSendable()) return;
+  message.channel.send(url);
+
+  if (embededMessageStorage.size >= 10000) {
+    const firstKey = embededMessageStorage.keys().next().value;
+    if (firstKey) embededMessageStorage.delete(firstKey);
+  }
+  embededMessageStorage.set(message.id, true);
 }
