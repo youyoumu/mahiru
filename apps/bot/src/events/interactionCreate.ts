@@ -1,5 +1,6 @@
 import { BaseInteraction, Events, MessageFlags } from "discord.js";
 import commands from "../commands";
+import { handleNHenButtonInteraction } from "#/feature/nhen";
 
 export default {
   name: Events.InteractionCreate as const,
@@ -25,8 +26,9 @@ export default {
         }
       }
     } else if (interaction.isButton()) {
-      console.log("DEBUG[427]: interaction=", interaction.component);
-      interaction.update("asdsa");
+      handleNHenButtonInteraction({
+        interaction,
+      });
     }
   },
 };

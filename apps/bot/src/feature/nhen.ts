@@ -1,6 +1,7 @@
 import {
   ActionRowBuilder,
   ButtonBuilder,
+  ButtonInteraction,
   ButtonStyle,
   EmbedBuilder,
   Message,
@@ -19,6 +20,7 @@ export async function handleNhenLink({
 }) {
   if (!message.channel.isSendable()) return;
   const book = await nH.getBook(nhenCode);
+  const totalPages = book.pages.length;
   const page1 = book.pages[0] ? nH.getImageURL(book.pages[0]) : null;
   const newPage1 = new URL(page1 ?? "");
   newPage1.hostname = "i4.nhentai.net";
@@ -26,6 +28,9 @@ export async function handleNhenLink({
   const embed = new EmbedBuilder()
     .setTitle(book.title.pretty)
     .setColor("#fef3c6")
+    .setFooter({
+      text: `${nhenCode} - 1/${totalPages}`,
+    })
     .setImage(newPage1.toString());
 
   const next = new ButtonBuilder()
@@ -41,4 +46,12 @@ export async function handleNhenLink({
     .addComponents(next);
 
   message.channel.send({ embeds: [embed], components: [row] });
+}
+
+export function handleNHenButtonInteraction({
+  interaction,
+}: {
+  interaction: ButtonInteraction;
+}) {
+  console.log("DEBUG[429]: interaction=", interaction.message.embeds);
 }
