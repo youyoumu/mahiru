@@ -11,6 +11,7 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMessageReactions,
   ],
 });
 
@@ -33,4 +34,8 @@ client.on(events.interactionCreate.name, (interaction) =>
 );
 client.on(events.messageCreate.name, (message) =>
   events.messageCreate.execute(message),
+);
+
+client.on(events.messageReactionAdd.name, (reaction, user) =>
+  events.messageReactionAdd.execute(reaction, user),
 );
