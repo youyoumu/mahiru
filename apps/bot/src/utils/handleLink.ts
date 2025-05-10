@@ -112,7 +112,10 @@ export async function handleLink({
     pathnameSplit[1] === "g" &&
     nhenCode.success;
   if (isNhen) {
-    handleNhenLink({ nhenCode: Number(nhenCode.output), message });
+    if (react) handleReact({ message });
+    if (embed) {
+      handleNhenLink({ nhenCode: Number(nhenCode.output), message });
+    }
   }
 }
 
