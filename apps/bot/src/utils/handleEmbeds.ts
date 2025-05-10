@@ -95,6 +95,19 @@ export function handleEmbeds({
     }
     return;
   }
+
+  const isInsta =
+    url.hostname === "www.instagram.com" &&
+    (pathnameSplit[1] === "p" || pathnameSplit[1] === "reel");
+  if (isInsta) {
+    if (react) handleReact({ message });
+    if (embed) {
+      const newUrl = new URL("https://www.ddinstagram.com");
+      newUrl.pathname = url.pathname;
+      handleSendEmbed({ message, url: newUrl.toString() });
+    }
+    return;
+  }
 }
 
 function handleReact({ message }: { message: Message | PartialMessage }) {
