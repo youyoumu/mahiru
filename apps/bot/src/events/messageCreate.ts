@@ -1,4 +1,5 @@
 import commands from "#/commands";
+import { env } from "#/env";
 import { getGuildPrefix, globalPrefix } from "#/utils/prefixStorage";
 import { Events, Message } from "discord.js";
 import { digits, pipe, safeParse, string } from "valibot";
@@ -79,6 +80,19 @@ function handleEmbeds({ message }: { message: Message }) {
   if (isTwitter) {
     const newUrl = new URL("https://fxtwitter.com");
     newUrl.pathname = url.pathname;
-    message.channel.send(newUrl.toString());
+    message.react("🔗");
+    setTimeout(async () => {
+      const myReactions = message.reactions.cache.filter((reactiton) =>
+        reactiton.users.cache.has(env.CLIENT_ID),
+      );
+      try {
+        for (const reaction of myReactions.values()) {
+          await reaction.users.remove(env.CLIENT_ID);
+        }
+      } catch {
+        console.error("Failed to remove reactions.");
+      }
+    }, 5000);
+    // message.channel.send(newUrl.toString());
   }
 }
