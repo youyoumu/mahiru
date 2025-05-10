@@ -7,7 +7,7 @@ import {
   Message,
   type PartialMessage,
 } from "discord.js";
-import { API, Book } from "nhentai-api";
+import { API } from "nhentai-api";
 import { digits, number, pipe, safeParse, string, transform } from "valibot";
 
 const nH = new API();
@@ -20,39 +20,17 @@ export async function handleNhenLink({
   message: Message | PartialMessage;
 }) {
   if (!message.channel.isSendable()) return;
-  let book: Book;
+
   try {
-    book = await nH.getBook(nhenCode);
+    message.channel.send(
+      await createMessage({
+        code: nhenCode,
+        currentPage: 1,
+      }),
+    );
   } catch {
     return;
   }
-  const totalPages = book.pages.length;
-  const page1 = book.pages[0] ? nH.getImageURL(book.pages[0]) : null;
-  if (!page1) return;
-  const newPage1 = new URL(page1);
-  newPage1.hostname = "i4.nhentai.net";
-
-  const embed = new EmbedBuilder()
-    .setTitle(book.title.pretty)
-    .setColor("#fef3c6")
-    .setFooter({
-      text: `${nhenCode} - 1/${totalPages}`,
-    })
-    .setImage(newPage1.toString());
-
-  const next = new ButtonBuilder()
-    .setCustomId("next")
-    .setEmoji("➡️")
-    .setStyle(ButtonStyle.Secondary);
-  const prev = new ButtonBuilder()
-    .setCustomId("prev")
-    .setEmoji("⬅️")
-    .setStyle(ButtonStyle.Secondary);
-  const row = new ActionRowBuilder<ButtonBuilder>()
-    .addComponents(prev)
-    .addComponents(next);
-
-  message.channel.send({ embeds: [embed], components: [row] });
 }
 
 export async function handleNHenButtonInteraction({
@@ -79,29 +57,38 @@ export async function handleNHenButtonInteraction({
   const parsedCurrentPage = safeParse(numberSchema, currentPage);
   if (!parsedCode.success || !parsedCurrentPage.success) return;
 
-  let book: Book;
   try {
-    book = await nH.getBook(parsedCode.output);
+    interaction.update(
+      await createMessage({
+        code: parsedCode.output,
+        currentPage: parsedCurrentPage.output,
+      }),
+    );
   } catch {
     return;
   }
-  const totalPages = book.pages.length;
+}
 
-  const index = parsedCurrentPage.output;
+async function createMessage({
+  code,
+  currentPage,
+}: {
+  code: number;
+  currentPage: number;
+}) {
+  const book = await nH.getBook(code);
+  const totalPages = book.pages.length;
+  const index = currentPage - 1;
   const page = book.pages[index] ? nH.getImageURL(book.pages[index]) : null;
-  if (!page) return;
+  if (!page) throw new Error("No page found");
   const newPage = new URL(page);
   newPage.hostname = "i4.nhentai.net";
-
-  console.log("Code:", code);
-  console.log("Current Page:", currentPage);
-  console.log("Total Page:", totalPages);
 
   const embed = new EmbedBuilder()
     .setTitle(book.title.pretty)
     .setColor("#fef3c6")
     .setFooter({
-      text: `${parsedCode.output} - ${index + 1}/${totalPages}`,
+      text: `${code} - ${currentPage}/${totalPages}`,
     })
     .setImage(newPage.toString());
 
@@ -116,6 +103,5 @@ export async function handleNHenButtonInteraction({
   const row = new ActionRowBuilder<ButtonBuilder>()
     .addComponents(prev)
     .addComponents(next);
-
-  interaction.update({ embeds: [embed], components: [row] });
+  return { embeds: [embed], components: [row] };
 }
