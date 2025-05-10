@@ -34,6 +34,9 @@ export default {
 
     if (reaction.emoji.name === LINK_EMOJI) {
       if (embededMessageStorage.get(reaction.message.id)) return;
+      const hasBotReaction = reaction.users.cache.has(env.CLIENT_ID);
+      if (!hasBotReaction) return;
+
       handleEmbeds({ message: reaction.message, react: false, embed: true });
     }
   },

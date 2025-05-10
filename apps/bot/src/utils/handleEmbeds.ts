@@ -53,8 +53,8 @@ export function handleEmbeds({
     if (react) {
       message.react(LINK_EMOJI);
       setTimeout(async () => {
-        const myReactions = message.reactions.cache.filter((reactiton) =>
-          reactiton.users.cache.has(env.CLIENT_ID),
+        const myReactions = message.reactions.cache.filter((reaction) =>
+          reaction.users.cache.has(env.CLIENT_ID),
         );
         try {
           for (const reaction of myReactions.values()) {
@@ -63,7 +63,7 @@ export function handleEmbeds({
         } catch {
           console.error("Failed to remove reactions.");
         }
-      }, 5000);
+      }, 10000);
     }
 
     if (embed) {
