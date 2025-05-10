@@ -81,10 +81,12 @@ export async function handleNHenButtonInteraction({
 
     switch (selectedButtonId) {
       case buttonId.next: {
-        return currentPage + 1;
+        const pageNumber = currentPage + 1;
+        return pageNumber > totalPages ? totalPages : pageNumber;
       }
       case buttonId.prev: {
-        return currentPage - 1;
+        const pageNumber = currentPage - 1;
+        return pageNumber < 1 ? 1 : pageNumber;
       }
       case buttonId.first: {
         return 1;
