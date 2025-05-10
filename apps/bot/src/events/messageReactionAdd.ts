@@ -1,4 +1,5 @@
-import { handleEmbeds } from "#/utils/handleEmbeds";
+import { env } from "#/env";
+import { handleEmbeds, LINK_EMOJI } from "#/utils/handleEmbeds";
 import {
   Events,
   MessageReaction,
@@ -13,6 +14,8 @@ export default {
     reaction: MessageReaction | PartialMessageReaction,
     user: User | PartialUser,
   ) {
+    if (user.id === env.CLIENT_ID) return;
+
     // When a reaction is received, check if the structure is partial
     if (reaction.partial) {
       // If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
@@ -25,7 +28,8 @@ export default {
       }
     }
 
-    // Now the message has been cached and is fully available
-    handleEmbeds({ message: reaction.message, react: false, embed: true });
+    if (reaction.emoji.name === LINK_EMOJI) {
+      handleEmbeds({ message: reaction.message, react: false, embed: true });
+    }
   },
 };

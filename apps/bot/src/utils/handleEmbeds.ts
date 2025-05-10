@@ -2,6 +2,8 @@ import { env } from "#/env";
 import type { Message, PartialMessage } from "discord.js";
 import { digits, pipe, safeParse, string } from "valibot";
 
+export const LINK_EMOJI = "🔗";
+
 export function handleEmbeds({
   message,
   react,
@@ -47,7 +49,7 @@ export function handleEmbeds({
     tweetId.success;
   if (isTwitter) {
     if (react) {
-      message.react("🔗");
+      message.react(LINK_EMOJI);
       setTimeout(async () => {
         const myReactions = message.reactions.cache.filter((reactiton) =>
           reactiton.users.cache.has(env.CLIENT_ID),
