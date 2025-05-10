@@ -132,6 +132,10 @@ async function createMessage({
     })
     .setImage(newPage.toString());
 
+  const first = new ButtonBuilder()
+    .setCustomId(buttonId.first)
+    .setEmoji("⏪")
+    .setStyle(ButtonStyle.Secondary);
   const prev = new ButtonBuilder()
     .setCustomId(buttonId.prev)
     .setEmoji("⬅️")
@@ -140,8 +144,14 @@ async function createMessage({
     .setCustomId(buttonId.next)
     .setEmoji("➡️")
     .setStyle(ButtonStyle.Secondary);
+  const last = new ButtonBuilder()
+    .setCustomId(buttonId.last)
+    .setEmoji("⏩")
+    .setStyle(ButtonStyle.Secondary);
   const row = new ActionRowBuilder<ButtonBuilder>()
+    .addComponents(first)
     .addComponents(prev)
-    .addComponents(next);
+    .addComponents(next)
+    .addComponents(last);
   return { embeds: [embed], components: [row] };
 }
