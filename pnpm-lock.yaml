@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  nhentai-api@3.4.3:
+    hash: l32mczv3ai4lur5fgqbgryjtlm
+    path: patches/nhentai-api@3.4.3.patch
+
 importers:
 
   .:
@@ -110,7 +115,7 @@ importers:
         version: 0.43.1(@libsql/client@0.15.4)
       nhentai-api:
         specifier: ^3.4.3
-        version: 3.4.3
+        version: 3.4.3(patch_hash=l32mczv3ai4lur5fgqbgryjtlm)
       valibot:
         specifier: ^1.0.0
         version: 1.0.0(typescript@5.8.2)
@@ -8337,7 +8342,7 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  nhentai-api@3.4.3: {}
+  nhentai-api@3.4.3(patch_hash=l32mczv3ai4lur5fgqbgryjtlm): {}
 
   no-case@2.3.2:
     dependencies:

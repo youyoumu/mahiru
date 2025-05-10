@@ -1,12 +1,15 @@
 import { env } from "#/env";
-import type { Message, PartialMessage } from "discord.js";
+import { EmbedBuilder, type Message, type PartialMessage } from "discord.js";
 import { digits, pipe, safeParse, string } from "valibot";
+import { API } from "nhentai-api";
 
 export const LINK_EMOJI = "🔗";
 
 export const embededMessageStorage = new Map<string, boolean>();
 
-export function handleLink({
+const nH = new API();
+
+export async function handleLink({
   message,
   react,
   embed,
@@ -111,7 +114,18 @@ export function handleLink({
     pathnameSplit[1] === "g" &&
     nhenCode.success;
   if (isNhen) {
-    console.log(url.toString());
+    const book = await nH.getBook(Number(nhenCode.output));
+    const page1 = book.pages[1] ? nH.getImageURL(book.pages[1]) : null;
+    const newPage1 = new URL(page1 ?? "");
+    newPage1.hostname = "i4.nhentai.net";
+
+    const embed = new EmbedBuilder()
+      .setTitle(book.title.pretty)
+      .setColor("#fef3c6")
+      .setImage(newPage1.toString())
+      .setTimestamp();
+
+    message.channel.send({ embeds: [embed] });
   }
 }
 
