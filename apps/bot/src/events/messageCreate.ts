@@ -12,7 +12,7 @@ export default {
   async execute(message: Message) {
     if (message.author.bot) return;
 
-    handleEmbeds({ message });
+    handleEmbeds({ message, react: true, embed: false });
 
     let args: string[] = [];
     if (message.guild) {

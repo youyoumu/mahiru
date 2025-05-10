@@ -1,3 +1,4 @@
+import { handleEmbeds } from "#/utils/handleEmbeds";
 import {
   Events,
   MessageReaction,
@@ -25,8 +26,6 @@ export default {
     }
 
     // Now the message has been cached and is fully available
-    console.log(
-      `${reaction.message.author}'s message "${reaction.message.content}" gained a reaction!`,
-    );
+    handleEmbeds({ message: reaction.message, react: false, embed: true });
   },
 };

@@ -1,10 +1,26 @@
 import { env } from "#/env";
-import type { Message } from "discord.js";
+import type { Message, PartialMessage } from "discord.js";
 import { digits, pipe, safeParse, string } from "valibot";
 
-export function handleEmbeds({ message }: { message: Message }) {
-  console.log("Message:", message.member?.id, message.guildId, message.content);
+export function handleEmbeds({
+  message,
+  react,
+  embed,
+}: {
+  message: Message | PartialMessage;
+
+  react: boolean;
+  embed: boolean;
+}) {
+  console.log(
+    "Message:",
+    `React=${react},Embed:${embed}`,
+    message.member?.id,
+    message.guildId,
+    message.content,
+  );
   if (!message.channel.isSendable()) return;
+  if (!message.content) return;
 
   if (!message.content.includes("https://")) return;
 
@@ -30,21 +46,26 @@ export function handleEmbeds({ message }: { message: Message }) {
     pathnameSplit[2] === "status" &&
     tweetId.success;
   if (isTwitter) {
-    const newUrl = new URL("https://fxtwitter.com");
-    newUrl.pathname = url.pathname;
-    message.react("🔗");
-    setTimeout(async () => {
-      const myReactions = message.reactions.cache.filter((reactiton) =>
-        reactiton.users.cache.has(env.CLIENT_ID),
-      );
-      try {
-        for (const reaction of myReactions.values()) {
-          await reaction.users.remove(env.CLIENT_ID);
+    if (react) {
+      message.react("🔗");
+      setTimeout(async () => {
+        const myReactions = message.reactions.cache.filter((reactiton) =>
+          reactiton.users.cache.has(env.CLIENT_ID),
+        );
+        try {
+          for (const reaction of myReactions.values()) {
+            await reaction.users.remove(env.CLIENT_ID);
+          }
+        } catch {
+          console.error("Failed to remove reactions.");
         }
-      } catch {
-        console.error("Failed to remove reactions.");
-      }
-    }, 5000);
-    // message.channel.send(newUrl.toString());
+      }, 5000);
+    }
+
+    if (embed) {
+      const newUrl = new URL("https://fxtwitter.com");
+      newUrl.pathname = url.pathname;
+      message.channel.send(newUrl.toString());
+    }
   }
 }
