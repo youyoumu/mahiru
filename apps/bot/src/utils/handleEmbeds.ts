@@ -46,6 +46,7 @@ export function handleEmbeds({
 
   const url = new URL(urlString);
   const pathnameSplit = url.pathname.split("/");
+  console.log("DEBUG[419]: pathnameSplit=", pathnameSplit);
   const digitsSchema = pipe(string(), digits());
 
   const tweetId = safeParse(digitsSchema, pathnameSplit[3]);
@@ -76,6 +77,19 @@ export function handleEmbeds({
     if (react) handleReact({ message });
     if (embed) {
       const newUrl = new URL("https://phixiv.net");
+      newUrl.pathname = url.pathname;
+      handleSendEmbed({ message, url: newUrl.toString() });
+    }
+    return;
+  }
+
+  const isReddit =
+    (url.hostname === "reddit.com" || url.hostname === "www.reddit.com") &&
+    (pathnameSplit[1] === "r" || pathnameSplit[3] === "comments");
+  if (isReddit) {
+    if (react) handleReact({ message });
+    if (embed) {
+      const newUrl = new URL("https://vxreddit.com");
       newUrl.pathname = url.pathname;
       handleSendEmbed({ message, url: newUrl.toString() });
     }
