@@ -7,7 +7,7 @@ import {
   Message,
   type PartialMessage,
 } from "discord.js";
-import { API, TagTypes } from "nhentai-api";
+import { API, Book, TagTypes } from "nhentai-api";
 import { digits, number, parse, pipe, string, transform } from "valibot";
 
 const nH = new API();
@@ -18,6 +18,8 @@ const buttonId = {
   last: "last",
 } as const;
 type ButtonId = keyof typeof buttonId;
+
+const bookStorage = new Map<number, Book>();
 
 export async function handleNhenLink({
   code,
@@ -116,7 +118,9 @@ async function createMessage({
   code: number;
   pageNumber: number;
 }) {
-  const book = await nH.getBook(code);
+  const bookCache = bookStorage.get(code);
+  const book = bookCache ?? (await nH.getBook(code));
+  if (!bookCache) bookStorage.set(code, book);
   const totalPages = book.pages.length;
   const index = pageNumber - 1;
   const page = book.pages[index] ? nH.getImageURL(book.pages[index]) : null;
