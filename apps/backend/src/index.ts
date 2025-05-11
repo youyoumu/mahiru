@@ -10,9 +10,10 @@ import authToken from "./routes/auth/token";
 import authSignIn from "./routes/auth/sign_in/";
 import proxy from "./routes/proxy";
 import tenor from "./routes/tenor";
+import users from "./routes/users";
+import health from "./routes/health";
 
 import { env } from "./env";
-import users from "./routes/users";
 
 const port = env.PORT;
 console.log(`Server is running on port http://localhost:${port}`);
@@ -26,7 +27,8 @@ export const route = app
   .route("auth/token", authToken)
   .route("auth/sign_in", authSignIn)
   .route("/proxy", proxy)
-  .route("/tenor", tenor);
+  .route("/tenor", tenor)
+  .route("/health", health);
 
 serve({
   fetch: route.fetch,
