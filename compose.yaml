@@ -5,12 +5,12 @@ services:
     env_file:
       - .mahiru-backend.env
     volumes:
-      - ./data:/home/node/mahiru/storage
+      - ./storage:/home/node/mahiru/storage
     ports:
       - "8100:8100"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8100/health"]
-      interval: 4s
+      interval: 60s
       retries: 4
       start_period: 4s
       timeout: 2s
@@ -20,7 +20,7 @@ services:
     env_file:
       - .mahiru-bot.env
     volumes:
-      - ./data:/home/node/mahiru/storage
+      - ./storage:/home/node/mahiru/storage
     depends_on:
-      mahiru-backend:
+      backend:
         condition: service_healthy

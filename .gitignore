@@ -38,3 +38,5 @@ yarn-error.log*
 *.pem
 
 /storage/*
+.mahiru-backend.env
+.mahiru-bot.env
