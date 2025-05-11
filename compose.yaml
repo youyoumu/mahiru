@@ -1,6 +1,6 @@
 services:
   backend:
-    image: "youyoumu2025/mahiru/backend:latest"
+    image: "youyoumu2025/mahiru-backend:latest"
     restart: always
     env_file:
       - .mahiru-backend.env
@@ -15,7 +15,7 @@ services:
       start_period: 4s
       timeout: 2s
   bot:
-    image: "youyoumu2025/mahiru/bot:latest"
+    image: "youyoumu2025/mahiru-bot:latest"
     restart: always
     env_file:
       - .mahiru-bot.env
