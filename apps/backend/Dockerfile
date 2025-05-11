@@ -12,6 +12,7 @@ RUN if [ "$DEBUG_TOOLS" = "true" ]; then \
   mv yazi-x86_64-unknown-linux-musl/yazi /usr/local/bin/ && \
   rm yazi.zip; \
   fi
+RUN apk update && apk add --no-cache curl=8.12.1-r1
 RUN npm install -g pnpm@10.10.0 turbo@2.5.2
 
 FROM base AS builder

@@ -1,0 +1,26 @@
+services:
+  backend:
+    image: "youyoumu2025/mahiru/backend:latest"
+    restart: always
+    env_file:
+      - .mahiru-backend.env
+    volumes:
+      - ./data:/home/node/mahiru/storage
+    ports:
+      - "8100:8100"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8100/health"]
+      interval: 4s
+      retries: 4
+      start_period: 4s
+      timeout: 2s
+  bot:
+    image: "youyoumu2025/mahiru/bot:latest"
+    restart: always
+    env_file:
+      - .mahiru-bot.env
+    volumes:
+      - ./data:/home/node/mahiru/storage
+    depends_on:
+      mahiru-backend:
+        condition: service_healthy
