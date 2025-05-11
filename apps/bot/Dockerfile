@@ -4,7 +4,7 @@ FROM node AS base
 ARG DEBUG_TOOLS=false
 WORKDIR /home/node/
 RUN if [ "$DEBUG_TOOLS" = "true" ]; then \
-  apk update && apk add --no-cache fish=3.7.1-r0 eza=0.20.12-r0 curl=8.12.1-r1 file=5.46-r2 starship=1.20.1-r0 && fish && \
+  apk update && apk add --no-cache fish=3.7.1-r0 eza=0.20.12-r0 curl=8.12.1-r1 file=5.46-r2 starship=1.20.1-r0 tmux=3.5a-r0 && fish && \
   echo 'alias ls="eza --long --icons --git --all --bytes --no-permissions --no-user --mounts --grid --group-directories-first"' >> /root/.config/fish/config.fish && \
   echo "starship init fish | source" >> /root/.config/fish/config.fish && \
   curl -L -o yazi.zip https://github.com/sxyazi/yazi/releases/download/v25.4.8/yazi-x86_64-unknown-linux-musl.zip && \
