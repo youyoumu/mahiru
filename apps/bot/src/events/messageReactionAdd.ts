@@ -19,7 +19,8 @@ export default {
     reaction: MessageReaction | PartialMessageReaction,
     user: User | PartialUser,
   ) {
-    if (user.id === env.CLIENT_ID) return;
+    if (user.id === env.CLIENT_ID || user.id !== reaction.message.author?.id)
+      return;
 
     // When a reaction is received, check if the structure is partial
     if (reaction.partial) {

@@ -139,7 +139,7 @@ function handleReact({
     } catch {
       console.error("Failed to remove reactions.");
     }
-  }, 10000);
+  }, 6000);
 }
 
 function handleSendEmbed({
