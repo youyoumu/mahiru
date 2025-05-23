@@ -47,6 +47,21 @@ export async function handleLink({
   console.log("DEBUG[419]: pathnameSplit=", pathnameSplit);
   const digitsSchema = pipe(string(), digits());
 
+  const nhenCode = safeParse(digitsSchema, pathnameSplit[2]);
+  const isNhen =
+    url.hostname === "nhentai.net" &&
+    pathnameSplit[1] === "g" &&
+    nhenCode.success;
+  if (isNhen) {
+    if (react) handleReact({ message, emoji: BOOK_EMOJI });
+    if (embed) {
+      handleNhenLink({ code: Number(nhenCode.output), message });
+    }
+  }
+
+  // disable embed react until further development
+  if (env.PROD) return;
+
   const tweetId = safeParse(digitsSchema, pathnameSplit[3]);
   const isTwitter =
     (url.hostname === "x.com" || url.hostname === "twitter.com") &&
@@ -105,18 +120,6 @@ export async function handleLink({
       handleSendEmbed({ message, url: newUrl.toString() });
     }
     return;
-  }
-
-  const nhenCode = safeParse(digitsSchema, pathnameSplit[2]);
-  const isNhen =
-    url.hostname === "nhentai.net" &&
-    pathnameSplit[1] === "g" &&
-    nhenCode.success;
-  if (isNhen) {
-    if (react) handleReact({ message, emoji: BOOK_EMOJI });
-    if (embed) {
-      handleNhenLink({ code: Number(nhenCode.output), message });
-    }
   }
 }
 
