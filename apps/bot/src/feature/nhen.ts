@@ -7,10 +7,22 @@ import {
   Message,
   type PartialMessage,
 } from "discord.js";
-import { API, Book, TagTypes } from "nhentai-api";
+import { API, Book, Image, TagTypes } from "nhentai-api";
 import { digits, number, parse, pipe, string, transform } from "valibot";
 
-const nH = new API();
+// 1. Create a new ImageType instance for WEBP
+const webpType = new Image.types.JPEG.constructor("w", "webp"); // reuse the constructor
+
+// 2. Patch the known types and add WEBP
+// @ts-expect-error add WEBP support
+Image.types.WEBP = webpType;
+
+const nH = new API({
+  //@ts-expect-error we don't need to pass all the options
+  hosts: {
+    images: "i4.nhentai.net",
+  },
+});
 const buttonId = {
   next: "next",
   prev: "prev",
@@ -106,7 +118,8 @@ export async function handleNHenButtonInteraction({
         pageNumber: getPageNumber(),
       }),
     );
-  } catch {
+  } catch (error) {
+    console.error(error);
     return;
   }
 }
@@ -120,13 +133,13 @@ async function createMessage({
 }) {
   const bookCache = bookStorage.get(code);
   const book = bookCache ?? (await nH.getBook(code));
+
   if (!bookCache) bookStorage.set(code, book);
   const totalPages = book.pages.length;
   const index = pageNumber - 1;
   const page = book.pages[index] ? nH.getImageURL(book.pages[index]) : null;
   if (!page) throw new Error("No page found");
   const newPage = new URL(page);
-  newPage.hostname = "i4.nhentai.net";
   const url = new URL("https://nhentai.net");
   const tags = book.tags.map((tag) => tag.name).join(", ");
   const artist = book.tags.find((tag) => tag.type === TagTypes.Artist)?.name;
