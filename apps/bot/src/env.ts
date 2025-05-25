@@ -1,5 +1,5 @@
 import { createEnv } from "@t3-oss/env-core";
-import { boolean, pipe, string, transform, unknown } from "valibot";
+import { boolean, pipe, string, transform, unknown, url } from "valibot";
 
 export const env = createEnv({
   server: {
@@ -21,6 +21,8 @@ export const env = createEnv({
     BE_URL: string(),
     WEB_URL_DEV: string(),
     WEB_URL: string(),
+    OPEN_WEBUI_URL: pipe(string(), url()),
+    OPEN_WEBUI_TOKEN: string(),
   },
 
   clientPrefix: "PUBLIC_",

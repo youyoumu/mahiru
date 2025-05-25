@@ -27,6 +27,7 @@
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.43.1",
     "nhentai-api": "^3.4.3",
+    "openapi-fetch": "^0.14.0",
     "valibot": "^1.0.0"
   },
   "devDependencies": {
