@@ -1,4 +1,5 @@
 import commands from "#/commands";
+import { handleChatbot } from "#/feature/chatbot";
 import { handleLink } from "#/utils/handleLink";
 import { getGuildPrefix, globalPrefix } from "#/utils/prefixStorage";
 import { Events, Message } from "discord.js";
@@ -10,9 +11,16 @@ const shortcut: Record<string, string> = {
 export default {
   name: Events.MessageCreate as const,
   async execute(message: Message) {
+    console.log(
+      "Message:",
+      message.member?.id,
+      message.guildId,
+      message.content,
+    );
     if (message.author.bot) return;
 
     handleLink({ message, react: true, embed: false });
+    handleChatbot({ message });
 
     let args: string[] = [];
     if (message.guild) {

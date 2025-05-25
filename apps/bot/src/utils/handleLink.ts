@@ -18,13 +18,6 @@ export async function handleLink({
   react: boolean;
   embed: boolean;
 }) {
-  console.log(
-    "Message:",
-    `React=${react},Embed:${embed}`,
-    message.member?.id,
-    message.guildId,
-    message.content,
-  );
   if (!message.channel.isSendable()) return;
   if (!message.content) return;
 
