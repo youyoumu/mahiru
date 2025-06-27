@@ -23,6 +23,7 @@ export const env = createEnv({
     WEB_URL: string(),
     OPEN_WEBUI_URL: pipe(string(), url()),
     OPEN_WEBUI_TOKEN: string(),
+    FORCE_CHATBOT_CHANNEL_ID: string(),
   },
 
   clientPrefix: "PUBLIC_",
