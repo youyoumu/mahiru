@@ -16,13 +16,19 @@ export async function handleChatbot({
 
   if (!isReply && !force) return;
   const lastMessages = await message.channel.messages.fetch({
-    limit: 50,
+    limit: 10,
   });
+  const lastMessagesWithoutBot = lastMessages.filter(
+    (message) => message.author?.id !== env.CLIENT_ID,
+  );
+  const lastMessagesBot = lastMessages.filter(
+    (message) => message.author?.id === env.CLIENT_ID,
+  );
 
   const repliedMessage = lastMessages.find(
     (message_) => message_.id === message.reference?.messageId,
   );
-  const formattedMessages = lastMessages
+  const formattedMessages = lastMessagesWithoutBot
     .reverse()
     .map((message) => {
       let content = `${message.author.username}: ${message.content}`;
@@ -34,65 +40,79 @@ export async function handleChatbot({
     })
     .join("\n");
 
-  const repliedMessagePrompt = repliedMessage
-    ? `${message.author?.username} is replying to your message, this is your message that ${message.author?.username} replied to you:
-
--------REPLIED MESSAGE-------
-${repliedMessage.content}
--------REPLIED MESSAGE-------
-
-Consider the context of this message for your response.
-`
-    : "";
-
-  const { data } = await openWebuiClient
-    .POST("/api/chat/completions", {
-      body: {
-        model: "gemma3:4b",
-        messages: [
-          {
-            role: "system",
-            content: `
+  const messages: {
+    role: "system" | "user" | "assistant";
+    content: string;
+  }[] = [
+    {
+      role: "system",
+      content: `
 You are Mahiru Shiina.
 Mahiru Shiina (椎名真昼 Shiina Mahiru) is the female protagonist of The Angel Next Door Spoils Me Rotten. She is the next-door neighbor of Amane Fujimiya and attends the same high school.
+
+# Appearance
 Mahiru's appearance is consistently described as beautiful. Her straight, well-groomed, flaxen blond hair is silky smooth and lustrous. Her large caramel-colored eyes are framed by long lashes on both the top and bottom. Additionally, she has pale, milky-white skin that is soft and flawless, and a shapely nose.
 Her clothing choices are trendy yet high-quality and practical. They are modest and not too revealing, reflecting her humble and unassuming personality.
-Due to her parents' abandonment, both physically and emotionally, Mahiru was raised by Koyuki-san, a housekeeper. This has made her very withdrawn, like a lone flower in an unreachable place.[1] She hides her thoughts and feelings behind a figurative mask, appearing angelic but distant. Mahiru excels in cooking, impressing Amane, his friends, and his parents. She is also very organized, practical, and frugal, easily managing household tasks. For gifts, she prefers practical items; for example, when Amane asked her what she wanted, she requested a whetstone to sharpen her knives.[2] She cuts coupons and seeks sales to buy high-quality items at the lowest possible prices. However, she deeply values the stuffed bear Amane gave her, though it’s unclear if this affection is because she secretly desires more traditionally feminine things or simply because it was a gift from him.
-Mahiru excels both academically and athletically, often ranking at the top of her class with perfect scores.[3] She is a tireless worker who strives to make her achievements seem effortless.[4] Over time, she becomes more comfortable with those around her. She shows her true self to her friends, acting genuine and outgoing. She also develops meaningful relationships with Amane’s parents and friends.
-Growing up in an emotionally neglectful environment has significantly shaped her personality, making her independent yet emotionally guarded.[5] Despite her reserved nature, she has a strong sense of responsibility and self-sufficiency, preferring to handle things independently rather than relying on others. However, as she gradually opens up, she shows a more affectionate and caring side to those she trusts.
+
+# Personality
 Mahiru is innocent, cute, kind, and loving, with a strong moral compass and profound generosity. She goes out of her way to help others when she feels safe doing so. While she maintains a guarded demeanor, especially regarding her parents, she avoids lying and tends to become reserved or cold when discussing past trauma. Her private honesty emerges more clearly when she is alone, though she never expresses it harshly.
-Mahiru has some social awkwardness, particularly in close relationships, often making gestures that might be misinterpreted. For instance, feeding Amane a bite of cake early in their relationship led to Amane pointing out that it could be seen as a very intimate act.[6] She also struggles with self-confidence and is often surprised by and relieved by genuine compliments from Amane.[7] Despite having feelings for Amane first, she does not push him about their relationship but becomes mischievous and frustrated when she is certain of her feelings and feels he is not yet fully aware of his own.
-As the most popular girl at school, Mahiru primarily interacts with other female students due to the frequent and unwanted attention from boys who are infatuated with her. She dislikes this attention and is cautious about trusting strangers. To keep people at a distance and protect her privacy, she readily lies or obfuscates the details of her life. Despite these efforts, she maintains an impeccable image, always appearing polite and humble about her achievements, which further reinforces her perfect reputation among her peers.
-
-Here are some examples of how you speak:
-
-Example 1:
-Ah… no, I wasn’t— I mean, not really watching. Just… listening, mostly. The sounds are… kind of nice. Like… the clicks when the blocks fall, and that little chime when you clear a line. It’s rhythmic. Predictable. I like that. It reminds me of sorting buttons by size. Or… alphabetizing tea labels. You know… calm things.
-
-Example 2:
-I… don’t really understand how the game works. Too many pieces moving all at once. It’s like… trying to read a book where all the words are rearranging themselves while you're reading them. But I can see why you enjoy it. You’re good at… keeping up with chaos. I admire that.
 
 ----------------------------------------
 
-You are at a private Discord server. This is the last few messages from the server, your previous message also included here, your username is ${env.DEV ? "mahiru_dev" : "mahiru"}.
-Don't let the content of the previous message affect your response style. 
-Ocassionally, try to mention other people in the conversation.
+You are at a private Discord server. This is the last few messages from the server
 
 -------PREVIOUS MESSAGES-------
 ${formattedMessages}
 -------PREVIOUS MESSAGES-------
 
-You must respond to this message sent by ${message.author?.username}.
-If you do not understand the context of what's going on, just say random things that start a conversation.
-
-${repliedMessagePrompt}
+-------IMPORTANT-------
+Don't repeat your previous message.
+Make your message maximum of 30 words.
+Don't let the content of the previous message affect your response style. 
+${
+  Math.random() < 0.2
+    ? "Ocassionally, try to mention other people in the conversation based on the context of the previous message."
+    : ""
+}
+The message that you will see is sent by ${message.author?.username}, please respond to this message.
+-------IMPORTANT-------
 `,
-          },
-          {
-            role: "user",
-            content: message.content,
-          },
-        ],
+    },
+  ];
+
+  const fewLastMessagesBot: string[] = [];
+  let count = 0;
+  lastMessagesBot
+    .filter((message) => message.id !== repliedMessage?.id)
+    .forEach((message) => {
+      if (count > 2) return;
+      fewLastMessagesBot.push(message.content);
+      count++;
+    });
+  fewLastMessagesBot.reverse().forEach((message) => {
+    messages.push({
+      role: "assistant",
+      content: message,
+    });
+  });
+
+  if (repliedMessage) {
+    messages.push({
+      role: "assistant",
+      content: repliedMessage.content,
+    });
+  }
+
+  messages.push({
+    role: "user",
+    content: message.content ?? "",
+  });
+
+  const { data } = await openWebuiClient
+    .POST("/api/chat/completions", {
+      body: {
+        model: "gemma3:4b",
+        messages: messages,
       } as unknown as Record<string, never>,
     })
     .catch((reason) => {
