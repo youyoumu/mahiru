@@ -12,7 +12,8 @@ export async function handleChatbot({
     return user.id === env.CLIENT_ID;
   });
   const force =
-    Math.random() < 0.002 && message.channelId === env.FORCE_CHATBOT_CHANNEL_ID;
+    Math.random() < 0.002 &&
+    env.FORCE_CHATBOT_CHANNEL_ID.includes(message.channelId);
 
   if (!isReply && !force) return;
   const lastMessages = await message.channel.messages.fetch({

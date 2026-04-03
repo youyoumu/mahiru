@@ -1,5 +1,5 @@
 import { createEnv } from "@t3-oss/env-core";
-import { boolean, pipe, string, transform, unknown, url } from "valibot";
+import { array, boolean, pipe, string, transform, unknown, url } from "valibot";
 
 export const env = createEnv({
   server: {
@@ -23,7 +23,11 @@ export const env = createEnv({
     WEB_URL: string(),
     OPEN_WEBUI_URL: pipe(string(), url()),
     OPEN_WEBUI_TOKEN: string(),
-    FORCE_CHATBOT_CHANNEL_ID: string(),
+    FORCE_CHATBOT_CHANNEL_ID: pipe(
+      string(),
+      transform((input) => input.split(",").map((s) => s.trim())),
+      array(string()),
+    ),
   },
 
   clientPrefix: "PUBLIC_",
