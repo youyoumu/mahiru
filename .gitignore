@@ -40,3 +40,5 @@ yarn-error.log*
 /storage/*
 .mahiru-backend.env
 .mahiru-bot.env
+
+.lazy.lua

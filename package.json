@@ -4,11 +4,15 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint . --fix",
+    "format": "oxfmt --check",
+    "format:fix": "oxfmt .",
+    "quality": "turbo run quality",
+    "quality:fix": "turbo run quality:fix",
     "migrate": "pnpm -F @repo/db run migrate",
     "generate": "pnpm -F @repo/db run generate",
     "typecheck": "turbo run typecheck",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "dockerbuild:backend": "docker build -t youyoumu2025/mahiru-backend:latest -f apps/backend/Dockerfile .",
     "dockerbuild:backend:debug": "docker build -t youyoumu2025/mahiru-backend:latest -f apps/backend/Dockerfile . --build-arg DEBUG_TOOLS=true",
     "dockerinteractive:backend": "docker run --env-file ./apps/backend/.env -it youyoumu2025/mahiru-backend:latest sh",
@@ -19,7 +23,8 @@
     "dockerpush:bot": "docker push youyoumu2025/mahiru-bot:latest"
   },
   "devDependencies": {
-    "prettier": "^3.5.3",
+    "oxfmt": "^0.43.0",
+    "oxlint": "^1.58.0",
     "turbo": "^2.5.2",
     "typescript": "5.8.2"
   },
