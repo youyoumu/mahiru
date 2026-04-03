@@ -11,8 +11,6 @@
     "dev": "DEV=1 PROD=0 tsx watch src/index.ts",
     "start": "DEV=0 PROD=1 node ./dist/index.js",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
-    "lint:fix": "npm run lint --fix",
     "build": "tsup",
     "deploy-command": "tsx src/deploy-command.ts",
     "deploy-command:all": "tsx src/deploy-command.ts --all-guilds"
@@ -31,10 +29,8 @@
     "valibot": "^1.0.0"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",
-    "eslint": "^9.25.0",
     "tsup": "8.3.0",
     "tsx": "^4.19.4"
   }

@@ -14,9 +14,7 @@
     "build": "tsup",
     "start": "node ./dist/index.js",
     "dev": "concurrently \"tsx watch src/index.ts\" \"tsup --watch\"",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
-    "lint:fix": "npm run lint --fix"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@discordjs/rest": "^2.5.0",
@@ -35,11 +33,9 @@
     "valibot": "^1.0.0"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",
     "concurrently": "^9.1.2",
-    "eslint": "^9.25.0",
     "tsx": "^4.19.4"
   }
 }
