@@ -13,8 +13,8 @@
     }
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "push": "drizzle-kit push",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
@@ -33,7 +33,7 @@
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",
     "drizzle-kit": "^0.31.0",
-    "tsup": "8.3.0",
+    "tsdown": "^0.21.7",
     "tsx": "^4.19.4"
   }
 }
