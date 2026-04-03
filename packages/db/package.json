@@ -2,7 +2,16 @@
   "name": "@repo/db",
   "version": "1.0.0",
   "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "type": "module",
   "main": "index.js",
+  "exports": {
+    ".": {
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -12,24 +21,6 @@
     "studio": "drizzle-kit studio",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./dist/index.js"
-    }
-  },
-  "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22.15.3",
-    "drizzle-kit": "^0.31.0",
-    "eslint": "^9.25.0",
-    "tsx": "^4.19.4",
-    "tsup": "8.3.0"
-  },
   "dependencies": {
     "@libsql/client": "^0.15.4",
     "@t3-oss/env-core": "^0.13.0",
@@ -37,5 +28,14 @@
     "drizzle-orm": "^0.43.1",
     "drizzle-valibot": "^0.4.1",
     "valibot": "^1.0.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "drizzle-kit": "^0.31.0",
+    "eslint": "^9.25.0",
+    "tsup": "8.3.0",
+    "tsx": "^4.19.4"
   }
 }

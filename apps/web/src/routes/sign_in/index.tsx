@@ -1,7 +1,8 @@
+import { writeTokenToCookie } from "#/hooks/useAuth";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { object, string } from "valibot";
+
 import SignInPage from "./-components/SignInPage";
-import { writeTokenToCookie } from "#/hooks/useAuth";
 
 export const Route = createFileRoute("/sign_in/")({
   validateSearch: object({

@@ -86,10 +86,7 @@ export async function handleNHenButtonInteraction({
 
   function getPageNumber() {
     let selectedButtonId: ButtonId = "next";
-    if (
-      "data" in interaction.component &&
-      "custom_id" in interaction.component.data
-    ) {
+    if ("data" in interaction.component && "custom_id" in interaction.component.data) {
       selectedButtonId = interaction.component.data.custom_id as ButtonId;
     }
 
@@ -124,13 +121,7 @@ export async function handleNHenButtonInteraction({
   }
 }
 
-async function createMessage({
-  code,
-  pageNumber,
-}: {
-  code: number;
-  pageNumber: number;
-}) {
+async function createMessage({ code, pageNumber }: { code: number; pageNumber: number }) {
   const bookCache = bookStorage.get(code);
   const book = bookCache ?? (await nH.getBook(code));
 

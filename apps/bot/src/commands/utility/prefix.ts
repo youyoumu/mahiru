@@ -1,3 +1,5 @@
+import { getPrefixStorage, globalPrefix } from "#/utils/prefixStorage";
+import db, { schema } from "@repo/db";
 import {
   ChatInputCommandInteraction,
   codeBlock,
@@ -6,9 +8,7 @@ import {
   Message,
   SlashCommandBuilder,
 } from "discord.js";
-import db, { schema } from "@repo/db";
 import { eq } from "drizzle-orm";
-import { getPrefixStorage, globalPrefix } from "#/utils/prefixStorage";
 
 const action = {
   current: "current",
@@ -41,17 +41,14 @@ export default {
     )
 
     .addSubcommand((subCommand) =>
-      subCommand
-        .setName(action.current)
-        .setDescription("Show current bot prefix for this server"),
+      subCommand.setName(action.current).setDescription("Show current bot prefix for this server"),
     )
 
     .addSubcommand((subCommand) =>
       subCommand.setName(action.help).setDescription("Explain prefix command"),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
-    const selectedAction =
-      interaction.options.getSubcommand() as keyof typeof action;
+    const selectedAction = interaction.options.getSubcommand() as keyof typeof action;
     const newPrefix = interaction.options.getString(param["new-prefix"]);
     const discord_guild_id = interaction.guildId;
 
@@ -126,11 +123,7 @@ export default {
   },
 };
 
-async function getGuildPrefixEntry({
-  discord_guild_id,
-}: {
-  discord_guild_id: string;
-}) {
+async function getGuildPrefixEntry({ discord_guild_id }: { discord_guild_id: string }) {
   return await db.query.prefixes.findFirst({
     where(fields, operators) {
       return operators.eq(fields.discord_guild_id, discord_guild_id);
@@ -184,8 +177,7 @@ async function handleCurrent({
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
-  const prefix =
-    (await getGuildPrefixEntry({ discord_guild_id }))?.prefix ?? globalPrefix;
+  const prefix = (await getGuildPrefixEntry({ discord_guild_id }))?.prefix ?? globalPrefix;
 
   interaction?.reply(inlineCode(prefix));
   if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));
@@ -210,8 +202,7 @@ function handleHelp({
     })
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> prefix change",
-      value:
-        "Change the bot prefix for this server. The maximum prefix length is 2 characters.",
+      value: "Change the bot prefix for this server. The maximum prefix length is 2 characters.",
     })
     .setFooter({
       text: "Mahiru",

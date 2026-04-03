@@ -5490,9 +5490,7 @@ export interface components {
       created_at: number;
       /** Updated At */
       updated_at: number;
-      user?:
-        | components["schemas"]["open_webui__routers__evaluations__UserResponse"]
-        | null;
+      user?: components["schemas"]["open_webui__routers__evaluations__UserResponse"] | null;
     };
     /** FileMeta */
     FileMeta: {
@@ -5870,12 +5868,7 @@ export interface components {
       /** Updated At */
       updated_at: number;
       /** Files */
-      files?:
-        | (
-            | components["schemas"]["FileMetadataResponse"]
-            | Record<string, never>
-          )[]
-        | null;
+      files?: (components["schemas"]["FileMetadataResponse"] | Record<string, never>)[] | null;
     };
     /** KnowledgeUserResponse */
     KnowledgeUserResponse: {
@@ -5897,16 +5890,9 @@ export interface components {
       created_at: number;
       /** Updated At */
       updated_at: number;
-      user?:
-        | components["schemas"]["open_webui__models__users__UserResponse"]
-        | null;
+      user?: components["schemas"]["open_webui__models__users__UserResponse"] | null;
       /** Files */
-      files?:
-        | (
-            | components["schemas"]["FileMetadataResponse"]
-            | Record<string, never>
-          )[]
-        | null;
+      files?: (components["schemas"]["FileMetadataResponse"] | Record<string, never>)[] | null;
     };
     /** LdapConfigForm */
     LdapConfigForm: {
@@ -6142,9 +6128,7 @@ export interface components {
       updated_at: number;
       /** Created At */
       created_at: number;
-      user?:
-        | components["schemas"]["open_webui__models__users__UserResponse"]
-        | null;
+      user?: components["schemas"]["open_webui__models__users__UserResponse"] | null;
     };
     /** ModelsConfigForm */
     ModelsConfigForm: {
@@ -6201,9 +6185,7 @@ export interface components {
       created_at: number;
       /** Updated At */
       updated_at: number;
-      user?:
-        | components["schemas"]["open_webui__models__users__UserResponse"]
-        | null;
+      user?: components["schemas"]["open_webui__models__users__UserResponse"] | null;
     };
     /** ProcessFileForm */
     ProcessFileForm: {
@@ -6277,9 +6259,7 @@ export interface components {
       timestamp: number;
       /** Access Control */
       access_control?: Record<string, never> | null;
-      user?:
-        | components["schemas"]["open_webui__models__users__UserResponse"]
-        | null;
+      user?: components["schemas"]["open_webui__models__users__UserResponse"] | null;
     };
     /** PushModelForm */
     PushModelForm: {
@@ -6664,9 +6644,7 @@ export interface components {
       updated_at: number;
       /** Created At */
       created_at: number;
-      user?:
-        | components["schemas"]["open_webui__models__users__UserResponse"]
-        | null;
+      user?: components["schemas"]["open_webui__models__users__UserResponse"] | null;
     };
     /** UpdateConfigForm */
     UpdateConfigForm: {
@@ -11566,9 +11544,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json":
-            | components["schemas"]["MessageUserResponse"]
-            | null;
+          "application/json": components["schemas"]["MessageUserResponse"] | null;
         };
       };
       /** @description Validation Error */
@@ -13287,9 +13263,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json":
-            | components["schemas"]["KnowledgeFilesResponse"]
-            | null;
+          "application/json": components["schemas"]["KnowledgeFilesResponse"] | null;
         };
       };
       /** @description Validation Error */
@@ -13324,9 +13298,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json":
-            | components["schemas"]["KnowledgeFilesResponse"]
-            | null;
+          "application/json": components["schemas"]["KnowledgeFilesResponse"] | null;
         };
       };
       /** @description Validation Error */
@@ -13361,9 +13333,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json":
-            | components["schemas"]["KnowledgeFilesResponse"]
-            | null;
+          "application/json": components["schemas"]["KnowledgeFilesResponse"] | null;
         };
       };
       /** @description Validation Error */
@@ -13398,9 +13368,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json":
-            | components["schemas"]["KnowledgeFilesResponse"]
-            | null;
+          "application/json": components["schemas"]["KnowledgeFilesResponse"] | null;
         };
       };
       /** @description Validation Error */
@@ -13435,9 +13403,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json":
-            | components["schemas"]["KnowledgeFilesResponse"]
-            | null;
+          "application/json": components["schemas"]["KnowledgeFilesResponse"] | null;
         };
       };
       /** @description Validation Error */
@@ -13534,9 +13500,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json":
-            | components["schemas"]["KnowledgeFilesResponse"]
-            | null;
+          "application/json": components["schemas"]["KnowledgeFilesResponse"] | null;
         };
       };
       /** @description Validation Error */

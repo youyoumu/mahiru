@@ -1,12 +1,6 @@
 export const tokenStorage = new Map();
 
-export function storeToken({
-  token,
-  user_id,
-}: {
-  token: string;
-  user_id: string;
-}) {
+export function storeToken({ token, user_id }: { token: string; user_id: string }) {
   tokenStorage.set(token, user_id);
 }
 

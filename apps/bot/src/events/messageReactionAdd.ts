@@ -1,10 +1,5 @@
 import { env } from "#/env";
-import {
-  BOOK_EMOJI,
-  embededMessageStorage,
-  handleLink,
-  LINK_EMOJI,
-} from "#/utils/handleLink";
+import { BOOK_EMOJI, embededMessageStorage, handleLink, LINK_EMOJI } from "#/utils/handleLink";
 import {
   Events,
   MessageReaction,
@@ -15,12 +10,8 @@ import {
 
 export default {
   name: Events.MessageReactionAdd as const,
-  async execute(
-    reaction: MessageReaction | PartialMessageReaction,
-    user: User | PartialUser,
-  ) {
-    if (user.id === env.CLIENT_ID || user.id !== reaction.message.author?.id)
-      return;
+  async execute(reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser) {
+    if (user.id === env.CLIENT_ID || user.id !== reaction.message.author?.id) return;
 
     // When a reaction is received, check if the structure is partial
     if (reaction.partial) {
@@ -34,10 +25,7 @@ export default {
       }
     }
 
-    if (
-      reaction.emoji.name === LINK_EMOJI ||
-      reaction.emoji.name === BOOK_EMOJI
-    ) {
+    if (reaction.emoji.name === LINK_EMOJI || reaction.emoji.name === BOOK_EMOJI) {
       if (embededMessageStorage.get(reaction.message.id)) return;
       const hasBotReaction = reaction.users.cache.has(env.CLIENT_ID);
       if (!hasBotReaction) return;

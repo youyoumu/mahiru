@@ -1,10 +1,10 @@
 import { createApp } from "#/app";
+import { env } from "#/env";
+import { createJwtToken } from "#/lib/jwt";
 import { consumeToken } from "#/lib/tokenStorage";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/valibot";
 import { object, optional, string, type InferOutput } from "valibot";
-import { createJwtToken } from "#/lib/jwt";
-import { env } from "#/env";
 
 const responseSchema = object({
   token: string(),

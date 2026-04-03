@@ -1,7 +1,7 @@
 import { useCurrentUser } from "#/hooks/useCurrentUser";
 import { Link } from "@tanstack/react-router";
-import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
 
 export default function HomePage() {
   const { data: currentUser, isLoading: L1 } = useCurrentUser();
@@ -25,8 +25,8 @@ export default function HomePage() {
         {isNotLogin && (
           <div className="w-64 text-muted-foreground">
             You're not logged in. To get started, use the{" "}
-            <span className="bg-muted border rounded-sm px-0.5">login</span>{" "}
-            command from the Mahiru bot.
+            <span className="bg-muted border rounded-sm px-0.5">login</span> command from the Mahiru
+            bot.
           </div>
         )}
       </div>
@@ -45,9 +45,7 @@ const LoveEmojiBubbles = () => {
   >([]);
 
   function handleMove(
-    e:
-      | MouseEvent<HTMLDivElement, globalThis.MouseEvent>
-      | TouchEvent<HTMLDivElement>,
+    e: MouseEvent<HTMLDivElement, globalThis.MouseEvent> | TouchEvent<HTMLDivElement>,
   ) {
     const bounds = parentRef.current?.getBoundingClientRect();
     if (!bounds) return;

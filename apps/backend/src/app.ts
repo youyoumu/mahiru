@@ -1,10 +1,13 @@
-import { Hono } from "hono";
-import { jwt } from "hono/jwt";
 import type { JwtVariables } from "hono/jwt";
-import { env } from "./env";
-import type { JwtPayload } from "./lib/jwt";
+
+import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { jwt } from "hono/jwt";
 import { logger } from "hono/logger";
+
+import type { JwtPayload } from "./lib/jwt";
+
+import { env } from "./env";
 
 export function createApp() {
   return new Hono<{ Variables: JwtVariables<JwtPayload> }>();

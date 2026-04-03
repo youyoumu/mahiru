@@ -1,3 +1,7 @@
+import { getGuildPrefix } from "#/utils/prefixStorage";
+import { uniqueBy } from "#/utils/uniqueBy";
+import { webUrl } from "#/utils/webUrl";
+import db, { schema } from "@repo/db";
 import {
   bold,
   ChatInputCommandInteraction,
@@ -7,11 +11,7 @@ import {
   Message,
   SlashCommandBuilder,
 } from "discord.js";
-import db, { schema } from "@repo/db";
 import { eq } from "drizzle-orm";
-import { getGuildPrefix } from "#/utils/prefixStorage";
-import { uniqueBy } from "#/utils/uniqueBy";
-import { webUrl } from "#/utils/webUrl";
 
 const action = {
   add: "add",
@@ -43,19 +43,14 @@ export default {
             .setRequired(true),
         )
         .addStringOption((option) =>
-          option
-            .setName(param.value)
-            .setDescription("Text or link")
-            .setRequired(true),
+          option.setName(param.value).setDescription("Text or link").setRequired(true),
         ),
     )
 
     .addSubcommand((subCommand) =>
       subCommand
         .setName(action.drop)
-        .setDescription(
-          "Drop a meme from your collection or the server's collection.",
-        )
+        .setDescription("Drop a meme from your collection or the server's collection.")
         .addStringOption((option) =>
           option
             .setName(param.key)
@@ -76,9 +71,7 @@ export default {
     .addSubcommand((subCommand) =>
       subCommand
         .setName(action.remove)
-        .setDescription(
-          "Remove a meme from your collection and/or the server's collection.",
-        )
+        .setDescription("Remove a meme from your collection and/or the server's collection.")
         .addStringOption((option) =>
           option
             .setName(param.key)
@@ -93,8 +86,7 @@ export default {
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
-    const selectedAction =
-      interaction.options.getSubcommand() as keyof typeof action;
+    const selectedAction = interaction.options.getSubcommand() as keyof typeof action;
     const key = interaction.options.getString(param.key);
     const value = interaction.options.getString(param.value);
     const discord_user_id = interaction.user.id;
@@ -157,11 +149,7 @@ export default {
     switch (subCommand) {
       case action.add: {
         const key = args[1];
-        const value = message.content
-          .split(`${key} `)
-          .slice(1)
-          .join(`${key} `)
-          .trim();
+        const value = message.content.split(`${key} `).slice(1).join(`${key} `).trim();
 
         if (key && value) {
           return handleAdd({
@@ -237,19 +225,10 @@ export default {
   },
 };
 
-async function getUserMeme({
-  key,
-  discord_user_id,
-}: {
-  key: string;
-  discord_user_id: string;
-}) {
+async function getUserMeme({ key, discord_user_id }: { key: string; discord_user_id: string }) {
   const userMeme = await db.query.meme.findFirst({
     where(fields, { eq, and }) {
-      return and(
-        eq(fields.key, key),
-        eq(fields.discord_user_id, discord_user_id),
-      );
+      return and(eq(fields.key, key), eq(fields.discord_user_id, discord_user_id));
     },
   });
   return userMeme;
@@ -265,10 +244,7 @@ async function getGuildMeme({
   const guildMeme = discord_guild_id
     ? await db.query.meme.findFirst({
         where(fields, { eq, and }) {
-          return and(
-            eq(fields.key, key),
-            eq(fields.discord_guild_id, discord_guild_id),
-          );
+          return and(eq(fields.key, key), eq(fields.discord_guild_id, discord_guild_id));
         },
       })
     : undefined;
@@ -360,8 +336,7 @@ async function handleAdd({
   }
 
   interaction?.reply(bold(key) + "\n\n" + value);
-  if (message?.channel.isSendable())
-    message.channel.send(bold(key) + "\n\n" + value);
+  if (message?.channel.isSendable()) message.channel.send(bold(key) + "\n\n" + value);
 }
 
 async function handleList({
@@ -408,10 +383,7 @@ async function handleList({
     .addFields({
       name: "\u200B",
       value: allMemes
-        .map(
-          (meme, i) =>
-            `${bold((i + 1).toString())}. ${meme.key} - <@${meme.discord_user_id}>`,
-        )
+        .map((meme, i) => `${bold((i + 1).toString())}. ${meme.key} - <@${meme.discord_user_id}>`)
         .join("\n"),
     })
 
@@ -458,8 +430,7 @@ async function handleRemove({
 
   if (guildMeme || userMeme) {
     interaction?.reply(`${inlineCode(key)} has been deleted`);
-    if (message?.channel.isSendable())
-      message?.channel.send(`${inlineCode(key)} has been deleted`);
+    if (message?.channel.isSendable()) message?.channel.send(`${inlineCode(key)} has been deleted`);
     return;
   }
 
@@ -499,8 +470,7 @@ async function handleHelp({
     })
     .addFields({
       name: "<:azusarelaxed:1207544782952595508> meme remove",
-      value:
-        "Remove a meme from your collection and/or the server's collection.",
+      value: "Remove a meme from your collection and/or the server's collection.",
     })
     .setFooter({
       text: "Mahiru",

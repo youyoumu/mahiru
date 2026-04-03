@@ -2,7 +2,14 @@
   "name": "@repo/backend",
   "version": "1.0.0",
   "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "type": "module",
   "main": "index.js",
+  "exports": {
+    "./hc": "./dist/hc.js"
+  },
   "scripts": {
     "build": "tsup",
     "start": "node ./dist/index.js",
@@ -10,13 +17,6 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "npm run lint --fix"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
-  "exports": {
-    "./hc": "./dist/hc.js"
   },
   "dependencies": {
     "@discordjs/rest": "^2.5.0",

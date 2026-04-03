@@ -2,20 +2,20 @@
   "name": "@repo/utils",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit"
-  },
   "keywords": [],
-  "author": "",
   "license": "ISC",
+  "author": "",
   "type": "module",
+  "main": "index.js",
   "exports": {
     ".": {
       "default": "./dist/index.js"
     }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@repo/eslint-config": "workspace:*",

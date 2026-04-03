@@ -1,14 +1,13 @@
-import { StrictMode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@ant-design/v5-patch-for-react-19";
-import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
-
-// Import the generated route tree
-import { routeTree } from "./routeTree.gen";
+import { StrictMode } from "react";
+import ReactDOM from "react-dom/client";
 
 import "./styles.css";
 import reportWebVitals from "./reportWebVitals.ts";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// Import the generated route tree
+import { routeTree } from "./routeTree.gen";
 
 const queryClient = new QueryClient({
   defaultOptions: {

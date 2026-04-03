@@ -18,9 +18,7 @@ export async function createJwtToken({
     discord_user_id,
     admin: secret_key === env.SECRET_KEY ? true : false,
     exp:
-      secret_key === env.SECRET_KEY
-        ? undefined
-        : Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
+      secret_key === env.SECRET_KEY ? undefined : Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
   };
   const token = await sign(payload, env.SECRET_KEY);
   return token;

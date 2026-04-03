@@ -1,34 +1,22 @@
-import { useMemes } from "#/hooks/useMemes";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "#/components/ui/card";
 import { Button } from "#/components/ui/button";
-import { Copy } from "lucide-react";
-import { toast } from "sonner";
-import { memo, useDeferredValue, useState } from "react";
-import { useDiscordCdn } from "#/hooks/useProxy";
-import ReactPlayer from "react-player";
-import ImageWithFallback from "#/routes/-components/ImageWithFallback";
-import { Textarea } from "#/components/ui/textarea";
-import { XEmbed, YouTubeEmbed } from "react-social-media-embed";
-import { useForm } from "react-hook-form";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "#/components/ui/form";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "#/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "#/components/ui/form";
 import { Input } from "#/components/ui/input";
-import fuzzysort from "fuzzysort";
-import { getRouteApi } from "@tanstack/react-router";
-import { useUser } from "#/hooks/useUsers";
-import { digits, pipe, safeParse, string } from "valibot";
+import { Textarea } from "#/components/ui/textarea";
+import { useMemes } from "#/hooks/useMemes";
+import { useDiscordCdn } from "#/hooks/useProxy";
 import { useTenorPost } from "#/hooks/useTenor";
+import { useUser } from "#/hooks/useUsers";
+import ImageWithFallback from "#/routes/-components/ImageWithFallback";
+import { getRouteApi } from "@tanstack/react-router";
+import fuzzysort from "fuzzysort";
+import { Copy } from "lucide-react";
+import { memo, useDeferredValue, useState } from "react";
+import { useForm } from "react-hook-form";
+import ReactPlayer from "react-player";
+import { XEmbed, YouTubeEmbed } from "react-social-media-embed";
+import { toast } from "sonner";
+import { digits, pipe, safeParse, string } from "valibot";
 
 export default function MemesPage() {
   const form = useForm({
@@ -131,13 +119,7 @@ function Embed({ value }: { value: string }) {
   try {
     url = new URL(value);
   } catch {
-    return (
-      <Textarea
-        value={value}
-        className="max-h-64 resize-none bg-secondary"
-        readOnly
-      />
-    );
+    return <Textarea value={value} className="max-h-64 resize-none bg-secondary" readOnly />;
   }
 
   const pathnameSplit = url.pathname.split("/");
@@ -149,8 +131,7 @@ function Embed({ value }: { value: string }) {
 
   if (isImage) {
     const isDiscordCdn =
-      url.hostname === "media.discordapp.net" ||
-      url.hostname === "cdn.discordapp.com";
+      url.hostname === "media.discordapp.net" || url.hostname === "cdn.discordapp.com";
     if (isDiscordCdn) return <ProxyCdnImage url={url.href} />;
     return (
       <div>
@@ -168,9 +149,7 @@ function Embed({ value }: { value: string }) {
   }
 
   const isYoutube =
-    url.hostname === "www.youtube.com" &&
-    pathnameSplit.length === 2 &&
-    lastPathname === "watch";
+    url.hostname === "www.youtube.com" && pathnameSplit.length === 2 && lastPathname === "watch";
   if (isYoutube) {
     return (
       <div>
@@ -181,8 +160,7 @@ function Embed({ value }: { value: string }) {
   }
 
   const isTwitter =
-    (url.hostname === "x.com" || url.hostname === "twitter.com") &&
-    pathnameSplit[2] === "status";
+    (url.hostname === "x.com" || url.hostname === "twitter.com") && pathnameSplit[2] === "status";
   if (isTwitter) {
     return (
       <div>
@@ -198,9 +176,7 @@ function Embed({ value }: { value: string }) {
   const parsedTenorId = safeParse(tenorIdSchema, tenorId);
 
   const isTenor =
-    url.hostname === "tenor.com" &&
-    pathnameSplit.length === 3 &&
-    parsedTenorId.success;
+    url.hostname === "tenor.com" && pathnameSplit.length === 3 && parsedTenorId.success;
 
   if (isTenor) {
     return (

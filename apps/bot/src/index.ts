@@ -1,9 +1,10 @@
 // Require the necessary discord.js classes
 import "dotenv/config";
+import { hcWithType } from "@repo/backend/hc";
 import { Client, GatewayIntentBits } from "discord.js";
+
 import { env } from "./env";
 import events from "./events";
-import { hcWithType } from "@repo/backend/hc";
 
 // Create a new client instance
 const client = new Client({
@@ -32,9 +33,7 @@ client.once(events.ready.name, (client) => events.ready.execute(client));
 client.on(events.interactionCreate.name, (interaction) =>
   events.interactionCreate.execute(interaction),
 );
-client.on(events.messageCreate.name, (message) =>
-  events.messageCreate.execute(message),
-);
+client.on(events.messageCreate.name, (message) => events.messageCreate.execute(message));
 
 client.on(events.messageReactionAdd.name, (reaction, user) =>
   events.messageReactionAdd.execute(reaction, user),

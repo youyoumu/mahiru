@@ -22,17 +22,14 @@ function parseValidURL(str: string): URL | null {
 }
 
 async function refreshDiscordUrl(url: string): Promise<string | null> {
-  const response = await fetch(
-    "https://discord.com/api/v9/attachments/refresh-urls",
-    {
-      method: "POST",
-      headers: {
-        Authorization: env.DISCORD_USER_TOKEN,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ attachment_urls: [url] }),
+  const response = await fetch("https://discord.com/api/v9/attachments/refresh-urls", {
+    method: "POST",
+    headers: {
+      Authorization: env.DISCORD_USER_TOKEN,
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify({ attachment_urls: [url] }),
+  });
 
   if (!response.ok) return null;
 

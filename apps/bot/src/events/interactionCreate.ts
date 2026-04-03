@@ -1,6 +1,7 @@
-import { BaseInteraction, Events, MessageFlags } from "discord.js";
-import commands from "../commands";
 import { handleNHenButtonInteraction } from "#/feature/nhen";
+import { BaseInteraction, Events, MessageFlags } from "discord.js";
+
+import commands from "../commands";
 
 export default {
   name: Events.InteractionCreate as const,

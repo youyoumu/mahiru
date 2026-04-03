@@ -8,9 +8,7 @@ import {
 } from "discord.js";
 
 export default {
-  data: new SlashCommandBuilder()
-    .setName("help")
-    .setDescription("Explain all commands"),
+  data: new SlashCommandBuilder().setName("help").setDescription("Explain all commands"),
   async execute(interaction: ChatInputCommandInteraction) {
     return handleHelp({ interaction });
   },

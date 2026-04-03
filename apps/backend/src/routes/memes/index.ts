@@ -1,6 +1,9 @@
 import { createApp } from "#/app";
+import { env } from "#/env";
+import db, { valibot } from "@repo/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/valibot";
+import { sign, verify } from "hono/jwt";
 import {
   array,
   number,
@@ -11,9 +14,6 @@ import {
   string,
   type InferOutput,
 } from "valibot";
-import db, { valibot } from "@repo/db";
-import { sign, verify } from "hono/jwt";
-import { env } from "#/env";
 
 const responseSchema = array(valibot.selectMemesSchema);
 const querySchema = object({
@@ -62,10 +62,7 @@ const route = createApp().get(
 
     const memes = await db.query.meme.findMany({
       where(fields, { eq, or, inArray }) {
-        return or(
-          eq(fields.discord_user_id, discord_user_id),
-          inArray(fields.id, meme_ids),
-        );
+        return or(eq(fields.discord_user_id, discord_user_id), inArray(fields.id, meme_ids));
       },
     });
 

@@ -28,10 +28,10 @@
     "turbo": "^2.5.2",
     "typescript": "5.8.2"
   },
-  "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=18"
   },
+  "packageManager": "pnpm@9.0.0",
   "pnpm": {
     "patchedDependencies": {
       "nhentai-api@3.4.3": "patches/nhentai-api@3.4.3.patch"

@@ -2,15 +2,7 @@ import { createApp } from "#/app";
 import { env } from "#/env";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/valibot";
-import {
-  array,
-  boolean,
-  number,
-  object,
-  parse,
-  string,
-  type InferOutput,
-} from "valibot";
+import { array, boolean, number, object, parse, string, type InferOutput } from "valibot";
 
 const tenorApiUrl = new URL("https://tenor.googleapis.com");
 tenorApiUrl.pathname = "/v2/posts";
@@ -74,9 +66,7 @@ const routeView = createApp().get(
       data = await res.json();
     }
 
-    return c.json<InferOutput<typeof responseSchema>>(
-      parse(responseSchema, data),
-    );
+    return c.json<InferOutput<typeof responseSchema>>(parse(responseSchema, data));
   },
 );
 

@@ -11,12 +11,7 @@ const shortcut: Record<string, string> = {
 export default {
   name: Events.MessageCreate as const,
   async execute(message: Message) {
-    console.log(
-      "Message:",
-      message.member?.id,
-      message.guildId,
-      message.content,
-    );
+    console.log("Message:", message.member?.id, message.guildId, message.content);
     if (message.author.bot) return;
 
     handleLink({ message, react: true, embed: false });
@@ -39,9 +34,7 @@ export default {
       args = message.content.slice(prefix.length).trim().split(/\s+/);
     } else {
       // handle DMs
-      const slice = message.content.startsWith(globalPrefix)
-        ? globalPrefix.length
-        : 0;
+      const slice = message.content.startsWith(globalPrefix) ? globalPrefix.length : 0;
       args = message.content.slice(slice).split(/\s+/);
     }
 

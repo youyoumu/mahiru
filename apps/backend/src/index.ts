@@ -2,18 +2,17 @@ import "dotenv/config";
 import { serve } from "@hono/node-server";
 
 import app from "./app";
+import { env } from "./env";
 import index from "./routes";
-import docs from "./routes/docs";
-import openapi from "./routes/openapi";
-import memes from "./routes/memes";
-import authToken from "./routes/auth/token";
 import authSignIn from "./routes/auth/sign_in/";
+import authToken from "./routes/auth/token";
+import docs from "./routes/docs";
+import health from "./routes/health";
+import memes from "./routes/memes";
+import openapi from "./routes/openapi";
 import proxy from "./routes/proxy";
 import tenor from "./routes/tenor";
 import users from "./routes/users";
-import health from "./routes/health";
-
-import { env } from "./env";
 
 const port = env.PORT;
 console.log(`Server is running on port http://localhost:${port}`);

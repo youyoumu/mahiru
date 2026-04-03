@@ -54,9 +54,7 @@ const routeMe = createApp().get(
   async (c) => {
     const { discord_user_id } = c.get("jwtPayload");
     const user = await getUser({ discord_user_id });
-    return c.json<InferOutput<typeof responseSchema>>(
-      parse(responseSchema, user),
-    );
+    return c.json<InferOutput<typeof responseSchema>>(parse(responseSchema, user));
   },
 );
 
@@ -84,9 +82,7 @@ const routeUserId = createApp().get(
   async (c) => {
     const { discord_user_id } = c.req.param();
     const user = await getUser({ discord_user_id });
-    return c.json<InferOutput<typeof responseSchema>>(
-      parse(responseSchema, user),
-    );
+    return c.json<InferOutput<typeof responseSchema>>(parse(responseSchema, user));
   },
 );
 

@@ -1,19 +1,14 @@
-import { env } from "#/env";
-import { openWebuiClient } from "#/utils/openWebuiClient";
 import type { Message, PartialMessage } from "discord.js";
 
-export async function handleChatbot({
-  message,
-}: {
-  message: Message | PartialMessage;
-}) {
+import { env } from "#/env";
+import { openWebuiClient } from "#/utils/openWebuiClient";
+
+export async function handleChatbot({ message }: { message: Message | PartialMessage }) {
   if (!message.channel.isSendable()) return;
   const isReply = message.mentions.users.some((user) => {
     return user.id === env.CLIENT_ID;
   });
-  const force =
-    Math.random() < 0.002 &&
-    env.FORCE_CHATBOT_CHANNEL_ID.includes(message.channelId);
+  const force = Math.random() < 0.002 && env.FORCE_CHATBOT_CHANNEL_ID.includes(message.channelId);
 
   if (!isReply && !force) return;
   const lastMessages = await message.channel.messages.fetch({
@@ -22,9 +17,7 @@ export async function handleChatbot({
   const lastMessagesWithoutBot = lastMessages.filter(
     (message) => message.author?.id !== env.CLIENT_ID,
   );
-  const lastMessagesBot = lastMessages.filter(
-    (message) => message.author?.id === env.CLIENT_ID,
-  );
+  const lastMessagesBot = lastMessages.filter((message) => message.author?.id === env.CLIENT_ID);
 
   const repliedMessage = lastMessages.find(
     (message_) => message_.id === message.reference?.messageId,

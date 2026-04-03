@@ -1,7 +1,7 @@
 import { env } from "#/env";
+import { handleNhenLink } from "#/feature/nhen";
 import { type Message, type PartialMessage } from "discord.js";
 import { digits, pipe, safeParse, string } from "valibot";
-import { handleNhenLink } from "#/feature/nhen";
 
 export const LINK_EMOJI = "🔗";
 export const BOOK_EMOJI = "📖";
@@ -41,10 +41,7 @@ export async function handleLink({
   const digitsSchema = pipe(string(), digits());
 
   const nhenCode = safeParse(digitsSchema, pathnameSplit[2]);
-  const isNhen =
-    url.hostname === "nhentai.net" &&
-    pathnameSplit[1] === "g" &&
-    nhenCode.success;
+  const isNhen = url.hostname === "nhentai.net" && pathnameSplit[1] === "g" && nhenCode.success;
   if (isNhen) {
     if (react) handleReact({ message, emoji: BOOK_EMOJI });
     if (embed) {
@@ -71,10 +68,7 @@ export async function handleLink({
     return;
   }
 
-  const pixivPostId = safeParse(
-    digitsSchema,
-    pathnameSplit[pathnameSplit.length - 1],
-  );
+  const pixivPostId = safeParse(digitsSchema, pathnameSplit[pathnameSplit.length - 1]);
   const isPixiv =
     (url.hostname === "pixiv.net" || url.hostname === "www.pixiv.net") &&
     (pathnameSplit[1] === "artworks" || pathnameSplit[2] === "artworks") &&
@@ -116,13 +110,7 @@ export async function handleLink({
   }
 }
 
-function handleReact({
-  message,
-  emoji,
-}: {
-  message: Message | PartialMessage;
-  emoji?: string;
-}) {
+function handleReact({ message, emoji }: { message: Message | PartialMessage; emoji?: string }) {
   message.react(emoji ?? LINK_EMOJI);
   setTimeout(async () => {
     const myReactions = message.reactions.cache.filter((reaction) =>
@@ -138,13 +126,7 @@ function handleReact({
   }, 6000);
 }
 
-function handleSendEmbed({
-  message,
-  url,
-}: {
-  message: Message | PartialMessage;
-  url: string;
-}) {
+function handleSendEmbed({ message, url }: { message: Message | PartialMessage; url: string }) {
   if (!message.channel.isSendable()) return;
   message.channel.send(url);
 

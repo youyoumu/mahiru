@@ -1,9 +1,5 @@
 import { webUrl } from "#/utils/webUrl";
-import {
-  ChatInputCommandInteraction,
-  Message,
-  SlashCommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, Message, SlashCommandBuilder } from "discord.js";
 
 export default {
   data: new SlashCommandBuilder()

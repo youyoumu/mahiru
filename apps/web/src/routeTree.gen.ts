@@ -10,131 +10,130 @@
 
 // Import Routes
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as LayoutImport } from './routes/_layout'
-import { Route as IndexImport } from './routes/index'
-import { Route as SigninIndexImport } from './routes/sign_in/index'
-import { Route as LayoutMemesIndexImport } from './routes/_layout/memes/index'
+import { Route as rootRoute } from "./routes/__root";
+import { Route as LayoutImport } from "./routes/_layout";
+import { Route as LayoutMemesIndexImport } from "./routes/_layout/memes/index";
+import { Route as IndexImport } from "./routes/index";
+import { Route as SigninIndexImport } from "./routes/sign_in/index";
 
 // Create/Update Routes
 
 const LayoutRoute = LayoutImport.update({
-  id: '/_layout',
+  id: "/_layout",
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const IndexRoute = IndexImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const SigninIndexRoute = SigninIndexImport.update({
-  id: '/sign_in/',
-  path: '/sign_in/',
+  id: "/sign_in/",
+  path: "/sign_in/",
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const LayoutMemesIndexRoute = LayoutMemesIndexImport.update({
-  id: '/memes/',
-  path: '/memes/',
+  id: "/memes/",
+  path: "/memes/",
   getParentRoute: () => LayoutRoute,
-} as any)
+} as any);
 
 // Populate the FileRoutesByPath interface
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/_layout': {
-      id: '/_layout'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof LayoutImport
-      parentRoute: typeof rootRoute
-    }
-    '/sign_in/': {
-      id: '/sign_in/'
-      path: '/sign_in'
-      fullPath: '/sign_in'
-      preLoaderRoute: typeof SigninIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/_layout/memes/': {
-      id: '/_layout/memes/'
-      path: '/memes'
-      fullPath: '/memes'
-      preLoaderRoute: typeof LayoutMemesIndexImport
-      parentRoute: typeof LayoutImport
-    }
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/_layout": {
+      id: "/_layout";
+      path: "";
+      fullPath: "";
+      preLoaderRoute: typeof LayoutImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/sign_in/": {
+      id: "/sign_in/";
+      path: "/sign_in";
+      fullPath: "/sign_in";
+      preLoaderRoute: typeof SigninIndexImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/_layout/memes/": {
+      id: "/_layout/memes/";
+      path: "/memes";
+      fullPath: "/memes";
+      preLoaderRoute: typeof LayoutMemesIndexImport;
+      parentRoute: typeof LayoutImport;
+    };
   }
 }
 
 // Create and export the route tree
 
 interface LayoutRouteChildren {
-  LayoutMemesIndexRoute: typeof LayoutMemesIndexRoute
+  LayoutMemesIndexRoute: typeof LayoutMemesIndexRoute;
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutMemesIndexRoute: LayoutMemesIndexRoute,
-}
+};
 
-const LayoutRouteWithChildren =
-  LayoutRoute._addFileChildren(LayoutRouteChildren)
+const LayoutRouteWithChildren = LayoutRoute._addFileChildren(LayoutRouteChildren);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '': typeof LayoutRouteWithChildren
-  '/sign_in': typeof SigninIndexRoute
-  '/memes': typeof LayoutMemesIndexRoute
+  "/": typeof IndexRoute;
+  "": typeof LayoutRouteWithChildren;
+  "/sign_in": typeof SigninIndexRoute;
+  "/memes": typeof LayoutMemesIndexRoute;
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '': typeof LayoutRouteWithChildren
-  '/sign_in': typeof SigninIndexRoute
-  '/memes': typeof LayoutMemesIndexRoute
+  "/": typeof IndexRoute;
+  "": typeof LayoutRouteWithChildren;
+  "/sign_in": typeof SigninIndexRoute;
+  "/memes": typeof LayoutMemesIndexRoute;
 }
 
 export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/_layout': typeof LayoutRouteWithChildren
-  '/sign_in/': typeof SigninIndexRoute
-  '/_layout/memes/': typeof LayoutMemesIndexRoute
+  __root__: typeof rootRoute;
+  "/": typeof IndexRoute;
+  "/_layout": typeof LayoutRouteWithChildren;
+  "/sign_in/": typeof SigninIndexRoute;
+  "/_layout/memes/": typeof LayoutMemesIndexRoute;
 }
 
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/sign_in' | '/memes'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/sign_in' | '/memes'
-  id: '__root__' | '/' | '/_layout' | '/sign_in/' | '/_layout/memes/'
-  fileRoutesById: FileRoutesById
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths: "/" | "" | "/sign_in" | "/memes";
+  fileRoutesByTo: FileRoutesByTo;
+  to: "/" | "" | "/sign_in" | "/memes";
+  id: "__root__" | "/" | "/_layout" | "/sign_in/" | "/_layout/memes/";
+  fileRoutesById: FileRoutesById;
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  LayoutRoute: typeof LayoutRouteWithChildren
-  SigninIndexRoute: typeof SigninIndexRoute
+  IndexRoute: typeof IndexRoute;
+  LayoutRoute: typeof LayoutRouteWithChildren;
+  SigninIndexRoute: typeof SigninIndexRoute;
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LayoutRoute: LayoutRouteWithChildren,
   SigninIndexRoute: SigninIndexRoute,
-}
+};
 
 export const routeTree = rootRoute
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
 
 /* ROUTE_MANIFEST_START
 {
