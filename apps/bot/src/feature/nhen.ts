@@ -8,7 +8,7 @@ import {
   type PartialMessage,
 } from "discord.js";
 import { API, Book, Image, TagTypes } from "nhentai-api";
-import { digits, number, parse, pipe, string, transform } from "valibot";
+import { z } from "zod";
 
 // 1. Create a new ImageType instance for WEBP
 const webpType = new Image.types.JPEG.constructor("w", "webp"); // reuse the constructor
@@ -65,21 +65,19 @@ export async function handleNHenButtonInteraction({
   if (!pageInfo) return;
   const [currentPageString, totalPagesString] = pageInfo.split("/");
 
-  const numberSchema = pipe(
-    string(),
-    digits(),
-    transform((s) => Number(s)),
-    number(),
-  );
+  const numberSchema = z
+    .string()
+    .regex(/^\d+$/)
+    .transform((s) => Number(s));
 
   let code: number;
   let currentPage: number;
   let totalPages: number;
 
   try {
-    code = parse(numberSchema, codeString);
-    currentPage = parse(numberSchema, currentPageString);
-    totalPages = parse(numberSchema, totalPagesString);
+    code = numberSchema.parse(codeString);
+    currentPage = numberSchema.parse(currentPageString);
+    totalPages = numberSchema.parse(totalPagesString);
   } catch {
     return;
   }

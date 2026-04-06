@@ -1,7 +1,7 @@
 import { env } from "#/env";
 import { handleNhenLink } from "#/feature/nhen";
 import { type Message, type PartialMessage } from "discord.js";
-import { digits, pipe, safeParse, string } from "valibot";
+import { z } from "zod";
 
 export const LINK_EMOJI = "🔗";
 export const BOOK_EMOJI = "📖";
@@ -38,21 +38,22 @@ export async function handleLink({
   const url = new URL(urlString);
   const pathnameSplit = url.pathname.split("/");
   console.log("DEBUG[419]: pathnameSplit=", pathnameSplit);
-  const digitsSchema = pipe(string(), digits());
+  const digitsSchema = z.string().regex(/^\d+$/);
 
-  const nhenCode = safeParse(digitsSchema, pathnameSplit[2]);
-  const isNhen = url.hostname === "nhentai.net" && pathnameSplit[1] === "g" && nhenCode.success;
+  const nhenCode = digitsSchema.safeParse(pathnameSplit[2]);
+  const isNhen =
+    url.hostname === "nhentai.net" && pathnameSplit[1] === "g" && nhenCode.success && nhenCode.data;
   if (isNhen) {
     if (react) handleReact({ message, emoji: BOOK_EMOJI });
     if (embed) {
-      handleNhenLink({ code: Number(nhenCode.output), message });
+      handleNhenLink({ code: Number(nhenCode.data), message });
     }
   }
 
   // disable embed react until further development
   if (env.PROD) return;
 
-  const tweetId = safeParse(digitsSchema, pathnameSplit[3]);
+  const tweetId = digitsSchema.safeParse(pathnameSplit[3]);
   const isTwitter =
     (url.hostname === "x.com" || url.hostname === "twitter.com") &&
     pathnameSplit[2] === "status" &&
@@ -68,7 +69,7 @@ export async function handleLink({
     return;
   }
 
-  const pixivPostId = safeParse(digitsSchema, pathnameSplit[pathnameSplit.length - 1]);
+  const pixivPostId = digitsSchema.safeParse(pathnameSplit[pathnameSplit.length - 1]);
   const isPixiv =
     (url.hostname === "pixiv.net" || url.hostname === "www.pixiv.net") &&
     (pathnameSplit[1] === "artworks" || pathnameSplit[2] === "artworks") &&

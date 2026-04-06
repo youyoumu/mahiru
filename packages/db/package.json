@@ -23,8 +23,8 @@
     "@libsql/client": "^0.15.4",
     "@t3-oss/env-core": "^0.13.0",
     "drizzle-orm": "^0.43.1",
-    "drizzle-valibot": "^0.4.1",
-    "valibot": "^1.0.0"
+    "drizzle-zod": "^0.8.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

@@ -1,89 +1,77 @@
 import { createApp } from "#/app";
 import { getUser } from "#/lib/discordRest";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/valibot";
-import {
-  boolean,
-  nullable,
-  number,
-  object,
-  optional,
-  parse,
-  string,
-  type InferOutput,
-} from "valibot";
+import { createRoute, z } from "@hono/zod-openapi";
 
-const responseSchema = object({
-  accent_color: optional(nullable(number())),
-  avatar: nullable(string()),
-  avatar_decoration: optional(nullable(string())),
-  avatar_decoration_data: optional(nullable(object({}))),
-  banner: optional(nullable(string())),
-  bot: optional(boolean()),
-  discriminator: string(),
-  email: optional(nullable(string())),
-  flags: optional(number()),
-  global_name: nullable(string()),
-  id: string(),
-  locale: optional(string()),
-  mfa_enabled: optional(boolean()),
-  premium_type: optional(number()),
-  public_flags: optional(number()),
-  system: optional(boolean()),
-  username: string(),
-  verified: optional(boolean()),
+const ResponseSchema = z.object({
+  accent_color: z.number().nullable().optional(),
+  avatar: z.string().nullable(),
+  avatar_decoration: z.string().nullable().optional(),
+  avatar_decoration_data: z.object({}).nullable().optional(),
+  banner: z.string().nullable().optional(),
+  bot: z.boolean().optional(),
+  discriminator: z.string(),
+  email: z.string().nullable().optional(),
+  flags: z.number().optional(),
+  global_name: z.string().nullable(),
+  id: z.string(),
+  locale: z.string().optional(),
+  mfa_enabled: z.boolean().optional(),
+  premium_type: z.number().optional(),
+  public_flags: z.number().optional(),
+  system: z.boolean().optional(),
+  username: z.string(),
+  verified: z.boolean().optional(),
+});
+
+const ParamsSchema = z.object({
+  discord_user_id: z.string(),
+});
+
+const routeMe = createRoute({
+  method: "get",
+  path: "/me",
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: ResponseSchema,
+        },
+      },
+      description: "Current user data",
+    },
+  },
+});
+
+const routeUserId = createRoute({
+  method: "get",
+  path: "/:discord_user_id",
+  request: {
+    params: ParamsSchema,
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: ResponseSchema,
+        },
+      },
+      description: "User data",
+    },
+  },
 });
 
 const app = createApp();
 
-const routeMe = createApp().get(
-  "/me",
-  describeRoute({
-    description: "Get current user data",
-    responses: {
-      200: {
-        description: "Current user data",
-        content: {
-          "application/json": {
-            schema: resolver(responseSchema),
-          },
-        },
-      },
-    },
-  }),
-  async (c) => {
-    const { discord_user_id } = c.get("jwtPayload");
-    const user = await getUser({ discord_user_id });
-    return c.json<InferOutput<typeof responseSchema>>(parse(responseSchema, user));
-  },
-);
+app.openapi(routeMe, async (c) => {
+  const { discord_user_id } = c.get("jwtPayload");
+  const user = await getUser({ discord_user_id });
+  return c.json(user, 200);
+});
 
-const routeUserId = createApp().get(
-  "/:discord_user_id",
-  describeRoute({
-    description: "Get user data",
-    responses: {
-      200: {
-        description: "User data",
-        content: {
-          "application/json": {
-            schema: resolver(responseSchema),
-          },
-        },
-      },
-    },
-  }),
-  validator(
-    "param",
-    object({
-      discord_user_id: string(),
-    }),
-  ),
-  async (c) => {
-    const { discord_user_id } = c.req.param();
-    const user = await getUser({ discord_user_id });
-    return c.json<InferOutput<typeof responseSchema>>(parse(responseSchema, user));
-  },
-);
+app.openapi(routeUserId, async (c) => {
+  const { discord_user_id } = ParamsSchema.parse(c.req.param());
+  const user = await getUser({ discord_user_id });
+  return c.json(user, 200);
+});
 
-export default app.route("/", routeMe).route("/", routeUserId);
+export { app as usersApp };

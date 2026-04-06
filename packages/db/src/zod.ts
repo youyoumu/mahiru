@@ -1,4 +1,4 @@
-import { createSelectSchema } from "drizzle-valibot";
+import { createSelectSchema } from "drizzle-zod";
 
 import { meme } from "./schema";
 

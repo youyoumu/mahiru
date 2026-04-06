@@ -25,7 +25,7 @@
     "drizzle-orm": "^0.43.1",
     "nhentai-api": "^3.4.3",
     "openapi-fetch": "^0.14.0",
-    "valibot": "^1.0.0"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

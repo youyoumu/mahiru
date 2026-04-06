@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import ReactPlayer from "react-player";
 import { XEmbed, YouTubeEmbed } from "react-social-media-embed";
 import { toast } from "sonner";
-import { digits, pipe, safeParse, string } from "valibot";
+import { z } from "zod";
 
 export default function MemesPage() {
   const form = useForm({
@@ -172,16 +172,16 @@ function Embed({ value }: { value: string }) {
 
   const pathname2Split = pathnameSplit[2]?.split("-");
   const tenorId = pathname2Split?.[pathname2Split.length - 1];
-  const tenorIdSchema = pipe(string(), digits());
-  const parsedTenorId = safeParse(tenorIdSchema, tenorId);
+  const tenorIdSchema = z.string().regex(/^\d+$/);
+  const parsedTenorId = tenorIdSchema.safeParse(tenorId);
 
   const isTenor =
     url.hostname === "tenor.com" && pathnameSplit.length === 3 && parsedTenorId.success;
 
-  if (isTenor) {
+  if (isTenor && parsedTenorId.success) {
     return (
       <div>
-        <TenorEmbed post_id={parsedTenorId.output} />
+        <TenorEmbed post_id={parsedTenorId.data} />
         <ALink url={value} />
       </div>
     );

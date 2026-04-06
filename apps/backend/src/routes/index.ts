@@ -1,33 +1,37 @@
 import { createApp } from "#/app";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/valibot";
-import { object, string } from "valibot";
+import { createRoute, z } from "@hono/zod-openapi";
 
-const responseSchema = object({
-  name: string(),
+const ResponseSchema = z.object({
+  name: z.string(),
 });
 
-const querySchema = object({
-  name: string(),
+const QuerySchema = z.object({
+  name: z.string(),
 });
 
-export default createApp().get(
-  "/",
-  describeRoute({
-    description: "Say hello to the user",
-    responses: {
-      200: {
-        description: "Successful greeting response",
-        content: {
-          "application/json": {
-            schema: resolver(responseSchema),
-          },
+const route = createRoute({
+  method: "get",
+  path: "/",
+  request: {
+    query: QuerySchema,
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: ResponseSchema,
         },
       },
+      description: "Successful greeting response",
     },
-  }),
-  validator("query", querySchema),
-  (c) => {
-    return c.json({ namee: "asd" });
   },
-);
+});
+
+const app = createApp();
+
+app.openapi(route, (c) => {
+  const { name } = QuerySchema.parse(c.req.query());
+  return c.json({ name }, 200);
+});
+
+export { app as indexApp };

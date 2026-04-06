@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { object, optional, string } from "valibot";
+import { z } from "zod";
 
 import MemesPage from "./-components/MemesPage";
 
 export const Route = createFileRoute("/_layout/memes/")({
-  validateSearch: object({
-    token: optional(string()),
+  validateSearch: z.object({
+    token: z.string().optional(),
   }),
   component: MemesPage,
 });

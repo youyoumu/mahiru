@@ -1,16 +1,16 @@
 import { createEnv } from "@t3-oss/env-core";
-import { boolean, string } from "valibot";
+import { z } from "zod";
 
 export const env = createEnv({
   shared: {
-    PROD: boolean(),
-    DEV: boolean(),
+    PROD: z.boolean(),
+    DEV: z.boolean(),
   },
   clientPrefix: "VITE_",
 
   client: {
-    VITE_BE_URL: string(),
-    VITE_BE_URL_DEV: string(),
+    VITE_BE_URL: z.string(),
+    VITE_BE_URL_DEV: z.string(),
   },
   runtimeEnv: import.meta.env,
 

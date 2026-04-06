@@ -1,17 +1,38 @@
 import { createApp } from "#/app";
 import { env } from "#/env";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/valibot";
-import { object, string } from "valibot";
+import { createRoute, z } from "@hono/zod-openapi";
 
-const responseSchema = object({
-  refreshed_url: string(),
-});
-const querySchema = object({
-  url: string(),
+const QuerySchema = z.object({
+  url: z.string(),
 });
 
-const app = createApp();
+const ResponseSchema = z.object({
+  refreshed_url: z.string(),
+});
+
+const route = createRoute({
+  method: "get",
+  path: "/discord-cdn",
+  request: {
+    query: QuerySchema,
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: ResponseSchema,
+        },
+      },
+      description: "New cdn link",
+    },
+    400: {
+      description: "Invalid URL",
+    },
+    500: {
+      description: "Failed to refresh URL",
+    },
+  },
+});
 
 function parseValidURL(str: string): URL | null {
   try {
@@ -38,41 +59,26 @@ async function refreshDiscordUrl(url: string): Promise<string | null> {
   return refreshedUrl || null;
 }
 
-const routeDiscordCdn = createApp().get(
-  "/discord-cdn",
-  describeRoute({
-    description: "Refresh discord cdn link",
-    responses: {
-      200: {
-        description: "New cdn link",
-        content: {
-          "application/json": {
-            schema: resolver(responseSchema),
-          },
-        },
-      },
-    },
-  }),
-  validator("query", querySchema),
-  async (c) => {
-    const { url } = c.req.valid("query");
+const app = createApp();
 
-    const parsedUrl = parseValidURL(decodeURIComponent(url));
+app.openapi(route, async (c) => {
+  const { url } = QuerySchema.parse(c.req.query());
 
-    if (!parsedUrl) return c.json({ error: "Invalid URL" }, 400);
+  const parsedUrl = parseValidURL(decodeURIComponent(url));
 
-    try {
-      const refreshedUrl = await refreshDiscordUrl(parsedUrl.href);
-      if (refreshedUrl) {
-        return c.json({ refreshed_url: refreshedUrl });
-      } else {
-        return c.json({ error: "Failed to refresh URL" }, 500);
-      }
-    } catch (error) {
-      if (error instanceof Error) return c.json({ error: error.message }, 500);
-      return c.body(null, 500);
+  if (!parsedUrl) return c.json({ error: "Invalid URL" }, 400);
+
+  try {
+    const refreshedUrl = await refreshDiscordUrl(parsedUrl.href);
+    if (refreshedUrl) {
+      return c.json({ refreshed_url: refreshedUrl }, 200);
+    } else {
+      return c.json({ error: "Failed to refresh URL" }, 500);
     }
-  },
-);
+  } catch (error) {
+    if (error instanceof Error) return c.json({ error: error.message }, 500);
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
 
-export default app.route("/", routeDiscordCdn);
+export { app as proxyApp };

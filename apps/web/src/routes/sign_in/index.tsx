@@ -1,12 +1,12 @@
 import { writeTokenToCookie } from "#/hooks/useAuth";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { object, string } from "valibot";
+import { z } from "zod";
 
 import SignInPage from "./-components/SignInPage";
 
 export const Route = createFileRoute("/sign_in/")({
-  validateSearch: object({
-    one_time_token: string(),
+  validateSearch: z.object({
+    one_time_token: z.string(),
   }),
   component: SignInPage,
   loaderDeps({ search: { one_time_token } }) {

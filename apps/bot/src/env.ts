@@ -1,37 +1,27 @@
 import { createEnv } from "@t3-oss/env-core";
 import path from "node:path";
 import { loadEnvFile } from "node:process";
-import { array, boolean, pipe, string, transform, unknown, url } from "valibot";
+import { z } from "zod";
 
 loadEnvFile(path.join(import.meta.dirname, "../.env"));
 
 export const env = createEnv({
   server: {
-    DISCORD_TOKEN: string(),
-    CLIENT_ID: string(),
-    GUILD_ID: string(),
-    DATABASE_URL: string(),
-    SECRET_KEY: string(),
-    DEV: pipe(
-      unknown(),
-      transform((input) => !!Number(input)),
-      boolean(),
-    ),
-    PROD: pipe(
-      unknown(),
-      transform((input) => !!Number(input)),
-      boolean(),
-    ),
-    BE_URL: string(),
-    WEB_URL_DEV: string(),
-    WEB_URL: string(),
-    OPEN_WEBUI_URL: pipe(string(), url()),
-    OPEN_WEBUI_TOKEN: string(),
-    FORCE_CHATBOT_CHANNEL_ID: pipe(
-      string(),
-      transform((input) => input.split(",").map((s) => s.trim())),
-      array(string()),
-    ),
+    DISCORD_TOKEN: z.string(),
+    CLIENT_ID: z.string(),
+    GUILD_ID: z.string(),
+    DATABASE_URL: z.string(),
+    SECRET_KEY: z.string(),
+    DEV: z.string().transform((input) => !!Number(input)),
+    PROD: z.string().transform((input) => !!Number(input)),
+    BE_URL: z.string(),
+    WEB_URL_DEV: z.string(),
+    WEB_URL: z.string(),
+    OPEN_WEBUI_URL: z.string().url(),
+    OPEN_WEBUI_TOKEN: z.string(),
+    FORCE_CHATBOT_CHANNEL_ID: z
+      .string()
+      .transform((input) => input.split(",").map((s) => s.trim())),
   },
 
   clientPrefix: "PUBLIC_",
