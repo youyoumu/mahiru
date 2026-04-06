@@ -1,5 +1,3 @@
-// Require the necessary discord.js classes
-import "dotenv/config";
 import { hcWithType } from "@repo/backend/hc";
 import { Client, GatewayIntentBits } from "discord.js";
 

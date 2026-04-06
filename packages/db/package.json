@@ -8,9 +8,7 @@
   "type": "module",
   "main": "index.js",
   "exports": {
-    ".": {
-      "default": "./dist/index.js"
-    }
+    ".": "./dist/index.mjs"
   },
   "scripts": {
     "build": "tsdown",
@@ -24,7 +22,6 @@
   "dependencies": {
     "@libsql/client": "^0.15.4",
     "@t3-oss/env-core": "^0.13.0",
-    "dotenv": "^16.5.0",
     "drizzle-orm": "^0.43.1",
     "drizzle-valibot": "^0.4.1",
     "valibot": "^1.0.0"

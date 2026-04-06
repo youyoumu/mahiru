@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/libsql";
-import "dotenv/config";
+
 import { env } from "./env";
 import * as schema from "./schema";
 import * as valibot from "./valibot";
