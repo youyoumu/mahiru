@@ -1,17 +1,22 @@
-import { Image } from "antd";
+import { useEffect } from "react";
 import { useState } from "react";
 
 export default function ImageWithFallback({ url }: { url: string | undefined }) {
   const [preview, setPreview] = useState(true);
+  const [src, setSrc] = useState(url);
+
+  useEffect(() => {
+    if (preview) {
+      setSrc("./fallback.png");
+    }
+  }, [preview]);
 
   return (
-    <Image
+    <img
       width="100%"
       height="210px"
       className="object-contain"
-      src={url}
-      fallback="/fallback.png"
-      preview={preview}
+      src={src}
       onError={() => {
         setPreview(false);
       }}
