@@ -17,40 +17,24 @@ export const authToken = new OpenAPIHono<{ Variables: { jwtPayload: JwtPayload }
     method: "post",
     path: "/",
     request: {
-      body: {
-        content: {
-          "application/json": {
-            schema: zReq,
-          },
-        },
-      },
+      body: { content: { "application/json": { schema: zReq } } },
     },
     responses: {
       200: {
         content: { "application/json": { schema: zRes } },
         description: "One time token for login for the provided user_id",
       },
-      401: {
-        description: "Unauthorized",
-      },
+      401: { description: "Unauthorized" },
     },
   }),
   async (c) => {
     const { admin } = c.get("jwtPayload");
-    const { discord_user_id } = await c.req.valid("json");
+    if (!admin) return c.json({ error: "Unauthorized" }, 401);
 
-    if (!admin) {
-      return c.json({ error: "Unauthorized" }, 401);
-    }
+    const { discord_user_id } = c.req.valid("json");
 
     const one_time_token = crypto.randomUUID();
     tokenStorage.set(one_time_token, discord_user_id);
-    return c.json(
-      {
-        discord_user_id,
-        one_time_token,
-      },
-      200,
-    );
+    return c.json({ discord_user_id, one_time_token }, 200);
   },
 );

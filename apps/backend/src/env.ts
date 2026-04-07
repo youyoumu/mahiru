@@ -13,12 +13,8 @@ export const env = createEnv({
     DISCORD_USER_TOKEN: z.string(),
     TENOR_KEY: z.string(),
   },
-
   clientPrefix: "PUBLIC_",
-
   client: {},
-
   runtimeEnv: process.env,
-
   emptyStringAsUndefined: true,
 });

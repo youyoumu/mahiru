@@ -21,7 +21,7 @@ export const root = new OpenAPIHono().openapi(
     },
   }),
   (c) => {
-    const { name } = zQuery.parse(c.req.query());
+    const { name } = c.req.valid("query");
     return c.json({ name }, 200);
   },
 );

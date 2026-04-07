@@ -17,26 +17,15 @@ export const authSignIn = new OpenAPIHono().openapi(
     method: "post",
     path: "/",
     request: {
-      body: {
-        content: {
-          "application/json": {
-            schema: zReq,
-          },
-        },
-      },
+      body: { content: { "application/json": { schema: zReq } } },
     },
     responses: {
-      200: {
-        content: { "application/json": { schema: zRes } },
-        description: "JWT token",
-      },
-      401: {
-        description: "Invalid credentials",
-      },
+      200: { content: { "application/json": { schema: zRes } }, description: "JWT token" },
+      401: { description: "Invalid credentials" },
     },
   }),
   async (c) => {
-    const { one_time_token, secret_key } = await c.req.valid("json");
+    const { one_time_token, secret_key } = c.req.valid("json");
 
     if (secret_key) {
       if (secret_key !== env.SECRET_KEY) {

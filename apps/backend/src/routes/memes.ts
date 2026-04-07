@@ -39,7 +39,7 @@ export const memes = new OpenAPIHono<{ Variables: { jwtPayload: JwtPayload } }>(
     }),
     async (c) => {
       const { discord_user_id } = c.get("jwtPayload");
-      const { meme_ids_token } = zQuery.parse(c.req.query());
+      const { meme_ids_token } = c.req.valid("query");
       let decoded;
       try {
         decoded = await verify(meme_ids_token ?? "", env.SECRET_KEY, { alg: "HS256" });
@@ -67,32 +67,20 @@ export const memes = new OpenAPIHono<{ Variables: { jwtPayload: JwtPayload } }>(
       method: "post",
       path: "/token",
       request: {
-        body: {
-          content: {
-            "application/json": {
-              schema: zReqToken,
-            },
-          },
-        },
+        body: { content: { "application/json": { schema: zReqToken } } },
       },
       responses: {
         200: {
           content: { "application/json": { schema: zResToken } },
           description: "Token to get list of memes",
         },
-        401: {
-          description: "Unauthorized",
-        },
+        401: { description: "Unauthorized" },
       },
     }),
     async (c) => {
       const { admin } = c.get("jwtPayload");
-
-      if (!admin) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
-
-      const { meme_ids } = zReqToken.parse(await c.req.valid("json"));
+      if (!admin) return c.json({ error: "Unauthorized" }, 401);
+      const { meme_ids } = c.req.valid("json");
 
       const payload = {
         meme_ids,

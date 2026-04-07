@@ -20,15 +20,11 @@ function parseValidURL(str: string): URL | null {
 async function refreshDiscordUrl(url: string): Promise<string | null> {
   const response = await fetch("https://discord.com/api/v9/attachments/refresh-urls", {
     method: "POST",
-    headers: {
-      Authorization: env.DISCORD_USER_TOKEN,
-      "Content-Type": "application/json",
-    },
+    headers: { Authorization: env.DISCORD_USER_TOKEN, "Content-Type": "application/json" },
     body: JSON.stringify({ attachment_urls: [url] }),
   });
 
   if (!response.ok) return null;
-
   const data = await response.json();
   const refreshedUrl = data?.refreshed_urls?.[0]?.refreshed;
   return refreshedUrl || null;
@@ -44,19 +40,13 @@ export const proxy = new OpenAPIHono().openapi(
         content: { "application/json": { schema: zRes } },
         description: "New cdn link",
       },
-      400: {
-        description: "Invalid URL",
-      },
-      500: {
-        description: "Failed to refresh URL",
-      },
+      400: { description: "Invalid URL" },
+      500: { description: "Failed to refresh URL" },
     },
   }),
   async (c) => {
-    const { url } = zQuery.parse(c.req.query());
-
+    const { url } = c.req.valid("query");
     const parsedUrl = parseValidURL(decodeURIComponent(url));
-
     if (!parsedUrl) return c.json({ error: "Invalid URL" }, 400);
 
     try {

@@ -9,10 +9,7 @@ export const health = new OpenAPIHono().openapi(
     method: "get",
     path: "/",
     responses: {
-      200: {
-        content: { "application/json": { schema: zRes } },
-        description: "OK",
-      },
+      200: { content: { "application/json": { schema: zRes } }, description: "OK" },
     },
   }),
   (c) => {
