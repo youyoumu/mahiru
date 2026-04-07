@@ -11,6 +11,13 @@ const port = env.PORT;
 console.log(`Server is running on port http://localhost:${port}`);
 
 const app = new OpenAPIHono()
+  .doc("/openapi", {
+    openapi: "3.0.0",
+    info: {
+      version: "0.0.0",
+      title: "Mahiru API",
+    },
+  })
   .use(cors())
   .use(logger())
   .use("/auth/token", jwt({ secret: env.SECRET_KEY, alg: "HS256" }))

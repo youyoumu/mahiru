@@ -38,6 +38,9 @@ export const users = new OpenAPIHono<{ Variables: { jwtPayload: JwtPayload } }>(
           content: { "application/json": { schema: zRes } },
           description: "Current user data",
         },
+        401: {
+          description: "Unauthorized",
+        },
       },
     }),
     async (c) => {
