@@ -1,62 +1,56 @@
-import { createApp } from "#/app";
-import { tokenStorage } from "#/lib/tokenStorage";
-import { createRoute, z } from "@hono/zod-openapi";
+import type { JwtPayload } from "#/lib/jwt";
 
-const RequestSchema = z.object({
+import { tokenStorage } from "#/lib/tokenStorage";
+import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+
+const zReq = z.object({
   discord_user_id: z.string(),
 });
 
-const ResponseSchema = z.object({
+const zRes = z.object({
   discord_user_id: z.string(),
   one_time_token: z.string(),
 });
 
-const route = createRoute({
-  method: "post",
-  path: "/",
-  request: {
-    body: {
-      content: {
-        "application/json": {
-          schema: RequestSchema,
+export const authToken = new OpenAPIHono<{ Variables: { jwtPayload: JwtPayload } }>().openapi(
+  createRoute({
+    method: "post",
+    path: "/",
+    request: {
+      body: {
+        content: {
+          "application/json": {
+            schema: zReq,
+          },
         },
       },
     },
-  },
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: ResponseSchema,
-        },
+    responses: {
+      200: {
+        content: { "application/json": { schema: zRes } },
+        description: "One time token for login for the provided user_id",
       },
-      description: "One time token for login for the provided user_id",
+      401: {
+        description: "Unauthorized",
+      },
     },
-    401: {
-      description: "Unauthorized",
-    },
+  }),
+  async (c) => {
+    const { admin } = c.get("jwtPayload");
+    const { discord_user_id } = await c.req.valid("json");
+
+    if (!admin) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    const one_time_token = crypto.randomUUID();
+    tokenStorage.set(one_time_token, discord_user_id);
+    return c.json(
+      {
+        discord_user_id,
+        one_time_token,
+      },
+      200,
+    );
   },
-});
-
-const app = createApp();
-
-app.openapi(route, async (c) => {
-  const { admin } = c.get("jwtPayload");
-  const { discord_user_id } = await c.req.valid("json");
-
-  if (!admin) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
-
-  const one_time_token = crypto.randomUUID();
-  tokenStorage.set(one_time_token, discord_user_id);
-  return c.json(
-    {
-      discord_user_id,
-      one_time_token,
-    },
-    200,
-  );
-});
-
-export { app as authTokenApp };
+);

@@ -1,8 +1,9 @@
-import { createApp } from "#/app";
-import { getUser } from "#/lib/discordRest";
-import { createRoute, z } from "@hono/zod-openapi";
+import type { JwtPayload } from "#/lib/jwt";
 
-const ResponseSchema = z.object({
+import { getUser } from "#/lib/discordRest";
+import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+
+const zRes = z.object({
   accent_color: z.number().nullable().optional(),
   avatar: z.string().nullable(),
   avatar_decoration: z.string().nullable().optional(),
@@ -23,55 +24,40 @@ const ResponseSchema = z.object({
   verified: z.boolean().optional(),
 });
 
-const ParamsSchema = z.object({
+const zParams = z.object({
   discord_user_id: z.string(),
 });
 
-const routeMe = createRoute({
-  method: "get",
-  path: "/me",
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: ResponseSchema,
+export const users = new OpenAPIHono<{ Variables: { jwtPayload: JwtPayload } }>()
+  .openapi(
+    createRoute({
+      method: "get",
+      path: "/me",
+      responses: {
+        200: {
+          content: { "application/json": { schema: zRes } },
+          description: "Current user data",
         },
       },
-      description: "Current user data",
+    }),
+    async (c) => {
+      const { discord_user_id } = c.get("jwtPayload");
+      const user = await getUser({ discord_user_id });
+      return c.json(user, 200);
     },
-  },
-});
-
-const routeUserId = createRoute({
-  method: "get",
-  path: "/:discord_user_id",
-  request: {
-    params: ParamsSchema,
-  },
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: ResponseSchema,
-        },
+  )
+  .openapi(
+    createRoute({
+      method: "get",
+      path: "/:discord_user_id",
+      request: { params: zParams },
+      responses: {
+        200: { content: { "application/json": { schema: zRes } }, description: "User data" },
       },
-      description: "User data",
+    }),
+    async (c) => {
+      const { discord_user_id } = zParams.parse(c.req.param());
+      const user = await getUser({ discord_user_id });
+      return c.json(user, 200);
     },
-  },
-});
-
-const app = createApp();
-
-app.openapi(routeMe, async (c) => {
-  const { discord_user_id } = c.get("jwtPayload");
-  const user = await getUser({ discord_user_id });
-  return c.json(user, 200);
-});
-
-app.openapi(routeUserId, async (c) => {
-  const { discord_user_id } = ParamsSchema.parse(c.req.param());
-  const user = await getUser({ discord_user_id });
-  return c.json(user, 200);
-});
-
-export { app as usersApp };
+  );

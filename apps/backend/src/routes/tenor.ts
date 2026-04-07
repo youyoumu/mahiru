@@ -1,8 +1,7 @@
-import { createApp } from "#/app";
 import { env } from "#/env";
-import { createRoute, z } from "@hono/zod-openapi";
+import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 
-const MediaFormatSchema = z.object({
+const zMediaFormat = z.object({
   url: z.string(),
   duration: z.number(),
   preview: z.string(),
@@ -10,11 +9,11 @@ const MediaFormatSchema = z.object({
   size: z.number(),
 });
 
-const ResultSchema = z.object({
+const zResult = z.object({
   id: z.string(),
   title: z.string(),
   media_formats: z.object({
-    webm: MediaFormatSchema,
+    webm: zMediaFormat,
   }),
   created: z.number(),
   content_description: z.string(),
@@ -26,23 +25,8 @@ const ResultSchema = z.object({
   content_description_source: z.string(),
 });
 
-const ResponseSchema = z.object({
-  results: z.array(ResultSchema),
-});
-
-const route = createRoute({
-  method: "get",
-  path: "/:post_id",
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: ResponseSchema,
-        },
-      },
-      description: "Tenor post detail",
-    },
-  },
+const zRes = z.object({
+  results: z.array(zResult),
 });
 
 const tenorApiUrl = new URL("https://tenor.googleapis.com");
@@ -50,21 +34,29 @@ tenorApiUrl.pathname = "/v2/posts";
 tenorApiUrl.searchParams.set("key", env.TENOR_KEY);
 tenorApiUrl.searchParams.set("media_filter", "webm");
 
-const app = createApp();
+export const tenor = new OpenAPIHono().openapi(
+  createRoute({
+    method: "get",
+    path: "/:post_id",
+    responses: {
+      200: {
+        content: { "application/json": { schema: zRes } },
+        description: "Tenor post detail",
+      },
+    },
+  }),
+  async (c) => {
+    const { post_id } = c.req.param();
 
-app.openapi(route, async (c) => {
-  const { post_id } = c.req.param();
+    const newUrl = new URL(tenorApiUrl);
+    newUrl.searchParams.set("ids", post_id);
 
-  const newUrl = new URL(tenorApiUrl);
-  newUrl.searchParams.set("ids", post_id);
+    const res = await fetch(newUrl);
+    let data;
+    if (res.ok) {
+      data = await res.json();
+    }
 
-  const res = await fetch(newUrl);
-  let data;
-  if (res.ok) {
-    data = await res.json();
-  }
-
-  return c.json(ResponseSchema.parse(data), 200);
-});
-
-export { app as tenorApp };
+    return c.json(zRes.parse(data), 200);
+  },
+);

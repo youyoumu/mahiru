@@ -1,29 +1,21 @@
-import { createApp } from "#/app";
-import { createRoute, z } from "@hono/zod-openapi";
+import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 
-const ResponseSchema = z.object({
+const zRes = z.object({
   ok: z.boolean(),
 });
 
-const route = createRoute({
-  method: "get",
-  path: "/",
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: ResponseSchema,
-        },
+export const health = new OpenAPIHono().openapi(
+  createRoute({
+    method: "get",
+    path: "/",
+    responses: {
+      200: {
+        content: { "application/json": { schema: zRes } },
+        description: "OK",
       },
-      description: "OK",
     },
+  }),
+  (c) => {
+    return c.json({ ok: true }, 200);
   },
-});
-
-const app = createApp();
-
-app.openapi(route, (c) => {
-  return c.json({ ok: true }, 200);
-});
-
-export { app as healthApp };
+);

@@ -1,42 +1,30 @@
 import { serve } from "@hono/node-server";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { cors } from "hono/cors";
+import { jwt } from "hono/jwt";
+import { logger } from "hono/logger";
 
-import app from "./app";
 import { env } from "./env";
-import { authSignInApp } from "./routes/auth.sign_in";
-import { authTokenApp } from "./routes/auth.token";
-import { healthApp } from "./routes/health";
-import { indexApp } from "./routes/index";
-import { memesApp } from "./routes/memes";
-import { proxyApp } from "./routes/proxy";
-import { tenorApp } from "./routes/tenor";
-import { usersApp } from "./routes/users";
+import * as routes from "./routes";
 
 const port = env.PORT;
 console.log(`Server is running on port http://localhost:${port}`);
 
-app.doc("/openapi", {
-  openapi: "3.0.0",
-  info: {
-    version: "1.0.0",
-    title: "Mahiru API",
-    description: "API for Mahiru",
-  },
-  servers: [
-    {
-      url: `http://localhost:${port}`,
-      description: "Local server",
-    },
-  ],
-});
-
-app.route("/", healthApp);
-app.route("/auth/token", authTokenApp);
-app.route("auth/sign_in", authSignInApp);
-app.route("/", indexApp);
-app.route("/proxy", proxyApp);
-app.route("/memes", memesApp);
-app.route("/tenor", tenorApp);
-app.route("/users", usersApp);
+const app = new OpenAPIHono()
+  .use(cors())
+  .use(logger())
+  .use("/auth/token", jwt({ secret: env.SECRET_KEY, alg: "HS256" }))
+  .use("/memes/*", jwt({ secret: env.SECRET_KEY, alg: "HS256" }))
+  .use("/users/*", jwt({ secret: env.SECRET_KEY, alg: "HS256" }))
+  .route("/", routes.health)
+  .route("/auth/token", routes.authToken)
+  .route("/auth/sign_in", routes.authSignIn)
+  .route("/", routes.root)
+  .route("/proxy", routes.proxy)
+  .route("/memes", routes.memes)
+  .route("/tenor", routes.tenor)
+  .route("/users", routes.users)
+  .route("/docs", routes.docs);
 
 export type AppType = typeof app;
 

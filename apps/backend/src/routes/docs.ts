@@ -1,6 +1,4 @@
-import { createApp } from "#/app";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 
-const docsRoute = createApp().get("/", Scalar({ url: "/openapi" }));
-
-export { docsRoute };
+export const docs = new OpenAPIHono().get("/", Scalar({ url: "/openapi" }));
