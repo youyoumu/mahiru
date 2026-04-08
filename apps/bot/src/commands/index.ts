@@ -1,8 +1,8 @@
-import help from "./utility/help";
-import login from "./utility/login";
-import meme from "./utility/meme";
-import ping from "./utility/ping";
-import prefix from "./utility/prefix";
+import help from "./help";
+import login from "./login";
+import meme from "./meme";
+import ping from "./ping";
+import prefix from "./prefix";
 
 export default {
   [ping.data.name]: ping,
