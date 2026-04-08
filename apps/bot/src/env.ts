@@ -12,8 +12,6 @@ export const env = createEnv({
     GUILD_ID: z.string(),
     DATABASE_URL: z.url(),
     ADMIN_KEY: z.string(),
-    DEV: z.stringbool(),
-    PROD: z.stringbool(),
     BE_URL: z.url(),
     WEB_URL: z.url(),
     OPEN_WEBUI_URL: z.url(),

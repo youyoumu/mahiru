@@ -51,7 +51,7 @@ export async function handleLink({
   }
 
   // disable embed react until further development
-  if (env.PROD) return;
+  if (env.ADMIN_KEY) return;
 
   const tweetId = digitsSchema.safeParse(pathnameSplit[3]);
   const isTwitter =
