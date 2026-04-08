@@ -9,6 +9,7 @@ export const env = createEnv({
   server: {
     PORT: z.string().transform((input) => Number(input)),
     SECRET_KEY: z.string(),
+    ADMIN_KEY: z.string(),
     DISCORD_TOKEN: z.string(),
     DISCORD_USER_TOKEN: z.string(),
     TENOR_KEY: z.string(),

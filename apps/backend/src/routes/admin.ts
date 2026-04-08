@@ -21,7 +21,9 @@ const zMemeTokenRes = z.object({
   token: z.string(),
 });
 
-export const admin = new OpenAPIHono<{ Variables: { jwtPayload: JwtPayload; ctx: { oneTimeTokens: Map<string, string> } } }>()
+export const admin = new OpenAPIHono<{
+  Variables: { jwtPayload: JwtPayload; ctx: { oneTimeTokens: Map<string, string> } };
+}>()
   .openapi(
     createRoute({
       method: "post",

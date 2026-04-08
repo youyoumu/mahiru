@@ -19,10 +19,10 @@ export async function createJwtToken({
     now: Math.floor(Date.now() / 1000),
     "30 days": 60 * 60 * 24 * 30,
   };
-  const exp = secret_key === env.SECRET_KEY ? undefined : seconds.now + seconds["30 days"];
+  const exp = secret_key === env.ADMIN_KEY ? undefined : seconds.now + seconds["30 days"];
   const payload: JwtPayload = {
     discord_user_id,
-    role: secret_key === env.SECRET_KEY ? "admin" : "user",
+    role: secret_key === env.ADMIN_KEY ? "admin" : "user",
     exp,
   };
   const token = await sign(payload, env.SECRET_KEY);

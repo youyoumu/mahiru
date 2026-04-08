@@ -8,7 +8,7 @@ export default {
   name: Events.ClientReady as const,
   async execute(client: Client) {
     const res = await client.api.auth.sign_in.$post({
-      json: { secret_key: env.SECRET_KEY },
+      json: { secret_key: env.ADMIN_KEY },
     });
 
     if (res.ok) {

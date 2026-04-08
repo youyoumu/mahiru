@@ -11,7 +11,9 @@ const zRes = z.object({
   token: z.string(),
 });
 
-export const auth = new OpenAPIHono<{ Variables: { ctx: { oneTimeTokens: Map<string, string> } } }>().openapi(
+export const auth = new OpenAPIHono<{
+  Variables: { ctx: { oneTimeTokens: Map<string, string> } };
+}>().openapi(
   createRoute({
     method: "post",
     path: "/sign_in",
@@ -28,7 +30,7 @@ export const auth = new OpenAPIHono<{ Variables: { ctx: { oneTimeTokens: Map<str
     const { one_time_token, secret_key } = c.req.valid("json");
 
     if (secret_key) {
-      if (secret_key !== env.SECRET_KEY) {
+      if (secret_key !== env.ADMIN_KEY) {
         return c.json({ error: "Invalid secret key" }, 401);
       }
 

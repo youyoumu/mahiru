@@ -11,13 +11,13 @@ export const env = createEnv({
     CLIENT_ID: z.string(),
     GUILD_ID: z.string(),
     DATABASE_URL: z.string(),
-    SECRET_KEY: z.string(),
+    ADMIN_KEY: z.string(),
     DEV: z.string().transform((input) => !!Number(input)),
     PROD: z.string().transform((input) => !!Number(input)),
     BE_URL: z.string(),
     WEB_URL_DEV: z.string(),
     WEB_URL: z.string(),
-    OPEN_WEBUI_URL: z.string().url(),
+    OPEN_WEBUI_URL: z.url(),
     OPEN_WEBUI_TOKEN: z.string(),
     FORCE_CHATBOT_CHANNEL_ID: z
       .string()
@@ -25,10 +25,7 @@ export const env = createEnv({
   },
 
   clientPrefix: "PUBLIC_",
-
   client: {},
-
   runtimeEnv: process.env,
-
   emptyStringAsUndefined: true,
 });
