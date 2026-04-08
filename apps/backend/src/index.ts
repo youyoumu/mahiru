@@ -25,15 +25,13 @@ const app = new OpenAPIHono()
   .route("/health", routes.health)
   .route("/auth", routes.auth)
   .route("/docs", routes.docs)
-  // Protected routes
   .use("*", async (c, next) => {
-    // Skip JWT for public routes already matched or specific paths
-    const publicPaths = ["/health", "/auth", "/docs", "/openapi"];
-    if (publicPaths.some((p) => c.req.path.startsWith(p))) {
-      return next();
-    }
+    const path = c.req.path;
+    const publicPaths = ["/", "/health", "/auth/sign_in", "/docs", "/openapi"];
+    if (publicPaths.includes(path)) return next();
     return jwt({ secret: env.SECRET_KEY, alg: "HS256" })(c, next);
   })
+  // Protected routes
   .route("/admin", routes.admin)
   .route("/proxy", routes.proxy)
   .route("/memes", routes.memes)
