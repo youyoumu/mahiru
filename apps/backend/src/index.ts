@@ -7,10 +7,14 @@ import { logger } from "hono/logger";
 import { env } from "./env";
 import * as routes from "./routes";
 
+const ctx = {
+  oneTimeTokens: new Map<string, string>(),
+};
+
 const port = env.PORT;
 console.log(`Server is running on port http://localhost:${port}`);
 
-const app = new OpenAPIHono()
+const app = new OpenAPIHono<{ Variables: { ctx: typeof ctx } }>()
   .doc("/openapi", {
     openapi: "3.0.0",
     info: {
@@ -20,17 +24,21 @@ const app = new OpenAPIHono()
   })
   .use(cors())
   .use(logger())
-  // Public routes
-  .route("/", routes.root)
-  .route("/health", routes.health)
-  .route("/auth", routes.auth)
-  .route("/docs", routes.docs)
+  .use("*", async (c, next) => {
+    c.set("ctx", ctx);
+    await next();
+  })
   .use("*", async (c, next) => {
     const path = c.req.path;
     const publicPaths = ["/", "/health", "/auth/sign_in", "/docs", "/openapi"];
     if (publicPaths.includes(path)) return next();
     return jwt({ secret: env.SECRET_KEY, alg: "HS256" })(c, next);
   })
+  // Public routes
+  .route("/", routes.root)
+  .route("/health", routes.health)
+  .route("/auth", routes.auth)
+  .route("/docs", routes.docs)
   // Protected routes
   .route("/admin", routes.admin)
   .route("/proxy", routes.proxy)

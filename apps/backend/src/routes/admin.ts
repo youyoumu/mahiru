@@ -1,7 +1,6 @@
 import type { JwtPayload } from "#/lib/jwt";
 
 import { env } from "#/env";
-import { tokenStorage } from "#/lib/tokenStorage";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { sign } from "hono/jwt";
 
@@ -22,7 +21,7 @@ const zMemeTokenRes = z.object({
   token: z.string(),
 });
 
-export const admin = new OpenAPIHono<{ Variables: { jwtPayload: JwtPayload } }>()
+export const admin = new OpenAPIHono<{ Variables: { jwtPayload: JwtPayload; ctx: { oneTimeTokens: Map<string, string> } } }>()
   .openapi(
     createRoute({
       method: "post",
@@ -39,10 +38,11 @@ export const admin = new OpenAPIHono<{ Variables: { jwtPayload: JwtPayload } }>(
       },
     }),
     async (c) => {
+      const { oneTimeTokens } = c.get("ctx");
       const { discord_user_id } = c.req.valid("json");
 
       const one_time_token = crypto.randomUUID();
-      tokenStorage.set(one_time_token, discord_user_id);
+      oneTimeTokens.set(one_time_token, discord_user_id);
       return c.json({ discord_user_id, one_time_token }, 200);
     },
   )

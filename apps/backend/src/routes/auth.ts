@@ -1,6 +1,5 @@
 import { env } from "#/env";
 import { createJwtToken } from "#/lib/jwt";
-import { consumeToken } from "#/lib/tokenStorage";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 
 const zReq = z.object({
@@ -12,7 +11,7 @@ const zRes = z.object({
   token: z.string(),
 });
 
-export const auth = new OpenAPIHono().openapi(
+export const auth = new OpenAPIHono<{ Variables: { ctx: { oneTimeTokens: Map<string, string> } } }>().openapi(
   createRoute({
     method: "post",
     path: "/sign_in",
@@ -25,6 +24,7 @@ export const auth = new OpenAPIHono().openapi(
     },
   }),
   async (c) => {
+    const { oneTimeTokens } = c.get("ctx");
     const { one_time_token, secret_key } = c.req.valid("json");
 
     if (secret_key) {
@@ -39,9 +39,9 @@ export const auth = new OpenAPIHono().openapi(
       return c.json({ token }, 200);
     }
 
-    const discord_user_id = consumeToken(one_time_token ?? "");
-
+    const discord_user_id = oneTimeTokens.get(one_time_token ?? "");
     if (discord_user_id) {
+      oneTimeTokens.delete(one_time_token ?? "");
       const token = await createJwtToken({
         discord_user_id,
         secret_key,
