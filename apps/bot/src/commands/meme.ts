@@ -1,7 +1,7 @@
 import type { Ctx } from "#/lib/ctx";
 
 import { env } from "#/env";
-import { getGuildPrefix } from "#/utils/prefixStorage";
+import { getGuildPrefix } from "#/utils/prefix-storage";
 import db, { schema } from "@repo/db";
 import {
   bold,

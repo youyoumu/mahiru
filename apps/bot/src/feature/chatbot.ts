@@ -1,7 +1,7 @@
 import type { Message, PartialMessage } from "discord.js";
 
 import { env } from "#/env";
-import { openWebuiClient } from "#/utils/openWebuiClient";
+import { openWebuiClient } from "#/utils/open-webui-client";
 
 export async function handleChatbot({ message }: { message: Message | PartialMessage }) {
   if (!message.channel.isSendable()) return;

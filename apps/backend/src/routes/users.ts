@@ -1,6 +1,6 @@
 import type { JwtPayload } from "#/lib/jwt";
 
-import { getUser } from "#/lib/discordRest";
+import { getUser } from "#/lib/discordjs-rest";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 
 const zRes = z.object({

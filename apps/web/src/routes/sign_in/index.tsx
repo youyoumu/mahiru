@@ -1,4 +1,4 @@
-import { writeTokenToCookie } from "#/hooks/useAuth";
+import { writeTokenToCookie } from "#/hooks/use-auth";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 

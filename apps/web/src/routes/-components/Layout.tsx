@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar";
 import { Toaster } from "#/components/ui/sonner";
-import { useCurrentUser } from "#/hooks/useCurrentUser";
+import { useCurrentUser } from "#/hooks/use-current-user";
 import { Link } from "@tanstack/react-router";
 
 export default function Layout({ children }: { children: ReactNode }) {

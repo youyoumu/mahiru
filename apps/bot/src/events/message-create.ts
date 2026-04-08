@@ -2,8 +2,8 @@ import type { Command } from "#/commands/Command";
 import type { Ctx } from "#/lib/ctx";
 
 import { handleChatbot } from "#/feature/chatbot";
-import { handleLink } from "#/utils/handleLink";
-import { getGuildPrefix, globalPrefix } from "#/utils/prefixStorage";
+import { handleLink } from "#/utils/handle-link";
+import { getGuildPrefix, globalPrefix } from "#/utils/prefix-storage";
 import { Message } from "discord.js";
 
 const shortcut: Record<string, string> = {

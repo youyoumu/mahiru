@@ -1,4 +1,4 @@
-import { useCurrentUser } from "#/hooks/useCurrentUser";
+import { useCurrentUser } from "#/hooks/use-current-user";
 import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRef, useState, type MouseEvent, type TouchEvent } from "react";

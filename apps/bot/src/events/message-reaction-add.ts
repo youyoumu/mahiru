@@ -1,7 +1,7 @@
 import type { Ctx } from "#/lib/ctx";
 
 import { env } from "#/env";
-import { BOOK_EMOJI, embededMessageStorage, handleLink, LINK_EMOJI } from "#/utils/handleLink";
+import { BOOK_EMOJI, embededMessageStorage, handleLink, LINK_EMOJI } from "#/utils/handle-link";
 import { MessageReaction, User, type PartialMessageReaction, type PartialUser } from "discord.js";
 
 export class MessageReactionAdd {

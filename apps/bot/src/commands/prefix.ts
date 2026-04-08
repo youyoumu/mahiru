@@ -1,6 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 
-import { getPrefixStorage, globalPrefix } from "#/utils/prefixStorage";
+import { getPrefixStorage, globalPrefix } from "#/utils/prefix-storage";
 import db, { schema } from "@repo/db";
 import {
   ChatInputCommandInteraction,

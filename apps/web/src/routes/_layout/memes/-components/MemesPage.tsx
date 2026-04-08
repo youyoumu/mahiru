@@ -3,10 +3,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "#/componen
 import { Form, FormControl, FormField, FormItem, FormMessage } from "#/components/ui/form";
 import { Input } from "#/components/ui/input";
 import { Textarea } from "#/components/ui/textarea";
-import { useMemes } from "#/hooks/useMemes";
-import { useDiscordCdn } from "#/hooks/useProxy";
-import { useTenorPost } from "#/hooks/useTenor";
-import { useUser } from "#/hooks/useUsers";
+import { useMemes } from "#/hooks/use-memes";
+import { useDiscordCdn } from "#/hooks/use-proxy";
+import { useTenorPost } from "#/hooks/use-tenor";
+import { useUser } from "#/hooks/use-users";
 import ImageWithFallback from "#/routes/-components/ImageWithFallback";
 import { getRouteApi } from "@tanstack/react-router";
 import fuzzysort from "fuzzysort";

@@ -1,4 +1,4 @@
-import { currentUserQueryOptions } from "#/hooks/useCurrentUser";
+import { currentUserQueryOptions } from "#/hooks/use-current-user";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 import Layout from "./-components/Layout";

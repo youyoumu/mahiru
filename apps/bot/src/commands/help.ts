@@ -1,6 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 
-import { getGuildPrefix } from "#/utils/prefixStorage";
+import { getGuildPrefix } from "#/utils/prefix-storage";
 import {
   ChatInputCommandInteraction,
   EmbedBuilder,
