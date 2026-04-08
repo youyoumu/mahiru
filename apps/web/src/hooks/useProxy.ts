@@ -1,11 +1,11 @@
-import { hc } from "#/lib/hc";
+import { api } from "#/lib/api";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
 export const discordCdnQueryOptions = ({ url }: { url: string }) =>
   queryOptions({
     queryKey: ["discord-cdn", { url }],
     queryFn: async () => {
-      const res = await hc().proxy["discord-cdn"].$get({
+      const res = await api.proxy["discord-cdn"].$get({
         query: {
           url,
         },

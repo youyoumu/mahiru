@@ -351,7 +351,7 @@ async function handleList({
   message?: Message;
 }) {
   const client = interaction?.client ?? message?.client;
-  const hc = client?.hc;
+  const hc = client?.api;
   const userMemes = await db.query.meme.findMany({
     where(fields, { eq, and }) {
       return and(eq(fields.discord_user_id, discord_user_id));

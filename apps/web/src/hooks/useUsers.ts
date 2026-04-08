@@ -1,11 +1,11 @@
-import { hc } from "#/lib/hc";
+import { api } from "#/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
 export function useUser({ discord_user_id }: { discord_user_id: string }) {
   return useQuery({
     queryKey: ["discord-user", { discord_user_id }],
     async queryFn() {
-      const res = await hc().users[":discord_user_id"].$get({
+      const res = await api.users[":discord_user_id"].$get({
         param: {
           discord_user_id,
         },

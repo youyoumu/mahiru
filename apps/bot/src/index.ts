@@ -18,11 +18,11 @@ const client = new Client({
 
 declare module "discord.js" {
   interface Client {
-    hc: ReturnType<typeof hc<AppType>>;
+    api: ReturnType<typeof hc<AppType>>;
   }
 }
 
-client.hc = hc<AppType>("");
+client.api = hc<AppType>("");
 
 // Log in to Discord with your client's token
 client.login(env.DISCORD_TOKEN);

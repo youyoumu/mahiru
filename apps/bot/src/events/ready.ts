@@ -7,13 +7,13 @@ import { hc } from "hono/client";
 export default {
   name: Events.ClientReady as const,
   async execute(client: Client) {
-    const res = await client.hc.auth.sign_in.$post({
+    const res = await client.api.auth.sign_in.$post({
       json: { secret_key: env.SECRET_KEY },
     });
 
     if (res.ok) {
       const { token } = await res.json();
-      client.hc = hc<AppType>(env.BE_URL, {
+      client.api = hc<AppType>(env.BE_URL, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

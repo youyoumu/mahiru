@@ -8,7 +8,7 @@ export default {
   async execute(interaction: ChatInputCommandInteraction) {
     const discord_user_id = interaction.user.id;
 
-    const res = await interaction.client.hc.admin.auth.token.$post({
+    const res = await interaction.client.api.admin.auth.token.$post({
       json: { discord_user_id },
     });
 
@@ -23,7 +23,7 @@ export default {
   async prefixExecute({ message, args }: { message: Message; args: string[] }) {
     const discord_user_id = message.author.id;
 
-    const res = await message.client.hc.admin.auth.token.$post({
+    const res = await message.client.api.admin.auth.token.$post({
       json: { discord_user_id },
     });
 
