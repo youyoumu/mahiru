@@ -1,7 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 
 import { getGuildPrefix } from "#/utils/prefixStorage";
-import { uniqueBy } from "#/utils/uniqueBy";
 import { webUrl } from "#/utils/webUrl";
 import db, { schema } from "@repo/db";
 import {
@@ -14,6 +13,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import { eq } from "drizzle-orm";
+import { uniqBy } from "es-toolkit";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "./Command";
 
@@ -378,7 +378,7 @@ async function handleList({
       })
     : [];
 
-  const allMemes = uniqueBy([...userMemes, ...guildMemes], (item) => item.id);
+  const allMemes = uniqBy([...userMemes, ...guildMemes], (item) => item.id);
   const meme_ids = allMemes.map((meme) => meme.id);
 
   const res = await api.admin.memes.token.$post({
