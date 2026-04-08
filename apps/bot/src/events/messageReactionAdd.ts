@@ -1,8 +1,11 @@
+import type { Ctx } from "#/lib/ctx";
+
 import { env } from "#/env";
 import { BOOK_EMOJI, embededMessageStorage, handleLink, LINK_EMOJI } from "#/utils/handleLink";
 import { MessageReaction, User, type PartialMessageReaction, type PartialUser } from "discord.js";
 
 export const messageReactionAdd = async (
+  ctx: Ctx,
   reaction: MessageReaction | PartialMessageReaction,
   user: User | PartialUser,
 ) => {

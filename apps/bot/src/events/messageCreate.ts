@@ -1,3 +1,5 @@
+import type { Ctx } from "#/lib/ctx";
+
 import commands from "#/commands";
 import { handleChatbot } from "#/feature/chatbot";
 import { handleLink } from "#/utils/handleLink";
@@ -8,7 +10,7 @@ const shortcut: Record<string, string> = {
   m: "meme",
 };
 
-export const messageCreate = async (message: Message) => {
+export const messageCreate = async (ctx: Ctx, message: Message) => {
   console.log("Message:", message.member?.id, message.guildId, message.content);
   if (message.author.bot) return;
 

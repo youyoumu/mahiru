@@ -5,6 +5,7 @@ import { hc } from "hono/client";
 
 import { env } from "./env";
 import * as events from "./events";
+import { Ctx } from "./lib/ctx";
 
 // Create a new client instance
 const client = new Client({
@@ -15,6 +16,8 @@ const client = new Client({
     GatewayIntentBits.GuildMessageReactions,
   ],
 });
+
+const ctx = new Ctx({ api: hc<AppType>("") });
 
 declare module "discord.js" {
   interface Client {
@@ -28,7 +31,9 @@ client.api = hc<AppType>("");
 client.login(env.DISCORD_TOKEN);
 
 // events
-client.once(Events.ClientReady, events.ready);
-client.on(Events.InteractionCreate, events.interactionCreate);
-client.on(Events.MessageCreate, events.messageCreate);
-client.on(Events.MessageReactionAdd, events.messageReactionAdd);
+client.once(Events.ClientReady, (client) => events.ready(ctx, client));
+client.on(Events.InteractionCreate, (interaction) => events.interactionCreate(ctx, interaction));
+client.on(Events.MessageCreate, (message) => events.messageCreate(ctx, message));
+client.on(Events.MessageReactionAdd, (reaction, user) =>
+  events.messageReactionAdd(ctx, reaction, user),
+);
