@@ -33,14 +33,6 @@ const interactionCreate = new events.InteractionCreate({ ctx, commandsPair });
 const messageCreate = new events.MessageCreate({ ctx, commandsPair });
 const messageReactionAdd = new events.MessageReactionAdd({ ctx });
 
-declare module "discord.js" {
-  interface Client {
-    api: ReturnType<typeof hc<AppType>>;
-  }
-}
-
-client.api = hc<AppType>("");
-
 // Log in to Discord with your client's token
 client.login(env.DISCORD_TOKEN);
 

@@ -128,6 +128,7 @@ export const Meme: CommandProto = class Meme implements Command {
       }
       case "list": {
         return handleList({
+          api: this.ctx.api,
           discord_guild_id,
           discord_user_id,
           interaction,
@@ -194,6 +195,7 @@ export const Meme: CommandProto = class Meme implements Command {
       }
       case action.list: {
         return handleList({
+          api: this.ctx.api,
           discord_guild_id,
           discord_user_id,
           message,
@@ -350,18 +352,18 @@ async function handleAdd({
 }
 
 async function handleList({
+  api,
   discord_guild_id,
   discord_user_id,
   interaction,
   message,
 }: {
+  api: Ctx["api"];
   discord_guild_id: string | undefined | null;
   discord_user_id: string;
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
-  const client = interaction?.client ?? message?.client;
-  const hc = client?.api;
   const userMemes = await db.query.meme.findMany({
     where(fields, { eq, and }) {
       return and(eq(fields.discord_user_id, discord_user_id));
@@ -379,11 +381,11 @@ async function handleList({
   const allMemes = uniqueBy([...userMemes, ...guildMemes], (item) => item.id);
   const meme_ids = allMemes.map((meme) => meme.id);
 
-  const res = await hc?.admin.memes.token.$post({
+  const res = await api.admin.memes.token.$post({
     json: { meme_ids },
   });
   let token = "";
-  if (res?.ok) {
+  if (res.ok) {
     token = (await res.json()).token;
   }
 

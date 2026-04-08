@@ -13,7 +13,7 @@ export class Ready {
   }
 
   async execute(client: Client) {
-    const res = await client.api.auth.sign_in.$post({
+    const res = await this.ctx.api.auth.sign_in.$post({
       json: { secret_key: env.ADMIN_KEY },
     });
 
@@ -21,12 +21,6 @@ export class Ready {
       const { token } = await res.json();
       this.ctx.api = hc<AppType>(env.BE_URL, {
         headers: { Authorization: `Bearer ${token}` },
-      });
-
-      client.api = hc<AppType>(env.BE_URL, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       return console.log(`Ready! Logged in as ${client.user?.tag}`);

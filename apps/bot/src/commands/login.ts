@@ -18,7 +18,7 @@ export const Login: CommandProto = class Login implements Command {
   async execute(interaction: ChatInputCommandInteraction) {
     const discord_user_id = interaction.user.id;
 
-    const res = await interaction.client.api.admin.auth.token.$post({
+    const res = await this.ctx.api.admin.auth.token.$post({
       json: { discord_user_id },
     });
 
@@ -34,7 +34,7 @@ export const Login: CommandProto = class Login implements Command {
   async prefixExecute({ message }: PrefixExecuteOpts) {
     const discord_user_id = message.author.id;
 
-    const res = await message.client.api.admin.auth.token.$post({
+    const res = await this.ctx.api.admin.auth.token.$post({
       json: { discord_user_id },
     });
 
