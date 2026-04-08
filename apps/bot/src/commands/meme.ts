@@ -1,7 +1,7 @@
 import type { Ctx } from "#/lib/ctx";
 
+import { env } from "#/env";
 import { getGuildPrefix } from "#/utils/prefixStorage";
-import { webUrl } from "#/utils/webUrl";
 import db, { schema } from "@repo/db";
 import {
   bold,
@@ -497,7 +497,7 @@ async function handleHelp({
 }
 
 function getListUrl(token: string) {
-  const url = new URL(webUrl);
+  const url = new URL(env.WEB_URL);
   url.pathname = "/memes";
   url.searchParams.set("token", token);
   return url.toString();
