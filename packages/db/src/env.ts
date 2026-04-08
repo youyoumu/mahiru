@@ -7,14 +7,11 @@ loadEnvFile(path.join(import.meta.dirname, "../.env"));
 
 export const env = createEnv({
   server: {
-    DATABASE_URL: z.string(),
+    DATABASE_URL: z.url(),
   },
 
   clientPrefix: "PUBLIC_",
-
   client: {},
-
   runtimeEnv: process.env,
-
   emptyStringAsUndefined: true,
 });

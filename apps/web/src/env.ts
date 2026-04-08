@@ -6,13 +6,10 @@ export const env = createEnv({
     PROD: z.boolean(),
     DEV: z.boolean(),
   },
-  clientPrefix: "VITE_",
-
   client: {
-    VITE_BE_URL: z.string(),
-    VITE_BE_URL_DEV: z.string(),
+    VITE_BE_URL: z.url(),
   },
+  clientPrefix: "VITE_",
   runtimeEnv: import.meta.env,
-
   emptyStringAsUndefined: true,
 });
