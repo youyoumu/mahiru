@@ -12,10 +12,10 @@ const zRes = z.object({
   token: z.string(),
 });
 
-export const authSignIn = new OpenAPIHono().openapi(
+export const auth = new OpenAPIHono().openapi(
   createRoute({
     method: "post",
-    path: "/",
+    path: "/sign_in",
     request: {
       body: { content: { "application/json": { schema: zReq } } },
     },

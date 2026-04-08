@@ -369,7 +369,7 @@ async function handleList({
   const allMemes = uniqueBy([...userMemes, ...guildMemes], (item) => item.id);
   const meme_ids = allMemes.map((meme) => meme.id);
 
-  const res = await hc?.memes.token.$post({
+  const res = await hc?.admin.memes.token.$post({
     json: { meme_ids },
   });
   let token = "";

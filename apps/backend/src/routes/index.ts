@@ -1,5 +1,5 @@
-export * from "./auth.sign_in";
-export * from "./auth.token";
+export * from "./admin";
+export * from "./auth";
 export * from "./docs";
 export * from "./health";
 export * from "./memes";

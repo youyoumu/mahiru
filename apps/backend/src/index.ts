@@ -20,18 +20,25 @@ const app = new OpenAPIHono()
   })
   .use(cors())
   .use(logger())
-  .use("/auth/token", jwt({ secret: env.SECRET_KEY, alg: "HS256" }))
-  .use("/memes/*", jwt({ secret: env.SECRET_KEY, alg: "HS256" }))
-  .use("/users/*", jwt({ secret: env.SECRET_KEY, alg: "HS256" }))
-  .route("/", routes.health)
-  .route("/auth/token", routes.authToken)
-  .route("/auth/sign_in", routes.authSignIn)
+  // Public routes
   .route("/", routes.root)
+  .route("/health", routes.health)
+  .route("/auth", routes.auth)
+  .route("/docs", routes.docs)
+  // Protected routes
+  .use("*", async (c, next) => {
+    // Skip JWT for public routes already matched or specific paths
+    const publicPaths = ["/health", "/auth", "/docs", "/openapi"];
+    if (publicPaths.some((p) => c.req.path.startsWith(p))) {
+      return next();
+    }
+    return jwt({ secret: env.SECRET_KEY, alg: "HS256" })(c, next);
+  })
+  .route("/admin", routes.admin)
   .route("/proxy", routes.proxy)
   .route("/memes", routes.memes)
   .route("/tenor", routes.tenor)
-  .route("/users", routes.users)
-  .route("/docs", routes.docs);
+  .route("/users", routes.users);
 
 export type AppType = typeof app;
 
