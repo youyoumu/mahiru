@@ -8,7 +8,7 @@
   "type": "module",
   "main": "index.js",
   "exports": {
-    "./hc": "./dist/hc.mjs"
+    ".": "./dist/index.mjs"
   },
   "scripts": {
     "build": "tsdown",

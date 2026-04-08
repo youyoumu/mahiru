@@ -1,5 +1,7 @@
-import { hcWithType } from "@repo/backend/hc";
+import type { AppType } from "@repo/backend";
+
 import { Client, GatewayIntentBits } from "discord.js";
+import { hc } from "hono/client";
 
 import { env } from "./env";
 import events from "./events";
@@ -16,12 +18,11 @@ const client = new Client({
 
 declare module "discord.js" {
   interface Client {
-    hc: typeof hc;
+    hc: ReturnType<typeof hc<AppType>>;
   }
 }
 
-const hc = hcWithType(env.BE_URL);
-client.hc = hc;
+client.hc = hc<AppType>("");
 
 // Log in to Discord with your client's token
 client.login(env.DISCORD_TOKEN);

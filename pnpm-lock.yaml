@@ -95,6 +95,9 @@ importers:
       drizzle-orm:
         specifier: ^0.43.1
         version: 0.43.1(@libsql/client@0.15.4)
+      hono:
+        specifier: ^4.12.11
+        version: 4.12.11
       nhentai-api:
         specifier: ^3.4.3
         version: 3.4.3(patch_hash=l32mczv3ai4lur5fgqbgryjtlm)
@@ -168,6 +171,9 @@ importers:
       fuzzysort:
         specifier: ^3.1.0
         version: 3.1.0
+      hono:
+        specifier: ^4.12.11
+        version: 4.12.11
       js-cookie:
         specifier: ^3.0.5
         version: 3.0.5

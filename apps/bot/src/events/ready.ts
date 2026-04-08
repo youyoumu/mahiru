@@ -1,6 +1,8 @@
+import type { AppType } from "@repo/backend";
+
 import { env } from "#/env";
-import { hcWithType } from "@repo/backend/hc";
 import { Client, Events } from "discord.js";
+import { hc } from "hono/client";
 
 export default {
   name: Events.ClientReady as const,
@@ -11,7 +13,7 @@ export default {
 
     if (res.ok) {
       const { token } = await res.json();
-      client.hc = hcWithType(env.BE_URL, {
+      client.hc = hc<AppType>(env.BE_URL, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
