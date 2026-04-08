@@ -74,9 +74,4 @@ export const admin = new OpenAPIHono<{
 
       return c.json({ token }, 200);
     },
-  )
-  .use("*", async (c, next) => {
-    const { role } = c.get("jwtPayload");
-    if (role !== "admin") return c.json({ error: "Unauthorized" }, 401);
-    await next();
-  });
+  );

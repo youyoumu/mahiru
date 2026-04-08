@@ -4,6 +4,8 @@ import { cors } from "hono/cors";
 import { jwt } from "hono/jwt";
 import { logger } from "hono/logger";
 
+import type { JwtPayload } from "./lib/jwt";
+
 import { env } from "./env";
 import * as routes from "./routes";
 
@@ -14,7 +16,9 @@ const ctx = {
 const port = env.PORT;
 console.log(`Server is running on port http://localhost:${port}`);
 
-const app = new OpenAPIHono<{ Variables: { ctx: typeof ctx } }>()
+const app = new OpenAPIHono<{
+  Variables: { jwtPayload: JwtPayload; ctx: { oneTimeTokens: Map<string, string> } };
+}>()
   .doc("/openapi", {
     openapi: "3.0.0",
     info: {
@@ -33,6 +37,11 @@ const app = new OpenAPIHono<{ Variables: { ctx: typeof ctx } }>()
     const publicPaths = ["/", "/health", "/auth/sign_in", "/docs", "/openapi"];
     if (publicPaths.includes(path)) return next();
     return jwt({ secret: env.SECRET_KEY, alg: "HS256" })(c, next);
+  })
+  .use("/admin/*", async (c, next) => {
+    const { role } = c.get("jwtPayload");
+    if (role !== "admin") return c.json({ error: "Unauthorized" }, 401);
+    await next();
   })
   // Public routes
   .route("/", routes.root)
