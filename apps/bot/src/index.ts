@@ -1,10 +1,10 @@
 import type { AppType } from "@repo/backend";
 
-import { Client, GatewayIntentBits } from "discord.js";
+import { Events, Client, GatewayIntentBits } from "discord.js";
 import { hc } from "hono/client";
 
 import { env } from "./env";
-import events from "./events";
+import * as events from "./events";
 
 // Create a new client instance
 const client = new Client({
@@ -28,12 +28,7 @@ client.api = hc<AppType>("");
 client.login(env.DISCORD_TOKEN);
 
 // events
-client.once(events.ready.name, (client) => events.ready.execute(client));
-client.on(events.interactionCreate.name, (interaction) =>
-  events.interactionCreate.execute(interaction),
-);
-client.on(events.messageCreate.name, (message) => events.messageCreate.execute(message));
-
-client.on(events.messageReactionAdd.name, (reaction, user) =>
-  events.messageReactionAdd.execute(reaction, user),
-);
+client.once(Events.ClientReady, events.ready);
+client.on(Events.InteractionCreate, events.interactionCreate);
+client.on(Events.MessageCreate, events.messageCreate);
+client.on(Events.MessageReactionAdd, events.messageReactionAdd);
