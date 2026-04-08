@@ -1,19 +1,13 @@
 import { REST, Routes } from "discord.js";
 
-import { commandProtos } from "./commands";
+import { Help, Login, Meme, Ping, Prefix } from "./commands";
 import { env } from "./env";
 
-const validCommands = [];
+const validCommands = [Ping.data, Meme.data, Login.data, Prefix.data, Help.data].map((data) =>
+  data.toJSON(),
+);
 
 const isAllGuilds = process.argv.includes("--all-guilds");
-
-for (const command of Object.values(commandProtos)) {
-  if ("data" in command) {
-    validCommands.push(command.data.toJSON());
-  } else {
-    console.log("some command is missing a required 'data' property");
-  }
-}
 
 // Construct and prepare an instance of the REST module
 const rest = new REST().setToken(env.DISCORD_TOKEN);
