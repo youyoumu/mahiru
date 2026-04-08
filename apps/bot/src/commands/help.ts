@@ -1,3 +1,5 @@
+import type { Ctx } from "#/lib/ctx";
+
 import { getGuildPrefix } from "#/utils/prefixStorage";
 import {
   ChatInputCommandInteraction,
@@ -7,14 +9,22 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 
-export default {
-  data: new SlashCommandBuilder().setName("help").setDescription("Explain all commands"),
+import type { Command, CommandProto, PrefixExecuteOpts } from "./Command";
+
+export const Help: CommandProto = class Help implements Command {
+  static data = new SlashCommandBuilder().setName("help").setDescription("Explain all commands");
+  ctx: Ctx;
+
+  constructor(opts: { ctx: Ctx }) {
+    this.ctx = opts.ctx;
+  }
+
   async execute(interaction: ChatInputCommandInteraction) {
     return handleHelp({ interaction });
-  },
-  async prefixExecute({ message, args }: { message: Message; args: string[] }) {
+  }
+  async prefixExecute({ message }: PrefixExecuteOpts) {
     return handleHelp({ message });
-  },
+  }
 };
 
 async function handleHelp({

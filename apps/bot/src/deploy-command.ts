@@ -1,17 +1,17 @@
 import { REST, Routes } from "discord.js";
 
-import commands from "./commands";
+import { commandProtos } from "./commands";
 import { env } from "./env";
 
 const validCommands = [];
 
 const isAllGuilds = process.argv.includes("--all-guilds");
 
-for (const command of Object.values(commands)) {
-  if ("data" in command && "execute" in command) {
+for (const command of Object.values(commandProtos)) {
+  if ("data" in command) {
     validCommands.push(command.data.toJSON());
   } else {
-    console.log("some command is missing a required 'data' or 'execute' property");
+    console.log("some command is missing a required 'data' property");
   }
 }
 

@@ -1,10 +1,20 @@
-import { webUrl } from "#/utils/webUrl";
-import { ChatInputCommandInteraction, Message, SlashCommandBuilder } from "discord.js";
+import type { Ctx } from "#/lib/ctx";
 
-export default {
-  data: new SlashCommandBuilder()
+import { webUrl } from "#/utils/webUrl";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+
+import type { Command, CommandProto, PrefixExecuteOpts } from "./Command";
+
+export const Login: CommandProto = class Login implements Command {
+  static data = new SlashCommandBuilder()
     .setName("login")
-    .setDescription("Get a link to log in to the Mahiru web app."),
+    .setDescription("Get a link to log in to the Mahiru web app.");
+  ctx: Ctx;
+
+  constructor(opts: { ctx: Ctx }) {
+    this.ctx = opts.ctx;
+  }
+
   async execute(interaction: ChatInputCommandInteraction) {
     const discord_user_id = interaction.user.id;
 
@@ -19,8 +29,9 @@ export default {
     }
 
     await interaction.reply("Something went wrong");
-  },
-  async prefixExecute({ message, args }: { message: Message; args: string[] }) {
+  }
+
+  async prefixExecute({ message }: PrefixExecuteOpts) {
     const discord_user_id = message.author.id;
 
     const res = await message.client.api.admin.auth.token.$post({
@@ -34,7 +45,7 @@ export default {
       });
       await message.reply("Please check your DMs");
     }
-  },
+  }
 };
 
 function getLoginUrl(token: string) {

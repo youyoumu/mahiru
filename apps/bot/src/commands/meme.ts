@@ -1,3 +1,5 @@
+import type { Ctx } from "#/lib/ctx";
+
 import { getGuildPrefix } from "#/utils/prefixStorage";
 import { uniqueBy } from "#/utils/uniqueBy";
 import { webUrl } from "#/utils/webUrl";
@@ -13,6 +15,8 @@ import {
 } from "discord.js";
 import { eq } from "drizzle-orm";
 
+import type { Command, CommandProto, PrefixExecuteOpts } from "./Command";
+
 const action = {
   add: "add",
   drop: "drop",
@@ -26,8 +30,8 @@ const param = {
   value: "value",
 };
 
-export default {
-  data: new SlashCommandBuilder()
+export const Meme: CommandProto = class Meme implements Command {
+  static data = new SlashCommandBuilder()
     .setName("meme")
     .setDescription("Manage your meme collections")
 
@@ -83,7 +87,12 @@ export default {
 
     .addSubcommand((subCommand) =>
       subCommand.setName(action.help).setDescription("Explain meme command"),
-    ),
+    );
+  ctx: Ctx;
+
+  constructor(opts: { ctx: Ctx }) {
+    this.ctx = opts.ctx;
+  }
 
   async execute(interaction: ChatInputCommandInteraction) {
     const selectedAction = interaction.options.getSubcommand() as keyof typeof action;
@@ -141,8 +150,9 @@ export default {
     }
 
     return interaction.reply("Something went wrong");
-  },
-  async prefixExecute({ message, args }: { message: Message; args: string[] }) {
+  }
+
+  async prefixExecute({ message, args }: PrefixExecuteOpts) {
     const discord_user_id = message.author.id;
     const discord_guild_id = message.guildId;
     const subCommand = args[0];
@@ -222,7 +232,7 @@ export default {
         }
       }
     }
-  },
+  }
 };
 
 async function getUserMeme({ key, discord_user_id }: { key: string; discord_user_id: string }) {

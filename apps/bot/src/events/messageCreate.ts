@@ -1,6 +1,6 @@
+import type { Command } from "#/commands/Command";
 import type { Ctx } from "#/lib/ctx";
 
-import commands from "#/commands";
 import { handleChatbot } from "#/feature/chatbot";
 import { handleLink } from "#/utils/handleLink";
 import { getGuildPrefix, globalPrefix } from "#/utils/prefixStorage";
@@ -10,7 +10,11 @@ const shortcut: Record<string, string> = {
   m: "meme",
 };
 
-export const messageCreate = async (ctx: Ctx, message: Message) => {
+export const messageCreate = async (
+  ctx: Ctx,
+  commandsPair: Record<string, Command>,
+  message: Message,
+) => {
   console.log("Message:", message.member?.id, message.guildId, message.content);
   if (message.author.bot) return;
 
@@ -42,7 +46,9 @@ export const messageCreate = async (ctx: Ctx, message: Message) => {
   const command = args?.shift()?.toLowerCase();
   const commandShortcut = shortcut[command ?? ""];
   if (command) {
-    commands[commandShortcut ?? command]?.prefixExecute({
+    const selectedCommand = commandsPair[commandShortcut ?? command];
+    if (!selectedCommand) return;
+    await selectedCommand.prefixExecute({
       message,
       args,
     });

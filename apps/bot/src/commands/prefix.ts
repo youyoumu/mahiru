@@ -1,3 +1,5 @@
+import type { Ctx } from "#/lib/ctx";
+
 import { getPrefixStorage, globalPrefix } from "#/utils/prefixStorage";
 import db, { schema } from "@repo/db";
 import {
@@ -9,6 +11,8 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import { eq } from "drizzle-orm";
+
+import type { Command, CommandProto, PrefixExecuteOpts } from "./Command";
 
 const action = {
   current: "current",
@@ -22,8 +26,8 @@ const param = {
   ["new-prefix"]: "new-prefix",
 };
 
-export default {
-  data: new SlashCommandBuilder()
+export const Prefix: CommandProto = class Prefix implements Command {
+  static data = new SlashCommandBuilder()
     .setName("prefix")
     .setDescription("Manage discord prefix for this server")
 
@@ -46,7 +50,13 @@ export default {
 
     .addSubcommand((subCommand) =>
       subCommand.setName(action.help).setDescription("Explain prefix command"),
-    ),
+    );
+  ctx: Ctx;
+
+  constructor(opts: { ctx: Ctx }) {
+    this.ctx = opts.ctx;
+  }
+
   async execute(interaction: ChatInputCommandInteraction) {
     const selectedAction = interaction.options.getSubcommand() as keyof typeof action;
     const newPrefix = interaction.options.getString(param["new-prefix"]);
@@ -79,8 +89,9 @@ export default {
     }
 
     return interaction.reply("Something went wrong");
-  },
-  async prefixExecute({ message, args }: { message: Message; args: string[] }) {
+  }
+
+  async prefixExecute({ message, args }: PrefixExecuteOpts) {
     const discord_guild_id = message.guildId;
     if (!discord_guild_id) return;
     const subCommand = args[0];
@@ -120,7 +131,7 @@ export default {
         });
       }
     }
-  },
+  }
 };
 
 async function getGuildPrefixEntry({ discord_guild_id }: { discord_guild_id: string }) {

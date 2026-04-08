@@ -1,13 +1,16 @@
+import type { Command } from "#/commands/Command";
 import type { Ctx } from "#/lib/ctx";
 
 import { handleNHenButtonInteraction } from "#/feature/nhen";
 import { BaseInteraction, MessageFlags } from "discord.js";
 
-import commands from "../commands";
-
-export const interactionCreate = async (ctx: Ctx, interaction: BaseInteraction) => {
+export const interactionCreate = async (
+  ctx: Ctx,
+  commandsPair: Record<string, Command>,
+  interaction: BaseInteraction,
+) => {
   if (interaction.isChatInputCommand()) {
-    const command = commands[interaction.commandName];
+    const command = commandsPair[interaction.commandName];
     if (!command) return;
 
     try {
