@@ -9,7 +9,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 
-import type { Command, CommandProto, PrefixExecuteOpts } from "./Command";
+import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
 export const Help: CommandProto = class Help implements Command {
   static data = new SlashCommandBuilder().setName("help").setDescription("Explain all commands");

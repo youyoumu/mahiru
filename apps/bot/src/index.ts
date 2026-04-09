@@ -3,7 +3,7 @@ import type { AppType } from "@repo/backend";
 import { Events, Client, GatewayIntentBits } from "discord.js";
 import { hc } from "hono/client";
 
-import type { Command } from "./commands/Command";
+import type { Command } from "./lib/command";
 
 import * as commands from "./commands";
 import { env } from "./env";

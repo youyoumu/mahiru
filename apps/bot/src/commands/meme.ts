@@ -16,7 +16,7 @@ import {
 import { eq } from "drizzle-orm";
 import { uniqBy } from "es-toolkit";
 
-import type { Command, CommandProto, PrefixExecuteOpts } from "./Command";
+import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
 const action = {
   add: "add",

@@ -13,7 +13,7 @@ import {
 } from "discord.js";
 import { eq } from "drizzle-orm";
 
-import type { Command, CommandProto, PrefixExecuteOpts } from "./Command";
+import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
 const action = {
   current: "current",

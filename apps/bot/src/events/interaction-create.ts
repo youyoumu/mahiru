@@ -1,4 +1,4 @@
-import type { Command } from "#/commands/Command";
+import type { Command } from "#/lib/command";
 import type { Ctx } from "#/lib/ctx";
 
 import { handleNHenButtonInteraction } from "#/feature/nhen";

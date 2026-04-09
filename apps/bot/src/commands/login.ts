@@ -3,7 +3,7 @@ import type { Ctx } from "#/lib/ctx";
 import { env } from "#/env";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
-import type { Command, CommandProto, PrefixExecuteOpts } from "./Command";
+import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
 export const Login: CommandProto = class Login implements Command {
   static data = new SlashCommandBuilder()
