@@ -13,7 +13,7 @@ export class InteractionCreate {
     this.commandsPair = opts.commandsPair;
   }
 
-  async execute(interaction: BaseInteraction) {
+  async handler(interaction: BaseInteraction) {
     if (interaction.isChatInputCommand()) {
       const command = this.commandsPair[interaction.commandName];
       if (!command) return;

@@ -12,7 +12,7 @@ export class Ready {
     this.ctx = opts.ctx;
   }
 
-  async execute(client: Client) {
+  async handler(client: Client) {
     const res = await this.ctx.api.auth.sign_in.$post({
       json: { k: env.ADMIN_KEY },
     });

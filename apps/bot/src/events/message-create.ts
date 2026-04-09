@@ -19,7 +19,7 @@ export class MessageCreate {
     this.commandsPair = opts.commandsPair;
   }
 
-  async execute(message: Message) {
+  async handler(message: Message) {
     console.log("Message:", message.member?.id, message.guildId, message.content);
     if (message.author.bot) return;
 

@@ -11,7 +11,7 @@ export class MessageReactionAdd {
     this.ctx = opts.ctx;
   }
 
-  async execute(reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser) {
+  async handler(reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser) {
     if (user.id === env.CLIENT_ID || user.id !== reaction.message.author?.id) return;
 
     // When a reaction is received, check if the structure is partial

@@ -39,9 +39,9 @@ const messageReactionAdd = new events.MessageReactionAdd({ ctx });
 client.login(env.DISCORD_TOKEN);
 
 // events
-client.once(Events.ClientReady, (client) => ready.execute(client));
-client.on(Events.InteractionCreate, (interaction) => interactionCreate.execute(interaction));
-client.on(Events.MessageCreate, (message) => messageCreate.execute(message));
+client.once(Events.ClientReady, (client) => ready.handler(client));
+client.on(Events.InteractionCreate, (interaction) => interactionCreate.handler(interaction));
+client.on(Events.MessageCreate, (message) => messageCreate.handler(message));
 client.on(Events.MessageReactionAdd, (reaction, user) =>
-  messageReactionAdd.execute(reaction, user),
+  messageReactionAdd.handler(reaction, user),
 );
