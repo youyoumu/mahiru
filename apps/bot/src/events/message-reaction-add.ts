@@ -1,15 +1,17 @@
+import type { LinkHandler } from "#/handler";
 import type { Ctx } from "#/lib/ctx";
 
 import { env } from "#/env";
 import { emojis } from "#/lib/constants";
-import { embededMessageStorage, handleLink } from "#/utils/handle-link";
 import { MessageReaction, User, type PartialMessageReaction, type PartialUser } from "discord.js";
 
 export class MessageReactionAdd {
   ctx: Ctx;
+  linkHandler: LinkHandler;
 
-  constructor(opts: { ctx: Ctx }) {
+  constructor(opts: { ctx: Ctx; linkHandler: LinkHandler }) {
     this.ctx = opts.ctx;
+    this.linkHandler = opts.linkHandler;
   }
 
   async handler(reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser) {
@@ -28,11 +30,11 @@ export class MessageReactionAdd {
     }
 
     if (reaction.emoji.name === emojis.link || reaction.emoji.name === emojis.book) {
-      if (embededMessageStorage.get(reaction.message.id)) return;
+      if (this.linkHandler.embededMessageStorage.get(reaction.message.id)) return;
       const hasBotReaction = reaction.users.cache.has(env.CLIENT_ID);
       if (!hasBotReaction) return;
 
-      handleLink({ message: reaction.message, react: false, embed: true });
+      this.linkHandler.handle({ message: reaction.message, react: false, embed: true });
     }
   }
 }

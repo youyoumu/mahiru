@@ -1,9 +1,9 @@
+import type { LinkHandler } from "#/handler";
 import type { Command } from "#/lib/command";
 import type { Ctx } from "#/lib/ctx";
 
 import { ChatbotHandler } from "#/handler/chatbot";
 import { DbSvc } from "#/lib/db";
-import { handleLink } from "#/utils/handle-link";
 import { Message } from "discord.js";
 
 const shortcut: Record<string, string> = {
@@ -14,22 +14,25 @@ export class MessageCreate {
   ctx: Ctx;
   commandsPair: Record<string, Command>;
   chatbotHandler: ChatbotHandler;
+  linkHandler: LinkHandler;
 
   constructor(opts: {
     ctx: Ctx;
     commandsPair: Record<string, Command>;
     chatbotHandler: ChatbotHandler;
+    linkHandler: LinkHandler;
   }) {
     this.ctx = opts.ctx;
     this.commandsPair = opts.commandsPair;
     this.chatbotHandler = opts.chatbotHandler;
+    this.linkHandler = opts.linkHandler;
   }
 
   async handler(message: Message) {
     console.log("Message:", message.member?.id, message.guildId, message.content);
     if (message.author.bot) return;
 
-    handleLink({ message, react: true, embed: false });
+    this.linkHandler.handle({ message, react: true, embed: false });
     this.chatbotHandler.handle({ message });
 
     let args: string[] = [];

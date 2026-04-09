@@ -15,6 +15,7 @@ import { createLogger } from "./lib/logger";
 
 const log = createLogger({ level: "trace" }).child({ name: "main" });
 const chatbotHandler = new handler.ChatbotHandler({ log: log.child({ name: "chatbot" }) });
+const linkHandler = new handler.LinkHandler({ log: log.child({ name: "link" }) });
 
 // Create a new client instance
 const client = new Client({
@@ -37,8 +38,8 @@ const commandsPair: Record<string, Command> = {
 };
 const ready = new events.Ready({ ctx });
 const interactionCreate = new events.InteractionCreate({ ctx, commandsPair });
-const messageCreate = new events.MessageCreate({ ctx, commandsPair, chatbotHandler });
-const messageReactionAdd = new events.MessageReactionAdd({ ctx });
+const messageCreate = new events.MessageCreate({ ctx, commandsPair, chatbotHandler, linkHandler });
+const messageReactionAdd = new events.MessageReactionAdd({ ctx, linkHandler });
 
 // Log in to Discord with your client's token
 client.login(env.DISCORD_TOKEN);
