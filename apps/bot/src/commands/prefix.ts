@@ -1,7 +1,7 @@
 import type { Ctx } from "#/lib/ctx";
 import type { DB } from "#/lib/db";
 
-import { getPrefixStorage, globalPrefix } from "#/utils/prefix-storage";
+import { DbSvc } from "#/lib/db";
 import { schema } from "@repo/db";
 import {
   ChatInputCommandInteraction,
@@ -69,7 +69,7 @@ export const Prefix: CommandProto = class Prefix implements Command {
       case "change": {
         if (newPrefix) {
           return handleChange({
-            db: this.ctx.db,
+            dbSvc: this.ctx.dbSvc,
             discord_guild_id,
             prefix: newPrefix,
             interaction,
@@ -80,7 +80,7 @@ export const Prefix: CommandProto = class Prefix implements Command {
 
       case "current": {
         return handleCurrent({
-          db: this.ctx.db,
+          dbSvc: this.ctx.dbSvc,
           discord_guild_id,
           interaction,
         });
@@ -105,7 +105,7 @@ export const Prefix: CommandProto = class Prefix implements Command {
 
         if (newPrefix) {
           return handleChange({
-            db: this.ctx.db,
+            dbSvc: this.ctx.dbSvc,
             discord_guild_id,
             prefix: newPrefix,
             message,
@@ -119,7 +119,7 @@ export const Prefix: CommandProto = class Prefix implements Command {
       }
       case action.current: {
         return handleCurrent({
-          db: this.ctx.db,
+          dbSvc: this.ctx.dbSvc,
           discord_guild_id,
           message,
         });
@@ -131,7 +131,7 @@ export const Prefix: CommandProto = class Prefix implements Command {
 
       default: {
         return handleCurrent({
-          db: this.ctx.db,
+          dbSvc: this.ctx.dbSvc,
           discord_guild_id,
           message,
         });
@@ -149,13 +149,13 @@ async function getGuildPrefixEntry({ db, discord_guild_id }: { db: DB; discord_g
 }
 
 async function handleChange({
-  db,
+  dbSvc,
   discord_guild_id,
   prefix,
   interaction,
   message,
 }: {
-  db: DB;
+  dbSvc: DbSvc;
   discord_guild_id: string;
   prefix: string;
   interaction?: ChatInputCommandInteraction;
@@ -168,37 +168,38 @@ async function handleChange({
     return;
   }
 
-  const guildPrefix = await getGuildPrefixEntry({ db, discord_guild_id });
+  const guildPrefix = await getGuildPrefixEntry({ db: dbSvc.db, discord_guild_id });
 
   if (guildPrefix) {
-    await db
+    await dbSvc.db
       .update(schema.prefixes)
       .set({ prefix: prefix })
       .where(eq(schema.prefixes.id, guildPrefix.id));
   } else {
-    await db.insert(schema.prefixes).values({
+    await dbSvc.db.insert(schema.prefixes).values({
       discord_guild_id: discord_guild_id,
       prefix: prefix,
     });
   }
-  getPrefixStorage().set(discord_guild_id, prefix);
+  dbSvc.getPrefixStorage().set(discord_guild_id, prefix);
 
   interaction?.reply(inlineCode(prefix));
   if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));
 }
 
 async function handleCurrent({
-  db,
+  dbSvc,
   discord_guild_id,
   interaction,
   message,
 }: {
-  db: DB;
+  dbSvc: DbSvc;
   discord_guild_id: string;
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
-  const prefix = (await getGuildPrefixEntry({ db, discord_guild_id }))?.prefix ?? globalPrefix;
+  const prefix =
+    (await getGuildPrefixEntry({ db: dbSvc.db, discord_guild_id }))?.prefix ?? DbSvc.globalPrefix;
 
   interaction?.reply(inlineCode(prefix));
   if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));

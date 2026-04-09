@@ -2,14 +2,14 @@ import type { AppType } from "@repo/backend";
 
 import { hc } from "hono/client";
 
-import type { DB } from "./db";
+import type { DbSvc } from "./db";
 
 export class Ctx {
   api: ReturnType<typeof hc<AppType>>;
-  db: DB;
+  dbSvc: DbSvc;
 
-  constructor(opts: { api: ReturnType<typeof hc<AppType>>; db: DB }) {
+  constructor(opts: { api: ReturnType<typeof hc<AppType>>; dbSvc: DbSvc }) {
     this.api = opts.api;
-    this.db = opts.db;
+    this.dbSvc = opts.dbSvc;
   }
 }

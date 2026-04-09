@@ -1,8 +1,7 @@
 import type { Ctx } from "#/lib/ctx";
-import type { DB } from "#/lib/db";
+import type { DB, DbSvc } from "#/lib/db";
 
 import { env } from "#/env";
-import { getGuildPrefix } from "#/utils/prefix-storage";
 import { schema } from "@repo/db";
 import {
   bold,
@@ -106,7 +105,7 @@ export const Meme: CommandProto = class Meme implements Command {
       case "add": {
         if (key && value) {
           return handleAdd({
-            db: this.ctx.db,
+            db: this.ctx.dbSvc.db,
             discord_guild_id,
             discord_user_id,
             key,
@@ -120,7 +119,7 @@ export const Meme: CommandProto = class Meme implements Command {
       case "drop": {
         if (key) {
           return handleDrop({
-            db: this.ctx.db,
+            db: this.ctx.dbSvc.db,
             discord_guild_id,
             discord_user_id,
             key,
@@ -132,7 +131,7 @@ export const Meme: CommandProto = class Meme implements Command {
       case "list": {
         return handleList({
           api: this.ctx.api,
-          db: this.ctx.db,
+          db: this.ctx.dbSvc.db,
           discord_guild_id,
           discord_user_id,
           interaction,
@@ -141,7 +140,7 @@ export const Meme: CommandProto = class Meme implements Command {
       case "remove": {
         if (key) {
           return handleRemove({
-            db: this.ctx.db,
+            db: this.ctx.dbSvc.db,
             discord_guild_id,
             discord_user_id,
             key,
@@ -151,7 +150,7 @@ export const Meme: CommandProto = class Meme implements Command {
         return interaction.reply("⚠️ Invalid arguments");
       }
       case "help": {
-        return handleHelp({ db: this.ctx.db, interaction });
+        return handleHelp({ dbSvc: this.ctx.dbSvc, interaction });
       }
     }
 
@@ -169,7 +168,7 @@ export const Meme: CommandProto = class Meme implements Command {
 
         if (key && value) {
           return handleAdd({
-            db: this.ctx.db,
+            db: this.ctx.dbSvc.db,
             discord_guild_id,
             discord_user_id,
             key,
@@ -187,7 +186,7 @@ export const Meme: CommandProto = class Meme implements Command {
         const key = args[1];
         if (key) {
           return handleDrop({
-            db: this.ctx.db,
+            db: this.ctx.dbSvc.db,
             discord_guild_id,
             discord_user_id,
             key,
@@ -203,7 +202,7 @@ export const Meme: CommandProto = class Meme implements Command {
       case action.list: {
         return handleList({
           api: this.ctx.api,
-          db: this.ctx.db,
+          db: this.ctx.dbSvc.db,
           discord_guild_id,
           discord_user_id,
           message,
@@ -213,7 +212,7 @@ export const Meme: CommandProto = class Meme implements Command {
         const key = args[1];
         if (key) {
           return handleRemove({
-            db: this.ctx.db,
+            db: this.ctx.dbSvc.db,
             discord_guild_id,
             discord_user_id,
             key,
@@ -227,14 +226,14 @@ export const Meme: CommandProto = class Meme implements Command {
         break;
       }
       case action.help: {
-        return handleHelp({ db: this.ctx.db, message });
+        return handleHelp({ dbSvc: this.ctx.dbSvc, message });
       }
       default: {
         if (message.channel.isSendable()) {
           const key = subCommand;
           if (key) {
             return handleDrop({
-              db: this.ctx.db,
+              db: this.ctx.dbSvc.db,
               discord_guild_id,
               discord_user_id,
               key,
@@ -479,16 +478,16 @@ async function handleRemove({
 }
 
 async function handleHelp({
-  db,
+  dbSvc,
   interaction,
   message,
 }: {
-  db: DB;
+  dbSvc: DbSvc;
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
   const discord_guild_id = message?.guildId ?? interaction?.guildId;
-  const prefix = await getGuildPrefix({ db, discord_guild_id });
+  const prefix = await dbSvc.getGuildPrefix(discord_guild_id);
 
   const embed = new EmbedBuilder()
     .setTitle("Meme Help")

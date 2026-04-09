@@ -1,6 +1,5 @@
 import type { Ctx } from "#/lib/ctx";
 
-import { getGuildPrefix } from "#/utils/prefix-storage";
 import {
   ChatInputCommandInteraction,
   EmbedBuilder,
@@ -37,7 +36,7 @@ async function handleHelp({
   message?: Message;
 }) {
   const discord_guild_id = message?.guildId ?? interaction?.guildId;
-  const prefix = await getGuildPrefix({ db: ctx.db, discord_guild_id });
+  const prefix = await ctx.dbSvc.getGuildPrefix(discord_guild_id);
   const embed = new EmbedBuilder()
     .setTitle("Help")
     .setColor("#fef3c6")

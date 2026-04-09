@@ -2,8 +2,8 @@ import type { Command } from "#/lib/command";
 import type { Ctx } from "#/lib/ctx";
 
 import { handleChatbot } from "#/feature/chatbot";
+import { DbSvc } from "#/lib/db";
 import { handleLink } from "#/utils/handle-link";
-import { getGuildPrefix, globalPrefix } from "#/utils/prefix-storage";
 import { Message } from "discord.js";
 
 const shortcut: Record<string, string> = {
@@ -30,10 +30,7 @@ export class MessageCreate {
     if (message.guild) {
       let prefix: string | undefined;
 
-      const guildPrefix = await getGuildPrefix({
-        db: this.ctx.db,
-        discord_guild_id: message.guildId,
-      });
+      const guildPrefix = await this.ctx.dbSvc.getGuildPrefix(message.guildId);
 
       if (guildPrefix && message.content.startsWith(guildPrefix)) {
         prefix = guildPrefix;
@@ -44,7 +41,7 @@ export class MessageCreate {
       args = message.content.slice(prefix.length).trim().split(/\s+/);
     } else {
       // handle DMs
-      const slice = message.content.startsWith(globalPrefix) ? globalPrefix.length : 0;
+      const slice = message.content.startsWith(DbSvc.globalPrefix) ? DbSvc.globalPrefix.length : 0;
       args = message.content.slice(slice).split(/\s+/);
     }
 
