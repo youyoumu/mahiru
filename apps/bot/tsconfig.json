@@ -2,14 +2,11 @@
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
     "module": "es2022",
-    "verbatimModuleSyntax": true,
     "moduleResolution": "bundler",
     "paths": {
       "#/*": ["./src/*"]
-    },
-    "outDir": "dist",
-    "rootDir": "src"
+    }
   },
-  "include": ["src"],
+  "include": ["src", "scripts/deploy-commands.ts"],
   "exclude": ["node_modules"]
 }
