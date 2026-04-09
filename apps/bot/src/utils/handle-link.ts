@@ -1,10 +1,8 @@
 import { env } from "#/env";
 import { handleNhenLink } from "#/feature/nhen";
+import { emojis } from "#/lib/constants";
 import { type Message, type PartialMessage } from "discord.js";
 import { z } from "zod";
-
-export const LINK_EMOJI = "🔗";
-export const BOOK_EMOJI = "📖";
 
 export const embededMessageStorage = new Map<string, boolean>();
 
@@ -44,7 +42,7 @@ export async function handleLink({
   const isNhen =
     url.hostname === "nhentai.net" && pathnameSplit[1] === "g" && nhenCode.success && nhenCode.data;
   if (isNhen) {
-    if (react) handleReact({ message, emoji: BOOK_EMOJI });
+    if (react) handleReact({ message, emoji: emojis.book });
     if (embed) {
       handleNhenLink({ code: Number(nhenCode.data), message });
     }
@@ -112,7 +110,7 @@ export async function handleLink({
 }
 
 function handleReact({ message, emoji }: { message: Message | PartialMessage; emoji?: string }) {
-  message.react(emoji ?? LINK_EMOJI);
+  message.react(emoji ?? emojis.link);
   setTimeout(async () => {
     const myReactions = message.reactions.cache.filter((reaction) =>
       reaction.users.cache.has(env.CLIENT_ID),

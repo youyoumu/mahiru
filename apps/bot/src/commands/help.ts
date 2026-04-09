@@ -1,5 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 
+import { discordEmojis } from "#/lib/constants";
 import {
   ChatInputCommandInteraction,
   EmbedBuilder,
@@ -29,23 +30,23 @@ export const Help: CommandProto = class Help implements Command {
         "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
       )
       .addFields({
-        name: "<:azusarelaxed:1207544782952595508> help",
+        name: `${discordEmojis.azusarelaxed} help`,
         value: "Show this message.",
       })
       .addFields({
-        name: "<:azusarelaxed:1207544782952595508> ping",
+        name: `${discordEmojis.azusarelaxed} ping`,
         value: "Replies with Pong.",
       })
       .addFields({
-        name: "<:azusarelaxed:1207544782952595508> login",
+        name: `${discordEmojis.azusarelaxed} login`,
         value: "Get a link to log in to the Mahiru web app.",
       })
       .addFields({
-        name: "<:azusarelaxed:1207544782952595508> meme",
+        name: `${discordEmojis.azusarelaxed} meme`,
         value: `Manage your meme collection. Use ${inlineCode("/meme help")} for details`,
       })
       .addFields({
-        name: "<:azusarelaxed:1207544782952595508> prefix",
+        name: `${discordEmojis.azusarelaxed} prefix`,
         value: `Manage the bot prefix for this server. Use ${inlineCode("/prefix help")} for details`,
       })
       .addFields({

@@ -1,5 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 
+import { discordEmojis } from "#/lib/constants";
 import { DbSvc } from "#/lib/db";
 import {
   ChatInputCommandInteraction,
@@ -142,11 +143,11 @@ export const Prefix: CommandProto = class Prefix implements Command {
         "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
       )
       .addFields({
-        name: "<:azusarelaxed:1207544782952595508> prefix current",
+        name: `${discordEmojis.azusarelaxed} prefix current`,
         value: "Display the current bot prefix for this server.",
       })
       .addFields({
-        name: "<:azusarelaxed:1207544782952595508> prefix change",
+        name: `${discordEmojis.azusarelaxed} prefix change`,
         value: "Change the bot prefix for this server. The maximum prefix length is 2 characters.",
       })
       .setFooter({

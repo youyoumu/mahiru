@@ -1,7 +1,8 @@
 import type { Ctx } from "#/lib/ctx";
 
 import { env } from "#/env";
-import { BOOK_EMOJI, embededMessageStorage, handleLink, LINK_EMOJI } from "#/utils/handle-link";
+import { emojis } from "#/lib/constants";
+import { embededMessageStorage, handleLink } from "#/utils/handle-link";
 import { MessageReaction, User, type PartialMessageReaction, type PartialUser } from "discord.js";
 
 export class MessageReactionAdd {
@@ -26,7 +27,7 @@ export class MessageReactionAdd {
       }
     }
 
-    if (reaction.emoji.name === LINK_EMOJI || reaction.emoji.name === BOOK_EMOJI) {
+    if (reaction.emoji.name === emojis.link || reaction.emoji.name === emojis.book) {
       if (embededMessageStorage.get(reaction.message.id)) return;
       const hasBotReaction = reaction.users.cache.has(env.CLIENT_ID);
       if (!hasBotReaction) return;

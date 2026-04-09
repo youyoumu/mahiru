@@ -1,5 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 
+import { discordEmojis } from "#/lib/constants";
 import { getListUrl } from "#/lib/url";
 import {
   bold,
@@ -13,15 +14,16 @@ import {
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
-const action = {
+const ACTION = {
   add: "add",
   drop: "drop",
   list: "list",
   remove: "remove",
   help: "help",
 } as const;
+type Action = keyof typeof ACTION;
 
-const param = {
+const PARAMS = {
   key: "key",
   value: "value",
 };
@@ -33,27 +35,27 @@ export const Meme: CommandProto = class Meme implements Command {
 
     .addSubcommand((subCommand) =>
       subCommand
-        .setName(action.add)
+        .setName(ACTION.add)
         .setDescription("Add a meme to your collection.")
         .addStringOption((option) =>
           option
-            .setName(param.key)
+            .setName(PARAMS.key)
             .setDescription("Key to retrieve the meme")
             .setMaxLength(32)
             .setRequired(true),
         )
         .addStringOption((option) =>
-          option.setName(param.value).setDescription("Text or link").setRequired(true),
+          option.setName(PARAMS.value).setDescription("Text or link").setRequired(true),
         ),
     )
 
     .addSubcommand((subCommand) =>
       subCommand
-        .setName(action.drop)
+        .setName(ACTION.drop)
         .setDescription("Drop a meme from your collection or the server's collection.")
         .addStringOption((option) =>
           option
-            .setName(param.key)
+            .setName(PARAMS.key)
             .setDescription("Key to retrieve the meme")
             .setMaxLength(32)
             .setRequired(true),
@@ -62,7 +64,7 @@ export const Meme: CommandProto = class Meme implements Command {
 
     .addSubcommand((subCommand) =>
       subCommand
-        .setName(action.list)
+        .setName(ACTION.list)
         .setDescription(
           "List all memes that can be drop, including those from both the user and server collections.",
         ),
@@ -70,11 +72,11 @@ export const Meme: CommandProto = class Meme implements Command {
 
     .addSubcommand((subCommand) =>
       subCommand
-        .setName(action.remove)
+        .setName(ACTION.remove)
         .setDescription("Remove a meme from your collection and/or the server's collection.")
         .addStringOption((option) =>
           option
-            .setName(param.key)
+            .setName(PARAMS.key)
             .setDescription("Key to retrieve the meme")
             .setMaxLength(32)
             .setRequired(true),
@@ -82,7 +84,7 @@ export const Meme: CommandProto = class Meme implements Command {
     )
 
     .addSubcommand((subCommand) =>
-      subCommand.setName(action.help).setDescription("Explain meme command"),
+      subCommand.setName(ACTION.help).setDescription("Explain meme command"),
     );
   ctx: Ctx;
 
@@ -93,11 +95,11 @@ export const Meme: CommandProto = class Meme implements Command {
   async execute(interaction?: ChatInputCommandInteraction, commandCtx?: PrefixExecuteOpts) {
     const { message, args } = commandCtx ?? {};
     const selectedAction = (interaction?.options.getSubcommand() ?? args?.[0]) as
-      | keyof typeof action
+      | Action
       | undefined;
-    const key = interaction?.options.getString(param.key) ?? args?.[1];
+    const key = interaction?.options.getString(PARAMS.key) ?? args?.[1];
     const value =
-      interaction?.options.getString(param.value) ??
+      interaction?.options.getString(PARAMS.value) ??
       message?.content.split(`${key} `).slice(1).join(`${key} `).trim();
     const discord_user_id = interaction?.user.id ?? message?.author.id;
     const discord_guild_id = interaction?.guildId ?? message?.guildId ?? null;
@@ -283,21 +285,21 @@ export const Meme: CommandProto = class Meme implements Command {
         "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
       )
       .addFields({
-        name: "<:azusarelaxed:1207544782952595508> meme add",
+        name: `${discordEmojis.azusarelaxed} meme add`,
         value:
           "Add a meme to your collection. If the command is used in a server, the meme will be added to the server's collection. If the same key already exists in the user or server collection, the value will be overwritten.",
       })
       .addFields({
-        name: "<:azusarelaxed:1207544782952595508> meme drop",
+        name: `${discordEmojis.azusarelaxed} meme drop`,
         value: `Drop a meme from your collection or the server's collection. The user's meme will take priority. ${inlineCode(prefix + "m <key>")} can also be used as shortcut.`,
       })
       .addFields({
-        name: "<:azusarelaxed:1207544782952595508> meme list",
+        name: `${discordEmojis.azusarelaxed} meme list`,
         value:
           "List all memes that can be drop, including those from both the user and server collections.",
       })
       .addFields({
-        name: "<:azusarelaxed:1207544782952595508> meme remove",
+        name: `${discordEmojis.azusarelaxed} meme remove`,
         value: "Remove a meme from your collection and/or the server's collection.",
       })
       .setFooter({
