@@ -63,46 +63,23 @@ export const Prefix: CommandProto = class Prefix implements Command {
       args?.[0]) as keyof typeof action;
     const newPrefix = interaction?.options.getString(param["new-prefix"]) ?? args?.[1];
     const discord_guild_id = interaction?.guildId ?? message?.guildId;
-
     if (!discord_guild_id) return;
 
     switch (selectedAction) {
       case "change": {
-        if (newPrefix) {
-          this.handleChange({
-            discord_guild_id,
-            prefix: newPrefix,
-            interaction,
-            message,
-          });
-        } else {
-          interaction?.reply("⚠️ Invalid arguments");
-          if (message?.channel.isSendable()) message.channel.send(codeBlock("change <new-prefix>"));
-        }
+        this.handleChange({ discord_guild_id, prefix: newPrefix, interaction, message });
         break;
       }
-
       case "current": {
-        this.handleCurrent({
-          discord_guild_id,
-          interaction,
-          message,
-        });
+        this.handleCurrent({ discord_guild_id, interaction, message });
         break;
       }
-
       case "help": {
         this.handleHelp({ interaction, message });
         break;
       }
-
       default: {
-        interaction?.reply("Something went wrong");
-        this.handleCurrent({
-          discord_guild_id,
-          interaction,
-          message,
-        });
+        this.handleCurrent({ discord_guild_id, interaction, message });
       }
     }
   }
@@ -122,10 +99,16 @@ export const Prefix: CommandProto = class Prefix implements Command {
     message,
   }: {
     discord_guild_id: string;
-    prefix: string;
+    prefix: string | undefined;
     interaction?: ChatInputCommandInteraction;
     message?: Message;
   }) {
+    if (!prefix) {
+      interaction?.reply("⚠️ Invalid arguments");
+      if (message?.channel.isSendable()) message.channel.send(codeBlock("change <new-prefix>"));
+      return;
+    }
+
     if (prefix.length > 2) {
       interaction?.reply("The maximum prefix length is 2 characters.");
       if (message?.channel.isSendable())
