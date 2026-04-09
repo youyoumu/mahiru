@@ -1,7 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 
 import { DbSvc } from "#/lib/db";
-import { schema } from "@repo/db";
 import {
   ChatInputCommandInteraction,
   codeBlock,
@@ -10,7 +9,6 @@ import {
   Message,
   SlashCommandBuilder,
 } from "discord.js";
-import { eq } from "drizzle-orm";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
@@ -84,14 +82,6 @@ export const Prefix: CommandProto = class Prefix implements Command {
     }
   }
 
-  private async getGuildPrefixEntry(discord_guild_id: string) {
-    return await this.ctx.dbSvc.db.query.prefixes.findFirst({
-      where(fields, operators) {
-        return operators.eq(fields.discord_guild_id, discord_guild_id);
-      },
-    });
-  }
-
   private async handleChange({
     discord_guild_id,
     prefix,
@@ -116,20 +106,7 @@ export const Prefix: CommandProto = class Prefix implements Command {
       return;
     }
 
-    const guildPrefix = await this.getGuildPrefixEntry(discord_guild_id);
-
-    if (guildPrefix) {
-      await this.ctx.dbSvc.db
-        .update(schema.prefixes)
-        .set({ prefix: prefix })
-        .where(eq(schema.prefixes.id, guildPrefix.id));
-    } else {
-      await this.ctx.dbSvc.db.insert(schema.prefixes).values({
-        discord_guild_id: discord_guild_id,
-        prefix: prefix,
-      });
-    }
-    this.ctx.dbSvc.getPrefixStorage().set(discord_guild_id, prefix);
+    await this.ctx.dbSvc.changeGuildPrefix(discord_guild_id, prefix);
 
     interaction?.reply(inlineCode(prefix));
     if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));
@@ -144,7 +121,8 @@ export const Prefix: CommandProto = class Prefix implements Command {
     interaction?: ChatInputCommandInteraction;
     message?: Message;
   }) {
-    const prefix = (await this.getGuildPrefixEntry(discord_guild_id))?.prefix ?? DbSvc.globalPrefix;
+    const prefix =
+      (await this.ctx.dbSvc.getGuildPrefixEntry(discord_guild_id))?.prefix ?? DbSvc.globalPrefix;
 
     interaction?.reply(inlineCode(prefix));
     if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));

@@ -1,7 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 
 import { getListUrl } from "#/lib/url";
-import { schema } from "@repo/db";
 import {
   bold,
   ChatInputCommandInteraction,
@@ -11,8 +10,6 @@ import {
   Message,
   SlashCommandBuilder,
 } from "discord.js";
-import { eq } from "drizzle-orm";
-import { uniqBy } from "es-toolkit";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
@@ -134,26 +131,6 @@ export const Meme: CommandProto = class Meme implements Command {
     }
   }
 
-  private async getUserMeme(key: string, discord_user_id: string) {
-    const userMeme = await this.ctx.dbSvc.db.query.meme.findFirst({
-      where(fields, { eq, and }) {
-        return and(eq(fields.key, key), eq(fields.discord_user_id, discord_user_id));
-      },
-    });
-    return userMeme;
-  }
-
-  private async getGuildMeme(key: string, discord_guild_id: string | undefined | null) {
-    const guildMeme = discord_guild_id
-      ? await this.ctx.dbSvc.db.query.meme.findFirst({
-          where(fields, { eq, and }) {
-            return and(eq(fields.key, key), eq(fields.discord_guild_id, discord_guild_id));
-          },
-        })
-      : undefined;
-    return guildMeme;
-  }
-
   private async handleDrop({
     discord_guild_id,
     discord_user_id,
@@ -173,22 +150,14 @@ export const Meme: CommandProto = class Meme implements Command {
       return;
     }
 
-    const userMeme = await this.getUserMeme(key, discord_user_id);
-    const guildMeme = await this.getGuildMeme(key, discord_guild_id);
-
-    if (userMeme) {
-      interaction?.reply(userMeme.value);
-      if (message?.channel.isSendable()) message?.channel.send(userMeme.value);
-      return;
-    }
-    if (guildMeme) {
-      interaction?.reply(guildMeme.value);
-      if (message?.channel.isSendable()) message?.channel.send(guildMeme.value);
+    const meme = await this.ctx.dbSvc.getMeme(key, discord_user_id, discord_guild_id);
+    if (meme) {
+      interaction?.reply(meme.value);
+      if (message?.channel.isSendable()) message?.channel.send(meme.value);
       return;
     }
 
     const unknownKeyMessage = "⚠️ Unknown Key";
-
     interaction?.reply(unknownKeyMessage);
     if (message?.channel.isSendable()) message?.channel.send(unknownKeyMessage);
   }
@@ -221,33 +190,7 @@ export const Meme: CommandProto = class Meme implements Command {
       return;
     }
 
-    const userMeme = await this.getUserMeme(key, discord_user_id);
-    const guildMeme = await this.getGuildMeme(key, discord_guild_id);
-
-    // if this guild already has meme with this key, remove it from this server
-    if (guildMeme) {
-      await this.ctx.dbSvc.db
-        .update(schema.meme)
-        .set({ discord_guild_id: "" })
-        .where(eq(schema.meme.id, guildMeme.id));
-    }
-
-    // if user already has meme with this key, update it
-    if (userMeme) {
-      await this.ctx.dbSvc.db
-        .update(schema.meme)
-        .set({ value, discord_guild_id: discord_guild_id ?? "" })
-        .where(eq(schema.meme.id, userMeme.id));
-    }
-    // else create new meme
-    else {
-      await this.ctx.dbSvc.db.insert(schema.meme).values({
-        key,
-        value,
-        discord_user_id,
-        discord_guild_id: discord_guild_id ?? "",
-      });
-    }
+    await this.ctx.dbSvc.addMeme(key, value, discord_user_id, discord_guild_id);
 
     interaction?.reply(bold(key) + "\n\n" + value);
     if (message?.channel.isSendable()) message.channel.send(bold(key) + "\n\n" + value);
@@ -264,30 +207,11 @@ export const Meme: CommandProto = class Meme implements Command {
     interaction?: ChatInputCommandInteraction;
     message?: Message;
   }) {
-    const userMemes = await this.ctx.dbSvc.db.query.meme.findMany({
-      where(fields, { eq, and }) {
-        return and(eq(fields.discord_user_id, discord_user_id));
-      },
-    });
-
-    const guildMemes = discord_guild_id
-      ? await this.ctx.dbSvc.db.query.meme.findMany({
-          where(fields, { eq, and }) {
-            return and(eq(fields.discord_guild_id, discord_guild_id));
-          },
-        })
-      : [];
-
-    const allMemes = uniqBy([...userMemes, ...guildMemes], (item) => item.id);
+    const allMemes = await this.ctx.dbSvc.getMemes(discord_user_id, discord_guild_id);
     const meme_ids = allMemes.map((meme) => meme.id);
-
-    const res = await this.ctx.api.admin.memes.token.$post({
-      json: { meme_ids },
-    });
-    let token = "";
-    if (res.ok) {
-      token = (await res.json()).token;
-    }
+    const res = await this.ctx.api.admin.memes.token.$post({ json: { meme_ids } });
+    if (!res.ok) return;
+    const token = (await res.json()).token;
 
     // inside a command, event listener, etc.
     const embed = new EmbedBuilder()
@@ -329,25 +253,12 @@ export const Meme: CommandProto = class Meme implements Command {
       return;
     }
 
-    const userMeme = await this.getUserMeme(key, discord_user_id);
-    const guildMeme = await this.getGuildMeme(key, discord_guild_id);
-
-    // if this guild already has meme with this key, remove it from this server
-    if (guildMeme) {
-      await this.ctx.dbSvc.db
-        .update(schema.meme)
-        .set({ discord_guild_id: "" })
-        .where(eq(schema.meme.id, guildMeme.id));
-    }
-
-    if (userMeme) {
-      await this.ctx.dbSvc.db.delete(schema.meme).where(eq(schema.meme.id, userMeme.id));
-    }
-
-    if (guildMeme || userMeme) {
+    const removed = await this.ctx.dbSvc.removeMeme(key, discord_user_id, discord_guild_id);
+    if (removed) {
       interaction?.reply(`${inlineCode(key)} has been deleted`);
-      if (message?.channel.isSendable())
+      if (message?.channel.isSendable()) {
         message?.channel.send(`${inlineCode(key)} has been deleted`);
+      }
       return;
     }
 
