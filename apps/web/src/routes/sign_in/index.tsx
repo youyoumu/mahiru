@@ -6,14 +6,14 @@ import SignInPage from "./-components/SignInPage";
 
 export const Route = createFileRoute("/sign_in/")({
   validateSearch: z.object({
-    one_time_token: z.string(),
+    t: z.string(),
   }),
   component: SignInPage,
-  loaderDeps({ search: { one_time_token } }) {
-    return { one_time_token };
+  loaderDeps({ search: { t } }) {
+    return { t };
   },
-  async loader({ deps: { one_time_token } }) {
-    await writeTokenToCookie({ one_time_token });
+  async loader({ deps: { t } }) {
+    await writeTokenToCookie({ t });
     throw redirect({ to: "/memes" });
   },
 });

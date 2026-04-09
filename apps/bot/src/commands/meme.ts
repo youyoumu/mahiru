@@ -1,6 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 
-import { env } from "#/env";
+import { getListUrl } from "#/lib/url";
 import { schema } from "@repo/db";
 import {
   bold,
@@ -301,7 +301,7 @@ export const Meme: CommandProto = class Meme implements Command {
 
       .addFields({
         name: "\u200B",
-        value: this.getListUrl(token),
+        value: getListUrl(token),
       })
 
       .setFooter({
@@ -401,12 +401,5 @@ export const Meme: CommandProto = class Meme implements Command {
       message.channel.send({
         embeds: [embed],
       });
-  }
-
-  private getListUrl(token: string) {
-    const url = new URL(env.WEB_URL);
-    url.pathname = "/memes";
-    url.searchParams.set("token", token);
-    return url.toString();
   }
 };

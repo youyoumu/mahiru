@@ -3,8 +3,8 @@ import { createJwtToken } from "#/lib/jwt";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 
 const zReq = z.object({
-  one_time_token: z.string().optional(),
-  secret_key: z.string().optional(),
+  t: z.string().optional(),
+  k: z.string().optional(),
 });
 
 const zRes = z.object({
@@ -27,28 +27,21 @@ export const auth = new OpenAPIHono<{
   }),
   async (c) => {
     const { oneTimeTokens } = c.get("ctx");
-    const { one_time_token, secret_key } = c.req.valid("json");
+    const { t, k } = c.req.valid("json");
 
-    if (secret_key) {
-      if (secret_key !== env.ADMIN_KEY) {
+    if (k) {
+      if (k !== env.ADMIN_KEY) {
         return c.json({ error: "Invalid secret key" }, 401);
       }
 
-      const token = await createJwtToken({
-        discord_user_id: "doesntmatter",
-        secret_key,
-      });
+      const token = await createJwtToken({ discord_user_id: "doesntmatter", secret_key: k });
       return c.json({ token }, 200);
     }
 
-    const discord_user_id = oneTimeTokens.get(one_time_token ?? "");
+    const discord_user_id = oneTimeTokens.get(t ?? "");
     if (discord_user_id) {
-      oneTimeTokens.delete(one_time_token ?? "");
-      const token = await createJwtToken({
-        discord_user_id,
-        secret_key,
-      });
-
+      oneTimeTokens.delete(t ?? "");
+      const token = await createJwtToken({ discord_user_id, secret_key: k });
       return c.json({ token }, 200);
     }
 

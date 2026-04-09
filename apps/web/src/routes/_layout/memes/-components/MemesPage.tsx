@@ -51,8 +51,8 @@ export default function MemesPage() {
 
 const Memes = memo(function ({ searchText }: { searchText: string }) {
   const routeApi = getRouteApi("/_layout/memes/");
-  const { token } = routeApi.useSearch();
-  const { data: memes = [] } = useMemes({ meme_ids_token: token });
+  const { t } = routeApi.useSearch();
+  const { data: memes = [] } = useMemes({ t });
 
   const filteredMemes = fuzzysort
     .go(searchText, memes, {

@@ -1,6 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 
-import { env } from "#/env";
+import { getLoginUrl } from "#/lib/url";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
@@ -33,11 +33,3 @@ export const Login: CommandProto = class Login implements Command {
     }
   }
 };
-
-//TODO: typesafe
-function getLoginUrl(token: string) {
-  const url = new URL(env.WEB_URL);
-  url.pathname = "/sign_in";
-  url.searchParams.set("one_time_token", token);
-  return url.toString();
-}

@@ -14,7 +14,7 @@ export class Ready {
 
   async execute(client: Client) {
     const res = await this.ctx.api.auth.sign_in.$post({
-      json: { secret_key: env.ADMIN_KEY },
+      json: { k: env.ADMIN_KEY },
     });
 
     if (res.ok) {

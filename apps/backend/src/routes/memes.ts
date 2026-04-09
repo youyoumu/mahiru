@@ -9,7 +9,7 @@ import { verify } from "hono/jwt";
 const zRes = z.array(selectMemesSchema);
 
 const zQuery = z.object({
-  meme_ids_token: z.string().optional(),
+  t: z.string().optional(),
 });
 
 const zDecodedPayload = z.object({
@@ -34,10 +34,10 @@ export const memes = new OpenAPIHono<{
   async (c) => {
     const { db } = c.get("ctx");
     const { discord_user_id } = c.get("jwtPayload");
-    const { meme_ids_token } = c.req.valid("query");
+    const { t: memeIdsToken } = c.req.valid("query");
     let decoded;
     try {
-      decoded = await verify(meme_ids_token ?? "", env.SECRET_KEY, { alg: "HS256" });
+      decoded = await verify(memeIdsToken ?? "", env.SECRET_KEY, { alg: "HS256" });
     } catch {
       decoded = null;
     }
