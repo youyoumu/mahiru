@@ -298,12 +298,10 @@ export const Meme: CommandProto = class Meme implements Command {
           .map((meme, i) => `${bold((i + 1).toString())}. ${meme.key} - <@${meme.discord_user_id}>`)
           .join("\n"),
       })
-
       .addFields({
         name: "\u200B",
-        value: getListUrl(token),
+        value: `[Open in Browser](${getListUrl(token)})`,
       })
-
       .setFooter({
         text: `Page 1/1 (${allMemes.length} Total)`,
       });

@@ -24,8 +24,9 @@ export const Login: CommandProto = class Login implements Command {
     if (res.ok) {
       const { one_time_token } = await res.json();
       const loginUrl = getLoginUrl(one_time_token);
-      await interaction?.reply(loginUrl);
-      await message?.author.send({ content: loginUrl });
+      const messageContent = `Open the following link in your browser to login to the Mahiru web app:\n${loginUrl}`;
+      await interaction?.reply(messageContent);
+      await message?.author.send({ content: messageContent });
       await message?.reply("Please check your DMs");
     } else {
       await interaction?.reply("Something went wrong");
