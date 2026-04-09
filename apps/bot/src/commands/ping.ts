@@ -12,11 +12,9 @@ export const Ping: CommandProto = class Ping implements Command {
     this.ctx = opts.ctx;
   }
 
-  async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.reply("Pong!");
-  }
-
-  async prefixExecute({ message }: PrefixExecuteOpts) {
-    if (message.channel.isSendable()) message.channel.send("Pong!");
+  async execute(interaction?: ChatInputCommandInteraction, messageCtx?: PrefixExecuteOpts) {
+    const { message } = messageCtx ?? {};
+    await interaction?.reply("Pong!");
+    if (message?.channel.isSendable()) message.channel.send("Pong!");
   }
 };

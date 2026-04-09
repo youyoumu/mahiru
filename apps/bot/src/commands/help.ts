@@ -4,7 +4,6 @@ import {
   ChatInputCommandInteraction,
   EmbedBuilder,
   inlineCode,
-  Message,
   SlashCommandBuilder,
 } from "discord.js";
 
@@ -18,20 +17,9 @@ export const Help: CommandProto = class Help implements Command {
     this.ctx = opts.ctx;
   }
 
-  async execute(interaction: ChatInputCommandInteraction) {
-    return this.handleHelp({ interaction });
-  }
-  async prefixExecute({ message }: PrefixExecuteOpts) {
-    return this.handleHelp({ message });
-  }
+  async execute(interaction?: ChatInputCommandInteraction, commandCtx?: PrefixExecuteOpts) {
+    const { message } = commandCtx ?? {};
 
-  private async handleHelp({
-    interaction,
-    message,
-  }: {
-    interaction?: ChatInputCommandInteraction;
-    message?: Message;
-  }) {
     const discord_guild_id = message?.guildId ?? interaction?.guildId;
     const prefix = await this.ctx.dbSvc.getGuildPrefix(discord_guild_id);
     const embed = new EmbedBuilder()
@@ -70,9 +58,6 @@ export const Help: CommandProto = class Help implements Command {
       .setTimestamp();
 
     interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable())
-      message.channel.send({
-        embeds: [embed],
-      });
+    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
   }
 };

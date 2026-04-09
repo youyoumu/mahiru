@@ -51,10 +51,7 @@ export class MessageCreate {
     if (command) {
       const selectedCommand = this.commandsPair[commandShortcut ?? command];
       if (!selectedCommand) return;
-      await selectedCommand.prefixExecute({
-        message,
-        args,
-      });
+      await selectedCommand.execute(undefined, { message, args });
     }
   }
 }

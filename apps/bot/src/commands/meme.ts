@@ -93,135 +93,90 @@ export const Meme: CommandProto = class Meme implements Command {
     this.ctx = opts.ctx;
   }
 
-  async execute(interaction: ChatInputCommandInteraction) {
-    const selectedAction = interaction.options.getSubcommand() as keyof typeof action;
-    const key = interaction.options.getString(param.key);
-    const value = interaction.options.getString(param.value);
-    const discord_user_id = interaction.user.id;
-    const discord_guild_id = interaction.guildId;
+  async execute(interaction?: ChatInputCommandInteraction, commandCtx?: PrefixExecuteOpts) {
+    const { message, args } = commandCtx ?? {};
+
+    const selectedAction = (interaction?.options.getSubcommand() ?? args?.[0]) as
+      | keyof typeof action
+      | undefined;
+    console.log("DEBUG[1933]: selectedAction=", selectedAction);
+    const key = interaction?.options.getString(param.key) ?? args?.[1];
+    const value =
+      interaction?.options.getString(param.value) ??
+      message?.content.split(`${key} `).slice(1).join(`${key} `).trim();
+    const discord_user_id = interaction?.user.id ?? message?.author.id;
+    const discord_guild_id = interaction?.guildId ?? message?.guildId ?? null;
+
+    if (!discord_user_id) return;
 
     switch (selectedAction) {
       case "add": {
         if (key && value) {
-          return this.handleAdd({
+          this.handleAdd({
             discord_guild_id,
             discord_user_id,
             key,
             value,
             interaction,
+            message,
           });
+        } else {
+          interaction?.reply("⚠️ Invalid arguments");
+          if (message?.channel.isSendable()) message.channel.send(codeBlock("add <key> <value>"));
         }
-        return interaction.reply("⚠️ Invalid arguments");
+        break;
       }
 
       case "drop": {
+        console.log("TEST", selectedAction);
         if (key) {
-          return this.handleDrop({
+          this.handleDrop({
             discord_guild_id,
             discord_user_id,
             key,
             interaction,
+            message,
           });
+        } else {
+          interaction?.reply("⚠️ Invalid arguments");
+          if (message?.channel.isSendable()) message.channel.send(codeBlock("drop <key>"));
         }
-        return interaction.reply("⚠️ Invalid arguments");
+        break;
       }
       case "list": {
-        return this.handleList({
+        this.handleList({
           discord_guild_id,
           discord_user_id,
           interaction,
+          message,
         });
+        break;
       }
       case "remove": {
         if (key) {
-          return this.handleRemove({
+          this.handleRemove({
             discord_guild_id,
             discord_user_id,
             key,
             interaction,
+            message,
           });
+        } else {
+          interaction?.reply("⚠️ Invalid arguments");
+          if (message?.channel.isSendable()) message.channel.send(codeBlock("remove <key>"));
         }
-        return interaction.reply("⚠️ Invalid arguments");
+        break;
       }
       case "help": {
-        return this.handleHelp({ interaction });
-      }
-    }
-
-    return interaction.reply("Something went wrong");
-  }
-
-  async prefixExecute({ message, args }: PrefixExecuteOpts) {
-    const discord_user_id = message.author.id;
-    const discord_guild_id = message.guildId;
-    const subCommand = args[0];
-    switch (subCommand) {
-      case action.add: {
-        const key = args[1];
-        const value = message.content.split(`${key} `).slice(1).join(`${key} `).trim();
-
-        if (key && value) {
-          return this.handleAdd({
-            discord_guild_id,
-            discord_user_id,
-            key,
-            value,
-            message,
-          });
-        }
-
-        if (message.channel.isSendable()) {
-          message.channel.send(codeBlock("add <key> <value>"));
-        }
+        this.handleHelp({ interaction, message });
         break;
-      }
-      case action.drop: {
-        const key = args[1];
-        if (key) {
-          return this.handleDrop({
-            discord_guild_id,
-            discord_user_id,
-            key,
-            message,
-          });
-        }
-
-        if (message.channel.isSendable()) {
-          message.channel.send(codeBlock("drop <key>"));
-        }
-        break;
-      }
-      case action.list: {
-        return this.handleList({
-          discord_guild_id,
-          discord_user_id,
-          message,
-        });
-      }
-      case action.remove: {
-        const key = args[1];
-        if (key) {
-          return this.handleRemove({
-            discord_guild_id,
-            discord_user_id,
-            key,
-            message,
-          });
-        }
-
-        if (message.channel.isSendable()) {
-          message.channel.send(codeBlock("remove <key>"));
-        }
-        break;
-      }
-      case action.help: {
-        return this.handleHelp({ message });
       }
       default: {
-        if (message.channel.isSendable()) {
-          const key = subCommand;
+        interaction?.reply("Something went wrong");
+        if (message?.channel.isSendable()) {
+          const key = args?.[0];
           if (key) {
-            return this.handleDrop({
+            this.handleDrop({
               discord_guild_id,
               discord_user_id,
               key,

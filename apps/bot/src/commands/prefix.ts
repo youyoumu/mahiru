@@ -57,76 +57,50 @@ export const Prefix: CommandProto = class Prefix implements Command {
     this.ctx = opts.ctx;
   }
 
-  async execute(interaction: ChatInputCommandInteraction) {
-    const selectedAction = interaction.options.getSubcommand() as keyof typeof action;
-    const newPrefix = interaction.options.getString(param["new-prefix"]);
-    const discord_guild_id = interaction.guildId;
+  async execute(interaction?: ChatInputCommandInteraction, messageCtx?: PrefixExecuteOpts) {
+    const { message, args } = messageCtx ?? {};
+    const selectedAction = (interaction?.options.getSubcommand() ??
+      args?.[0]) as keyof typeof action;
+    const newPrefix = interaction?.options.getString(param["new-prefix"]) ?? args?.[1];
+    const discord_guild_id = interaction?.guildId ?? message?.guildId;
 
     if (!discord_guild_id) return;
 
     switch (selectedAction) {
       case "change": {
         if (newPrefix) {
-          return this.handleChange({
+          this.handleChange({
             discord_guild_id,
             prefix: newPrefix,
             interaction,
-          });
-        }
-        return interaction.reply("⚠️ Invalid arguments");
-      }
-
-      case "current": {
-        return this.handleCurrent({
-          discord_guild_id,
-          interaction,
-        });
-      }
-
-      case "help": {
-        return this.handleHelp({ interaction });
-      }
-    }
-
-    return interaction.reply("Something went wrong");
-  }
-
-  async prefixExecute({ message, args }: PrefixExecuteOpts) {
-    const discord_guild_id = message.guildId;
-    if (!discord_guild_id) return;
-    const subCommand = args[0];
-
-    switch (subCommand) {
-      case action.change: {
-        const newPrefix = args[1];
-
-        if (newPrefix) {
-          return this.handleChange({
-            discord_guild_id,
-            prefix: newPrefix,
             message,
           });
-        }
-
-        if (message.channel.isSendable()) {
-          message.channel.send(codeBlock("change <new-prefix>"));
+        } else {
+          interaction?.reply("⚠️ Invalid arguments");
+          if (message?.channel.isSendable()) message.channel.send(codeBlock("change <new-prefix>"));
         }
         break;
       }
-      case action.current: {
-        return this.handleCurrent({
+
+      case "current": {
+        this.handleCurrent({
           discord_guild_id,
+          interaction,
           message,
         });
+        break;
       }
 
-      case action.help: {
-        return this.handleHelp({ message });
+      case "help": {
+        this.handleHelp({ interaction, message });
+        break;
       }
 
       default: {
-        return this.handleCurrent({
+        interaction?.reply("Something went wrong");
+        this.handleCurrent({
           discord_guild_id,
+          interaction,
           message,
         });
       }

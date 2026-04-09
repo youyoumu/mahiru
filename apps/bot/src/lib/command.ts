@@ -13,8 +13,10 @@ export interface PrefixExecuteOpts {
 
 export interface Command {
   ctx: Ctx;
-  execute(interaction: ChatInputCommandInteraction): unknown | Promise<unknown>;
-  prefixExecute(opts: PrefixExecuteOpts): unknown | Promise<unknown>;
+  execute(
+    interaction?: ChatInputCommandInteraction,
+    messageCtx?: PrefixExecuteOpts,
+  ): unknown | Promise<unknown>;
 }
 
 export interface CommandProto {

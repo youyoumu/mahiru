@@ -15,39 +15,26 @@ export const Login: CommandProto = class Login implements Command {
     this.ctx = opts.ctx;
   }
 
-  async execute(interaction: ChatInputCommandInteraction) {
-    const discord_user_id = interaction.user.id;
+  async execute(interaction?: ChatInputCommandInteraction, commandCtx?: PrefixExecuteOpts) {
+    const { message } = commandCtx ?? {};
+    const discord_user_id = interaction?.user.id ?? message?.author.id;
+    if (!discord_user_id) return;
 
-    const res = await this.ctx.api.admin.auth.token.$post({
-      json: { discord_user_id },
-    });
-
+    const res = await this.ctx.api.admin.auth.token.$post({ json: { discord_user_id } });
     if (res.ok) {
       const { one_time_token } = await res.json();
-
-      return await interaction.reply(getLoginUrl(one_time_token));
-    }
-
-    await interaction.reply("Something went wrong");
-  }
-
-  async prefixExecute({ message }: PrefixExecuteOpts) {
-    const discord_user_id = message.author.id;
-
-    const res = await this.ctx.api.admin.auth.token.$post({
-      json: { discord_user_id },
-    });
-
-    if (res.ok) {
-      const { one_time_token } = await res.json();
-      await message.author.send({
-        content: getLoginUrl(one_time_token),
-      });
-      await message.reply("Please check your DMs");
+      const loginUrl = getLoginUrl(one_time_token);
+      await interaction?.reply(loginUrl);
+      await message?.author.send({ content: loginUrl });
+      await message?.reply("Please check your DMs");
+    } else {
+      await interaction?.reply("Something went wrong");
+      await message?.reply("Something went wrong");
     }
   }
 };
 
+//TODO: typesafe
 function getLoginUrl(token: string) {
   const url = new URL(env.WEB_URL);
   url.pathname = "/sign_in";

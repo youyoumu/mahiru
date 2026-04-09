@@ -22,7 +22,7 @@ const client = new Client({
 });
 
 const dbSvc = new DbSvc();
-const ctx = new Ctx({ api: hc<AppType>(""), dbSvc });
+const ctx = new Ctx({ api: hc<AppType>(env.BE_URL), dbSvc });
 const commandsPair: Record<string, Command> = {
   [commands.Ping.data.name]: new commands.Ping({ ctx }),
   [commands.Meme.data.name]: new commands.Meme({ ctx }),
