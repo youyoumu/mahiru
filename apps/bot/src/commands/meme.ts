@@ -1,5 +1,4 @@
 import type { Ctx } from "#/lib/ctx";
-import type { DB, DbSvc } from "#/lib/db";
 
 import { env } from "#/env";
 import { schema } from "@repo/db";
@@ -104,8 +103,7 @@ export const Meme: CommandProto = class Meme implements Command {
     switch (selectedAction) {
       case "add": {
         if (key && value) {
-          return handleAdd({
-            db: this.ctx.dbSvc.db,
+          return this.handleAdd({
             discord_guild_id,
             discord_user_id,
             key,
@@ -118,8 +116,7 @@ export const Meme: CommandProto = class Meme implements Command {
 
       case "drop": {
         if (key) {
-          return handleDrop({
-            db: this.ctx.dbSvc.db,
+          return this.handleDrop({
             discord_guild_id,
             discord_user_id,
             key,
@@ -129,9 +126,7 @@ export const Meme: CommandProto = class Meme implements Command {
         return interaction.reply("⚠️ Invalid arguments");
       }
       case "list": {
-        return handleList({
-          api: this.ctx.api,
-          db: this.ctx.dbSvc.db,
+        return this.handleList({
           discord_guild_id,
           discord_user_id,
           interaction,
@@ -139,8 +134,7 @@ export const Meme: CommandProto = class Meme implements Command {
       }
       case "remove": {
         if (key) {
-          return handleRemove({
-            db: this.ctx.dbSvc.db,
+          return this.handleRemove({
             discord_guild_id,
             discord_user_id,
             key,
@@ -150,7 +144,7 @@ export const Meme: CommandProto = class Meme implements Command {
         return interaction.reply("⚠️ Invalid arguments");
       }
       case "help": {
-        return handleHelp({ dbSvc: this.ctx.dbSvc, interaction });
+        return this.handleHelp({ interaction });
       }
     }
 
@@ -167,8 +161,7 @@ export const Meme: CommandProto = class Meme implements Command {
         const value = message.content.split(`${key} `).slice(1).join(`${key} `).trim();
 
         if (key && value) {
-          return handleAdd({
-            db: this.ctx.dbSvc.db,
+          return this.handleAdd({
             discord_guild_id,
             discord_user_id,
             key,
@@ -185,8 +178,7 @@ export const Meme: CommandProto = class Meme implements Command {
       case action.drop: {
         const key = args[1];
         if (key) {
-          return handleDrop({
-            db: this.ctx.dbSvc.db,
+          return this.handleDrop({
             discord_guild_id,
             discord_user_id,
             key,
@@ -200,9 +192,7 @@ export const Meme: CommandProto = class Meme implements Command {
         break;
       }
       case action.list: {
-        return handleList({
-          api: this.ctx.api,
-          db: this.ctx.dbSvc.db,
+        return this.handleList({
           discord_guild_id,
           discord_user_id,
           message,
@@ -211,8 +201,7 @@ export const Meme: CommandProto = class Meme implements Command {
       case action.remove: {
         const key = args[1];
         if (key) {
-          return handleRemove({
-            db: this.ctx.dbSvc.db,
+          return this.handleRemove({
             discord_guild_id,
             discord_user_id,
             key,
@@ -226,14 +215,13 @@ export const Meme: CommandProto = class Meme implements Command {
         break;
       }
       case action.help: {
-        return handleHelp({ dbSvc: this.ctx.dbSvc, message });
+        return this.handleHelp({ message });
       }
       default: {
         if (message.channel.isSendable()) {
           const key = subCommand;
           if (key) {
-            return handleDrop({
-              db: this.ctx.dbSvc.db,
+            return this.handleDrop({
               discord_guild_id,
               discord_user_id,
               key,
@@ -244,290 +232,263 @@ export const Meme: CommandProto = class Meme implements Command {
       }
     }
   }
-};
 
-async function getUserMeme({
-  db,
-  key,
-  discord_user_id,
-}: {
-  db: DB;
-  key: string;
-  discord_user_id: string;
-}) {
-  const userMeme = await db.query.meme.findFirst({
-    where(fields, { eq, and }) {
-      return and(eq(fields.key, key), eq(fields.discord_user_id, discord_user_id));
-    },
-  });
-  return userMeme;
-}
+  private async getUserMeme(key: string, discord_user_id: string) {
+    const userMeme = await this.ctx.dbSvc.db.query.meme.findFirst({
+      where(fields, { eq, and }) {
+        return and(eq(fields.key, key), eq(fields.discord_user_id, discord_user_id));
+      },
+    });
+    return userMeme;
+  }
 
-async function getGuildMeme({
-  db,
-  key,
-  discord_guild_id,
-}: {
-  db: DB;
-  key: string;
-  discord_guild_id: string | undefined | null;
-}) {
-  const guildMeme = discord_guild_id
-    ? await db.query.meme.findFirst({
-        where(fields, { eq, and }) {
-          return and(eq(fields.key, key), eq(fields.discord_guild_id, discord_guild_id));
-        },
+  private async getGuildMeme(key: string, discord_guild_id: string | undefined | null) {
+    const guildMeme = discord_guild_id
+      ? await this.ctx.dbSvc.db.query.meme.findFirst({
+          where(fields, { eq, and }) {
+            return and(eq(fields.key, key), eq(fields.discord_guild_id, discord_guild_id));
+          },
+        })
+      : undefined;
+
+    return guildMeme;
+  }
+
+  private async handleDrop({
+    discord_guild_id,
+    discord_user_id,
+    key,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string | undefined | null;
+    discord_user_id: string;
+    key: string;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    const userMeme = await this.getUserMeme(key, discord_user_id);
+    const guildMeme = await this.getGuildMeme(key, discord_guild_id);
+
+    if (userMeme) {
+      interaction?.reply(userMeme.value);
+      if (message?.channel.isSendable()) message?.channel.send(userMeme.value);
+      return;
+    }
+    if (guildMeme) {
+      interaction?.reply(guildMeme.value);
+      if (message?.channel.isSendable()) message?.channel.send(guildMeme.value);
+      return;
+    }
+
+    const unknownKeyMessage = "⚠️ Unknown Key";
+
+    interaction?.reply(unknownKeyMessage);
+    if (message?.channel.isSendable()) message?.channel.send(unknownKeyMessage);
+  }
+
+  private async handleAdd({
+    discord_guild_id,
+    discord_user_id,
+    key,
+    value,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string | undefined | null;
+    discord_user_id: string;
+    key: string;
+    value: string;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    if (key.length > 32) {
+      interaction?.reply("The maximum key length is 32 characters.");
+      if (message?.channel.isSendable())
+        message.channel.send("The maximum key length is 32 characters.");
+      return;
+    }
+
+    const userMeme = await this.getUserMeme(key, discord_user_id);
+    const guildMeme = await this.getGuildMeme(key, discord_guild_id);
+
+    // if this guild already has meme with this key, remove it from this server
+    if (guildMeme) {
+      await this.ctx.dbSvc.db
+        .update(schema.meme)
+        .set({ discord_guild_id: "" })
+        .where(eq(schema.meme.id, guildMeme.id));
+    }
+
+    // if user already has meme with this key, update it
+    if (userMeme) {
+      await this.ctx.dbSvc.db
+        .update(schema.meme)
+        .set({ value, discord_guild_id: discord_guild_id ?? "" })
+        .where(eq(schema.meme.id, userMeme.id));
+    }
+    // else create new meme
+    else {
+      await this.ctx.dbSvc.db.insert(schema.meme).values({
+        key,
+        value,
+        discord_user_id,
+        discord_guild_id: discord_guild_id ?? "",
+      });
+    }
+
+    interaction?.reply(bold(key) + "\n\n" + value);
+    if (message?.channel.isSendable()) message.channel.send(bold(key) + "\n\n" + value);
+  }
+
+  private async handleList({
+    discord_guild_id,
+    discord_user_id,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string | undefined | null;
+    discord_user_id: string;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    const userMemes = await this.ctx.dbSvc.db.query.meme.findMany({
+      where(fields, { eq, and }) {
+        return and(eq(fields.discord_user_id, discord_user_id));
+      },
+    });
+
+    const guildMemes = discord_guild_id
+      ? await this.ctx.dbSvc.db.query.meme.findMany({
+          where(fields, { eq, and }) {
+            return and(eq(fields.discord_guild_id, discord_guild_id));
+          },
+        })
+      : [];
+
+    const allMemes = uniqBy([...userMemes, ...guildMemes], (item) => item.id);
+    const meme_ids = allMemes.map((meme) => meme.id);
+
+    const res = await this.ctx.api.admin.memes.token.$post({
+      json: { meme_ids },
+    });
+    let token = "";
+    if (res.ok) {
+      token = (await res.json()).token;
+    }
+
+    // inside a command, event listener, etc.
+    const embed = new EmbedBuilder()
+      .setDescription("Showing memes you can drop")
+      .addFields({
+        name: "\u200B",
+        value: allMemes
+          .map((meme, i) => `${bold((i + 1).toString())}. ${meme.key} - <@${meme.discord_user_id}>`)
+          .join("\n"),
       })
-    : undefined;
 
-  return guildMeme;
-}
+      .addFields({
+        name: "\u200B",
+        value: this.getListUrl(token),
+      })
 
-async function handleDrop({
-  db,
-  discord_guild_id,
-  discord_user_id,
-  key,
-  interaction,
-  message,
-}: {
-  db: DB;
-  discord_guild_id: string | undefined | null;
-  discord_user_id: string;
-  key: string;
-  interaction?: ChatInputCommandInteraction;
-  message?: Message;
-}) {
-  const userMeme = await getUserMeme({ db, discord_user_id, key });
-  const guildMeme = await getGuildMeme({ db, discord_guild_id, key });
+      .setFooter({
+        text: `Page 1/1 (${allMemes.length} Total)`,
+      });
 
-  if (userMeme) {
-    interaction?.reply(userMeme.value);
-    if (message?.channel.isSendable()) message?.channel.send(userMeme.value);
-    return;
-  }
-  if (guildMeme) {
-    interaction?.reply(guildMeme.value);
-    if (message?.channel.isSendable()) message?.channel.send(guildMeme.value);
-    return;
+    interaction?.reply({ embeds: [embed] });
+    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
   }
 
-  const unknownKeyMessage = "⚠️ Unknown Key";
+  private async handleRemove({
+    discord_guild_id,
+    discord_user_id,
+    key,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string | undefined | null;
+    discord_user_id: string;
+    key: string;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    const userMeme = await this.getUserMeme(key, discord_user_id);
+    const guildMeme = await this.getGuildMeme(key, discord_guild_id);
 
-  interaction?.reply(unknownKeyMessage);
-  if (message?.channel.isSendable()) message?.channel.send(unknownKeyMessage);
-}
+    // if this guild already has meme with this key, remove it from this server
+    if (guildMeme) {
+      await this.ctx.dbSvc.db
+        .update(schema.meme)
+        .set({ discord_guild_id: "" })
+        .where(eq(schema.meme.id, guildMeme.id));
+    }
 
-async function handleAdd({
-  db,
-  discord_guild_id,
-  discord_user_id,
-  key,
-  value,
-  interaction,
-  message,
-}: {
-  db: DB;
-  discord_guild_id: string | undefined | null;
-  discord_user_id: string;
-  key: string;
-  value: string;
-  interaction?: ChatInputCommandInteraction;
-  message?: Message;
-}) {
-  if (key.length > 32) {
-    interaction?.reply("The maximum key length is 32 characters.");
+    if (userMeme) {
+      await this.ctx.dbSvc.db.delete(schema.meme).where(eq(schema.meme.id, userMeme.id));
+    }
+
+    if (guildMeme || userMeme) {
+      interaction?.reply(`${inlineCode(key)} has been deleted`);
+      if (message?.channel.isSendable())
+        message?.channel.send(`${inlineCode(key)} has been deleted`);
+      return;
+    }
+
+    interaction?.reply("⚠️ Unknown Key");
+    if (message?.channel.isSendable()) message?.channel.send("⚠️ Unknown Key");
+  }
+
+  private async handleHelp({
+    interaction,
+    message,
+  }: {
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    const discord_guild_id = message?.guildId ?? interaction?.guildId;
+    const prefix = await this.ctx.dbSvc.getGuildPrefix(discord_guild_id);
+
+    const embed = new EmbedBuilder()
+      .setTitle("Meme Help")
+      .setColor("#fef3c6")
+      .setThumbnail(
+        "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
+      )
+      .addFields({
+        name: "<:azusarelaxed:1207544782952595508> meme add",
+        value:
+          "Add a meme to your collection. If the command is used in a server, the meme will be added to the server's collection. If the same key already exists in the user or server collection, the value will be overwritten.",
+      })
+      .addFields({
+        name: "<:azusarelaxed:1207544782952595508> meme drop",
+        value: `Drop a meme from your collection or the server's collection. The user's meme will take priority. ${inlineCode(prefix + "m <key>")} can also be used as shortcut.`,
+      })
+      .addFields({
+        name: "<:azusarelaxed:1207544782952595508> meme list",
+        value:
+          "List all memes that can be drop, including those from both the user and server collections.",
+      })
+      .addFields({
+        name: "<:azusarelaxed:1207544782952595508> meme remove",
+        value: "Remove a meme from your collection and/or the server's collection.",
+      })
+      .setFooter({
+        text: "Mahiru",
+      })
+      .setTimestamp();
+
+    interaction?.reply({ embeds: [embed] });
     if (message?.channel.isSendable())
-      message.channel.send("The maximum key length is 32 characters.");
-    return;
+      message.channel.send({
+        embeds: [embed],
+      });
   }
 
-  const userMeme = await getUserMeme({ db, discord_user_id, key });
-  const guildMeme = await getGuildMeme({ db, discord_guild_id, key });
-
-  // if this guild already has meme with this key, remove it from this server
-  if (guildMeme) {
-    await db
-      .update(schema.meme)
-      .set({ discord_guild_id: "" })
-      .where(eq(schema.meme.id, guildMeme.id));
+  private getListUrl(token: string) {
+    const url = new URL(env.WEB_URL);
+    url.pathname = "/memes";
+    url.searchParams.set("token", token);
+    return url.toString();
   }
-
-  // if user already has meme with this key, update it
-  if (userMeme) {
-    await db
-      .update(schema.meme)
-      .set({ value, discord_guild_id: discord_guild_id ?? "" })
-      .where(eq(schema.meme.id, userMeme.id));
-  }
-  // else create new meme
-  else {
-    await db.insert(schema.meme).values({
-      key,
-      value,
-      discord_user_id,
-      discord_guild_id: discord_guild_id ?? "",
-    });
-  }
-
-  interaction?.reply(bold(key) + "\n\n" + value);
-  if (message?.channel.isSendable()) message.channel.send(bold(key) + "\n\n" + value);
-}
-
-async function handleList({
-  api,
-  db,
-  discord_guild_id,
-  discord_user_id,
-  interaction,
-  message,
-}: {
-  api: Ctx["api"];
-  db: DB;
-  discord_guild_id: string | undefined | null;
-  discord_user_id: string;
-  interaction?: ChatInputCommandInteraction;
-  message?: Message;
-}) {
-  const userMemes = await db.query.meme.findMany({
-    where(fields, { eq, and }) {
-      return and(eq(fields.discord_user_id, discord_user_id));
-    },
-  });
-
-  const guildMemes = discord_guild_id
-    ? await db.query.meme.findMany({
-        where(fields, { eq, and }) {
-          return and(eq(fields.discord_guild_id, discord_guild_id));
-        },
-      })
-    : [];
-
-  const allMemes = uniqBy([...userMemes, ...guildMemes], (item) => item.id);
-  const meme_ids = allMemes.map((meme) => meme.id);
-
-  const res = await api.admin.memes.token.$post({
-    json: { meme_ids },
-  });
-  let token = "";
-  if (res.ok) {
-    token = (await res.json()).token;
-  }
-
-  // inside a command, event listener, etc.
-  const embed = new EmbedBuilder()
-    .setDescription("Showing memes you can drop")
-    .addFields({
-      name: "\u200B",
-      value: allMemes
-        .map((meme, i) => `${bold((i + 1).toString())}. ${meme.key} - <@${meme.discord_user_id}>`)
-        .join("\n"),
-    })
-
-    .addFields({
-      name: "\u200B",
-      value: getListUrl(token),
-    })
-
-    .setFooter({
-      text: `Page 1/1 (${allMemes.length} Total)`,
-    });
-
-  interaction?.reply({ embeds: [embed] });
-  if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
-}
-
-async function handleRemove({
-  db,
-  discord_guild_id,
-  discord_user_id,
-  key,
-  interaction,
-  message,
-}: {
-  db: DB;
-  discord_guild_id: string | undefined | null;
-  discord_user_id: string;
-  key: string;
-  interaction?: ChatInputCommandInteraction;
-  message?: Message;
-}) {
-  const userMeme = await getUserMeme({ db, key, discord_user_id });
-  const guildMeme = await getGuildMeme({ db, discord_guild_id, key });
-
-  // if this guild already has meme with this key, remove it from this server
-  if (guildMeme) {
-    await db
-      .update(schema.meme)
-      .set({ discord_guild_id: "" })
-      .where(eq(schema.meme.id, guildMeme.id));
-  }
-
-  if (userMeme) {
-    await db.delete(schema.meme).where(eq(schema.meme.id, userMeme.id));
-  }
-
-  if (guildMeme || userMeme) {
-    interaction?.reply(`${inlineCode(key)} has been deleted`);
-    if (message?.channel.isSendable()) message?.channel.send(`${inlineCode(key)} has been deleted`);
-    return;
-  }
-
-  interaction?.reply("⚠️ Unknown Key");
-  if (message?.channel.isSendable()) message?.channel.send("⚠️ Unknown Key");
-}
-
-async function handleHelp({
-  dbSvc,
-  interaction,
-  message,
-}: {
-  dbSvc: DbSvc;
-  interaction?: ChatInputCommandInteraction;
-  message?: Message;
-}) {
-  const discord_guild_id = message?.guildId ?? interaction?.guildId;
-  const prefix = await dbSvc.getGuildPrefix(discord_guild_id);
-
-  const embed = new EmbedBuilder()
-    .setTitle("Meme Help")
-    .setColor("#fef3c6")
-    .setThumbnail(
-      "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
-    )
-    .addFields({
-      name: "<:azusarelaxed:1207544782952595508> meme add",
-      value:
-        "Add a meme to your collection. If the command is used in a server, the meme will be added to the server's collection. If the same key already exists in the user or server collection, the value will be overwritten.",
-    })
-    .addFields({
-      name: "<:azusarelaxed:1207544782952595508> meme drop",
-      value: `Drop a meme from your collection or the server's collection. The user's meme will take priority. ${inlineCode(prefix + "m <key>")} can also be used as shortcut.`,
-    })
-    .addFields({
-      name: "<:azusarelaxed:1207544782952595508> meme list",
-      value:
-        "List all memes that can be drop, including those from both the user and server collections.",
-    })
-    .addFields({
-      name: "<:azusarelaxed:1207544782952595508> meme remove",
-      value: "Remove a meme from your collection and/or the server's collection.",
-    })
-    .setFooter({
-      text: "Mahiru",
-    })
-    .setTimestamp();
-
-  interaction?.reply({ embeds: [embed] });
-  if (message?.channel.isSendable())
-    message.channel.send({
-      embeds: [embed],
-    });
-}
-
-function getListUrl(token: string) {
-  const url = new URL(env.WEB_URL);
-  url.pathname = "/memes";
-  url.searchParams.set("token", token);
-  return url.toString();
-}
+};

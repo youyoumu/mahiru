@@ -1,5 +1,4 @@
 import type { Ctx } from "#/lib/ctx";
-import type { DB } from "#/lib/db";
 
 import { DbSvc } from "#/lib/db";
 import { schema } from "@repo/db";
@@ -68,8 +67,7 @@ export const Prefix: CommandProto = class Prefix implements Command {
     switch (selectedAction) {
       case "change": {
         if (newPrefix) {
-          return handleChange({
-            dbSvc: this.ctx.dbSvc,
+          return this.handleChange({
             discord_guild_id,
             prefix: newPrefix,
             interaction,
@@ -79,15 +77,14 @@ export const Prefix: CommandProto = class Prefix implements Command {
       }
 
       case "current": {
-        return handleCurrent({
-          dbSvc: this.ctx.dbSvc,
+        return this.handleCurrent({
           discord_guild_id,
           interaction,
         });
       }
 
       case "help": {
-        return handleHelp({ interaction });
+        return this.handleHelp({ interaction });
       }
     }
 
@@ -104,8 +101,7 @@ export const Prefix: CommandProto = class Prefix implements Command {
         const newPrefix = args[1];
 
         if (newPrefix) {
-          return handleChange({
-            dbSvc: this.ctx.dbSvc,
+          return this.handleChange({
             discord_guild_id,
             prefix: newPrefix,
             message,
@@ -118,122 +114,115 @@ export const Prefix: CommandProto = class Prefix implements Command {
         break;
       }
       case action.current: {
-        return handleCurrent({
-          dbSvc: this.ctx.dbSvc,
+        return this.handleCurrent({
           discord_guild_id,
           message,
         });
       }
 
       case action.help: {
-        return handleHelp({ message });
+        return this.handleHelp({ message });
       }
 
       default: {
-        return handleCurrent({
-          dbSvc: this.ctx.dbSvc,
+        return this.handleCurrent({
           discord_guild_id,
           message,
         });
       }
     }
   }
-};
 
-async function getGuildPrefixEntry({ db, discord_guild_id }: { db: DB; discord_guild_id: string }) {
-  return await db.query.prefixes.findFirst({
-    where(fields, operators) {
-      return operators.eq(fields.discord_guild_id, discord_guild_id);
-    },
-  });
-}
+  private async getGuildPrefixEntry(discord_guild_id: string) {
+    return await this.ctx.dbSvc.db.query.prefixes.findFirst({
+      where(fields, operators) {
+        return operators.eq(fields.discord_guild_id, discord_guild_id);
+      },
+    });
+  }
 
-async function handleChange({
-  dbSvc,
-  discord_guild_id,
-  prefix,
-  interaction,
-  message,
-}: {
-  dbSvc: DbSvc;
-  discord_guild_id: string;
-  prefix: string;
-  interaction?: ChatInputCommandInteraction;
-  message?: Message;
-}) {
-  if (prefix.length > 2) {
-    interaction?.reply("The maximum prefix length is 2 characters.");
+  private async handleChange({
+    discord_guild_id,
+    prefix,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string;
+    prefix: string;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    if (prefix.length > 2) {
+      interaction?.reply("The maximum prefix length is 2 characters.");
+      if (message?.channel.isSendable())
+        message.channel.send("The maximum prefix length is 2 characters.");
+      return;
+    }
+
+    const guildPrefix = await this.getGuildPrefixEntry(discord_guild_id);
+
+    if (guildPrefix) {
+      await this.ctx.dbSvc.db
+        .update(schema.prefixes)
+        .set({ prefix: prefix })
+        .where(eq(schema.prefixes.id, guildPrefix.id));
+    } else {
+      await this.ctx.dbSvc.db.insert(schema.prefixes).values({
+        discord_guild_id: discord_guild_id,
+        prefix: prefix,
+      });
+    }
+    this.ctx.dbSvc.getPrefixStorage().set(discord_guild_id, prefix);
+
+    interaction?.reply(inlineCode(prefix));
+    if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));
+  }
+
+  private async handleCurrent({
+    discord_guild_id,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    const prefix = (await this.getGuildPrefixEntry(discord_guild_id))?.prefix ?? DbSvc.globalPrefix;
+
+    interaction?.reply(inlineCode(prefix));
+    if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));
+  }
+
+  private handleHelp({
+    interaction,
+    message,
+  }: {
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    const embed = new EmbedBuilder()
+      .setTitle("Prefix Help")
+      .setColor("#fef3c6")
+      .setThumbnail(
+        "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
+      )
+      .addFields({
+        name: "<:azusarelaxed:1207544782952595508> prefix current",
+        value: "Display the current bot prefix for this server.",
+      })
+      .addFields({
+        name: "<:azusarelaxed:1207544782952595508> prefix change",
+        value: "Change the bot prefix for this server. The maximum prefix length is 2 characters.",
+      })
+      .setFooter({
+        text: "Mahiru",
+      })
+      .setTimestamp();
+
+    interaction?.reply({ embeds: [embed] });
     if (message?.channel.isSendable())
-      message.channel.send("The maximum prefix length is 2 characters.");
-    return;
+      message.channel.send({
+        embeds: [embed],
+      });
   }
-
-  const guildPrefix = await getGuildPrefixEntry({ db: dbSvc.db, discord_guild_id });
-
-  if (guildPrefix) {
-    await dbSvc.db
-      .update(schema.prefixes)
-      .set({ prefix: prefix })
-      .where(eq(schema.prefixes.id, guildPrefix.id));
-  } else {
-    await dbSvc.db.insert(schema.prefixes).values({
-      discord_guild_id: discord_guild_id,
-      prefix: prefix,
-    });
-  }
-  dbSvc.getPrefixStorage().set(discord_guild_id, prefix);
-
-  interaction?.reply(inlineCode(prefix));
-  if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));
-}
-
-async function handleCurrent({
-  dbSvc,
-  discord_guild_id,
-  interaction,
-  message,
-}: {
-  dbSvc: DbSvc;
-  discord_guild_id: string;
-  interaction?: ChatInputCommandInteraction;
-  message?: Message;
-}) {
-  const prefix =
-    (await getGuildPrefixEntry({ db: dbSvc.db, discord_guild_id }))?.prefix ?? DbSvc.globalPrefix;
-
-  interaction?.reply(inlineCode(prefix));
-  if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));
-}
-
-function handleHelp({
-  interaction,
-  message,
-}: {
-  interaction?: ChatInputCommandInteraction;
-  message?: Message;
-}) {
-  const embed = new EmbedBuilder()
-    .setTitle("Prefix Help")
-    .setColor("#fef3c6")
-    .setThumbnail(
-      "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
-    )
-    .addFields({
-      name: "<:azusarelaxed:1207544782952595508> prefix current",
-      value: "Display the current bot prefix for this server.",
-    })
-    .addFields({
-      name: "<:azusarelaxed:1207544782952595508> prefix change",
-      value: "Change the bot prefix for this server. The maximum prefix length is 2 characters.",
-    })
-    .setFooter({
-      text: "Mahiru",
-    })
-    .setTimestamp();
-
-  interaction?.reply({ embeds: [embed] });
-  if (message?.channel.isSendable())
-    message.channel.send({
-      embeds: [embed],
-    });
-}
+};
