@@ -10,6 +10,9 @@ import { env } from "./env";
 import * as events from "./events";
 import { Ctx } from "./lib/ctx";
 import { DbSvc } from "./lib/db";
+import { createLogger } from "./lib/logger";
+
+const log = createLogger({ level: "trace" }).child({ name: "main" });
 
 // Create a new client instance
 const client = new Client({
