@@ -31,6 +31,7 @@ export class MessageCreate {
       let prefix: string | undefined;
 
       const guildPrefix = await getGuildPrefix({
+        db: this.ctx.db,
         discord_guild_id: message.guildId,
       });
 

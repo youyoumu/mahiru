@@ -1,8 +1,9 @@
+import type { DB } from "#/lib/db";
 import type { JwtPayload } from "#/lib/jwt";
 
 import { env } from "#/env";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import db, { selectMemesSchema } from "@repo/db";
+import { selectMemesSchema } from "@repo/db";
 import { verify } from "hono/jwt";
 
 const zRes = z.array(selectMemesSchema);
@@ -16,7 +17,9 @@ const zDecodedPayload = z.object({
   exp: z.number(),
 });
 
-export const memes = new OpenAPIHono<{ Variables: { jwtPayload: JwtPayload } }>().openapi(
+export const memes = new OpenAPIHono<{
+  Variables: { jwtPayload: JwtPayload; ctx: { oneTimeTokens: Map<string, string>; db: DB } };
+}>().openapi(
   createRoute({
     method: "get",
     path: "/",
@@ -29,6 +32,7 @@ export const memes = new OpenAPIHono<{ Variables: { jwtPayload: JwtPayload } }>(
     },
   }),
   async (c) => {
+    const { db } = c.get("ctx");
     const { discord_user_id } = c.get("jwtPayload");
     const { meme_ids_token } = c.req.valid("query");
     let decoded;

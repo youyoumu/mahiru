@@ -13,6 +13,7 @@ export const env = createEnv({
     DISCORD_TOKEN: z.string(),
     DISCORD_USER_TOKEN: z.string(),
     TENOR_KEY: z.string(),
+    DATABASE_URL: z.url(),
   },
   clientPrefix: "PUBLIC_",
   client: {},

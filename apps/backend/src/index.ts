@@ -7,17 +7,19 @@ import { logger } from "hono/logger";
 import type { JwtPayload } from "./lib/jwt";
 
 import { env } from "./env";
+import { createDb, type DB } from "./lib/db";
 import * as routes from "./routes";
 
 const ctx = {
   oneTimeTokens: new Map<string, string>(),
+  db: createDb(),
 };
 
 const port = env.PORT;
 console.log(`Server is running on port http://localhost:${port}`);
 
 const app = new OpenAPIHono<{
-  Variables: { jwtPayload: JwtPayload; ctx: { oneTimeTokens: Map<string, string> } };
+  Variables: { jwtPayload: JwtPayload; ctx: { oneTimeTokens: Map<string, string>; db: DB } };
 }>()
   .doc("/openapi", {
     openapi: "3.0.0",

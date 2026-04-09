@@ -20,22 +20,24 @@ export const Help: CommandProto = class Help implements Command {
   }
 
   async execute(interaction: ChatInputCommandInteraction) {
-    return handleHelp({ interaction });
+    return handleHelp({ ctx: this.ctx, interaction });
   }
   async prefixExecute({ message }: PrefixExecuteOpts) {
-    return handleHelp({ message });
+    return handleHelp({ ctx: this.ctx, message });
   }
 };
 
 async function handleHelp({
+  ctx,
   interaction,
   message,
 }: {
+  ctx: Ctx;
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
   const discord_guild_id = message?.guildId ?? interaction?.guildId;
-  const prefix = await getGuildPrefix({ discord_guild_id });
+  const prefix = await getGuildPrefix({ db: ctx.db, discord_guild_id });
   const embed = new EmbedBuilder()
     .setTitle("Help")
     .setColor("#fef3c6")

@@ -9,6 +9,7 @@ import * as commands from "./commands";
 import { env } from "./env";
 import * as events from "./events";
 import { Ctx } from "./lib/ctx";
+import { createDb } from "./lib/db";
 
 // Create a new client instance
 const client = new Client({
@@ -20,7 +21,8 @@ const client = new Client({
   ],
 });
 
-const ctx = new Ctx({ api: hc<AppType>("") });
+const db = createDb();
+const ctx = new Ctx({ api: hc<AppType>(""), db });
 const commandsPair: Record<string, Command> = {
   [commands.Ping.data.name]: new commands.Ping({ ctx }),
   [commands.Meme.data.name]: new commands.Meme({ ctx }),

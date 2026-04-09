@@ -1,4 +1,4 @@
-import db from "@repo/db";
+import type { DB } from "#/lib/db";
 
 export const globalPrefix = "!";
 const prefixStorage = new Map();
@@ -8,8 +8,10 @@ export function getPrefixStorage() {
 }
 
 export async function getGuildPrefix({
+  db,
   discord_guild_id,
 }: {
+  db: DB;
   discord_guild_id: string | null | undefined;
 }): Promise<string> {
   const prefixFromStorage = getPrefixStorage().get(discord_guild_id);

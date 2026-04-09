@@ -1,8 +1,9 @@
 import type { Ctx } from "#/lib/ctx";
+import type { DB } from "#/lib/db";
 
 import { env } from "#/env";
 import { getGuildPrefix } from "#/utils/prefix-storage";
-import db, { schema } from "@repo/db";
+import { schema } from "@repo/db";
 import {
   bold,
   ChatInputCommandInteraction,
@@ -105,6 +106,7 @@ export const Meme: CommandProto = class Meme implements Command {
       case "add": {
         if (key && value) {
           return handleAdd({
+            db: this.ctx.db,
             discord_guild_id,
             discord_user_id,
             key,
@@ -118,6 +120,7 @@ export const Meme: CommandProto = class Meme implements Command {
       case "drop": {
         if (key) {
           return handleDrop({
+            db: this.ctx.db,
             discord_guild_id,
             discord_user_id,
             key,
@@ -129,6 +132,7 @@ export const Meme: CommandProto = class Meme implements Command {
       case "list": {
         return handleList({
           api: this.ctx.api,
+          db: this.ctx.db,
           discord_guild_id,
           discord_user_id,
           interaction,
@@ -137,6 +141,7 @@ export const Meme: CommandProto = class Meme implements Command {
       case "remove": {
         if (key) {
           return handleRemove({
+            db: this.ctx.db,
             discord_guild_id,
             discord_user_id,
             key,
@@ -146,7 +151,7 @@ export const Meme: CommandProto = class Meme implements Command {
         return interaction.reply("⚠️ Invalid arguments");
       }
       case "help": {
-        return handleHelp({ interaction });
+        return handleHelp({ db: this.ctx.db, interaction });
       }
     }
 
@@ -164,6 +169,7 @@ export const Meme: CommandProto = class Meme implements Command {
 
         if (key && value) {
           return handleAdd({
+            db: this.ctx.db,
             discord_guild_id,
             discord_user_id,
             key,
@@ -181,6 +187,7 @@ export const Meme: CommandProto = class Meme implements Command {
         const key = args[1];
         if (key) {
           return handleDrop({
+            db: this.ctx.db,
             discord_guild_id,
             discord_user_id,
             key,
@@ -196,6 +203,7 @@ export const Meme: CommandProto = class Meme implements Command {
       case action.list: {
         return handleList({
           api: this.ctx.api,
+          db: this.ctx.db,
           discord_guild_id,
           discord_user_id,
           message,
@@ -205,6 +213,7 @@ export const Meme: CommandProto = class Meme implements Command {
         const key = args[1];
         if (key) {
           return handleRemove({
+            db: this.ctx.db,
             discord_guild_id,
             discord_user_id,
             key,
@@ -218,13 +227,14 @@ export const Meme: CommandProto = class Meme implements Command {
         break;
       }
       case action.help: {
-        return handleHelp({ message });
+        return handleHelp({ db: this.ctx.db, message });
       }
       default: {
         if (message.channel.isSendable()) {
           const key = subCommand;
           if (key) {
             return handleDrop({
+              db: this.ctx.db,
               discord_guild_id,
               discord_user_id,
               key,
@@ -237,7 +247,15 @@ export const Meme: CommandProto = class Meme implements Command {
   }
 };
 
-async function getUserMeme({ key, discord_user_id }: { key: string; discord_user_id: string }) {
+async function getUserMeme({
+  db,
+  key,
+  discord_user_id,
+}: {
+  db: DB;
+  key: string;
+  discord_user_id: string;
+}) {
   const userMeme = await db.query.meme.findFirst({
     where(fields, { eq, and }) {
       return and(eq(fields.key, key), eq(fields.discord_user_id, discord_user_id));
@@ -247,9 +265,11 @@ async function getUserMeme({ key, discord_user_id }: { key: string; discord_user
 }
 
 async function getGuildMeme({
+  db,
   key,
   discord_guild_id,
 }: {
+  db: DB;
   key: string;
   discord_guild_id: string | undefined | null;
 }) {
@@ -265,20 +285,22 @@ async function getGuildMeme({
 }
 
 async function handleDrop({
+  db,
   discord_guild_id,
   discord_user_id,
   key,
   interaction,
   message,
 }: {
+  db: DB;
   discord_guild_id: string | undefined | null;
   discord_user_id: string;
   key: string;
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
-  const userMeme = await getUserMeme({ discord_user_id, key });
-  const guildMeme = await getGuildMeme({ discord_guild_id, key });
+  const userMeme = await getUserMeme({ db, discord_user_id, key });
+  const guildMeme = await getGuildMeme({ db, discord_guild_id, key });
 
   if (userMeme) {
     interaction?.reply(userMeme.value);
@@ -298,6 +320,7 @@ async function handleDrop({
 }
 
 async function handleAdd({
+  db,
   discord_guild_id,
   discord_user_id,
   key,
@@ -305,6 +328,7 @@ async function handleAdd({
   interaction,
   message,
 }: {
+  db: DB;
   discord_guild_id: string | undefined | null;
   discord_user_id: string;
   key: string;
@@ -319,8 +343,8 @@ async function handleAdd({
     return;
   }
 
-  const userMeme = await getUserMeme({ discord_user_id, key });
-  const guildMeme = await getGuildMeme({ discord_guild_id, key });
+  const userMeme = await getUserMeme({ db, discord_user_id, key });
+  const guildMeme = await getGuildMeme({ db, discord_guild_id, key });
 
   // if this guild already has meme with this key, remove it from this server
   if (guildMeme) {
@@ -353,12 +377,14 @@ async function handleAdd({
 
 async function handleList({
   api,
+  db,
   discord_guild_id,
   discord_user_id,
   interaction,
   message,
 }: {
   api: Ctx["api"];
+  db: DB;
   discord_guild_id: string | undefined | null;
   discord_user_id: string;
   interaction?: ChatInputCommandInteraction;
@@ -413,20 +439,22 @@ async function handleList({
 }
 
 async function handleRemove({
+  db,
   discord_guild_id,
   discord_user_id,
   key,
   interaction,
   message,
 }: {
+  db: DB;
   discord_guild_id: string | undefined | null;
   discord_user_id: string;
   key: string;
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
-  const userMeme = await getUserMeme({ key, discord_user_id });
-  const guildMeme = await getGuildMeme({ discord_guild_id, key });
+  const userMeme = await getUserMeme({ db, key, discord_user_id });
+  const guildMeme = await getGuildMeme({ db, discord_guild_id, key });
 
   // if this guild already has meme with this key, remove it from this server
   if (guildMeme) {
@@ -451,14 +479,16 @@ async function handleRemove({
 }
 
 async function handleHelp({
+  db,
   interaction,
   message,
 }: {
+  db: DB;
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 }) {
   const discord_guild_id = message?.guildId ?? interaction?.guildId;
-  const prefix = await getGuildPrefix({ discord_guild_id });
+  const prefix = await getGuildPrefix({ db, discord_guild_id });
 
   const embed = new EmbedBuilder()
     .setTitle("Meme Help")
