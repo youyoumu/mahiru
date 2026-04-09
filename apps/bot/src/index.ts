@@ -8,11 +8,13 @@ import type { Command } from "./lib/command";
 import * as commands from "./commands";
 import { env } from "./env";
 import * as events from "./events";
+import * as handler from "./handler";
 import { Ctx } from "./lib/ctx";
 import { DbSvc } from "./lib/db";
 import { createLogger } from "./lib/logger";
 
 const log = createLogger({ level: "trace" }).child({ name: "main" });
+const chatbotHandler = new handler.ChatbotHandler({ log: log.child({ name: "chatbot" }) });
 
 // Create a new client instance
 const client = new Client({
@@ -35,7 +37,7 @@ const commandsPair: Record<string, Command> = {
 };
 const ready = new events.Ready({ ctx });
 const interactionCreate = new events.InteractionCreate({ ctx, commandsPair });
-const messageCreate = new events.MessageCreate({ ctx, commandsPair });
+const messageCreate = new events.MessageCreate({ ctx, commandsPair, chatbotHandler });
 const messageReactionAdd = new events.MessageReactionAdd({ ctx });
 
 // Log in to Discord with your client's token

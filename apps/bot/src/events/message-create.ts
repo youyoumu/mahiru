@@ -1,7 +1,7 @@
 import type { Command } from "#/lib/command";
 import type { Ctx } from "#/lib/ctx";
 
-import { handleChatbot } from "#/feature/chatbot";
+import { ChatbotHandler } from "#/handler/chatbot";
 import { DbSvc } from "#/lib/db";
 import { handleLink } from "#/utils/handle-link";
 import { Message } from "discord.js";
@@ -13,10 +13,16 @@ const shortcut: Record<string, string> = {
 export class MessageCreate {
   ctx: Ctx;
   commandsPair: Record<string, Command>;
+  chatbotHandler: ChatbotHandler;
 
-  constructor(opts: { ctx: Ctx; commandsPair: Record<string, Command> }) {
+  constructor(opts: {
+    ctx: Ctx;
+    commandsPair: Record<string, Command>;
+    chatbotHandler: ChatbotHandler;
+  }) {
     this.ctx = opts.ctx;
     this.commandsPair = opts.commandsPair;
+    this.chatbotHandler = opts.chatbotHandler;
   }
 
   async handler(message: Message) {
@@ -24,7 +30,7 @@ export class MessageCreate {
     if (message.author.bot) return;
 
     handleLink({ message, react: true, embed: false });
-    handleChatbot({ message });
+    this.chatbotHandler.handle({ message });
 
     let args: string[] = [];
     if (message.guild) {
