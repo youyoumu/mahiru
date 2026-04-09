@@ -3,10 +3,10 @@ import type { JwtPayload } from "#/lib/jwt";
 
 import { env } from "#/env";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { selectMemesSchema } from "@repo/db";
+import { zSelectMemes } from "@repo/db";
 import { verify } from "hono/jwt";
 
-const zRes = z.array(selectMemesSchema);
+const zRes = z.array(zSelectMemes);
 
 const zQuery = z.object({
   t: z.string().optional(),

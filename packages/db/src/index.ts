@@ -1,7 +1,8 @@
 import { drizzle } from "drizzle-orm/libsql";
+import { createSelectSchema } from "drizzle-zod";
 
 import * as schema from "./schema";
-import * as zodSchemas from "./zod";
+
+export const zSelectMemes = createSelectSchema(schema.meme);
 
 export { schema, drizzle };
-export const selectMemesSchema = zodSchemas.selectMemesSchema;
