@@ -12,11 +12,9 @@ import * as handler from "./handler";
 import { Ctx } from "./lib/ctx";
 import { DbSvc } from "./lib/db";
 import { createLogger } from "./lib/logger";
+import { Unblock } from "./lib/unblock";
 
 const log = createLogger({ level: "trace" }).child({ name: "main" });
-const chatbotHandler = new handler.ChatbotHandler({ log: log.child({ name: "chatbot" }) });
-const nhenHandler = new handler.NhenHandler({ log: log.child({ name: "nhen" }) });
-const linkHandler = new handler.LinkHandler({ log: log.child({ name: "link" }), nhenHandler });
 
 // Create a new client instance
 const client = new Client({
@@ -28,8 +26,12 @@ const client = new Client({
   ],
 });
 
-const dbSvc = new DbSvc();
-const ctx = new Ctx({ api: hc<AppType>(env.BE_URL), dbSvc });
+const ctx = new Ctx({
+  api: hc<AppType>(env.BE_URL),
+  dbSvc: new DbSvc(),
+  unblock: new Unblock(),
+});
+
 const commandsPair: Record<string, Command> = {
   [commands.Ping.data.name]: new commands.Ping({ ctx }),
   [commands.Meme.data.name]: new commands.Meme({ ctx }),
@@ -37,6 +39,11 @@ const commandsPair: Record<string, Command> = {
   [commands.Prefix.data.name]: new commands.Prefix({ ctx }),
   [commands.Help.data.name]: new commands.Help({ ctx }),
 };
+
+const chatbotHandler = new handler.ChatbotHandler({ log: log.child({ name: "chatbot" }) });
+const nhenHandler = new handler.NhenHandler({ ctx, log: log.child({ name: "nhen" }) });
+const linkHandler = new handler.LinkHandler({ log: log.child({ name: "link" }), nhenHandler });
+
 const ready = new events.Ready({
   ctx,
   log: log.child({ name: "ready" }),

@@ -1,3 +1,4 @@
+import type { paths } from "#/types/openapi-nhen.d.ts";
 import type { Logger } from "pino";
 
 import {
@@ -9,20 +10,14 @@ import {
   Message,
   type PartialMessage,
 } from "discord.js";
-import { API, Book, Image, TagTypes } from "nhentai-api";
+
+type Gallery =
+  paths["/api/v2/galleries/{gallery_id}"]["get"]["responses"]["200"]["content"]["application/json"];
+
+import type { Ctx } from "#/lib/ctx";
+
 import { z } from "zod";
 
-// 1. Create a new ImageType instance for WEBP
-const webpType = new Image.types.JPEG.constructor("w", "webp"); // reuse the constructor
-
-// 2. Patch the known types and add WEBP
-// @ts-expect-error add WEBP support
-Image.types.WEBP = webpType;
-
-const nH = new API({
-  //@ts-expect-error we don't need to pass all the options
-  hosts: { images: "i4.nhentai.net" },
-});
 const buttonId = {
   next: "next",
   prev: "prev",
@@ -32,10 +27,12 @@ const buttonId = {
 type ButtonId = keyof typeof buttonId;
 
 export class NhenHandler {
-  bookStorage = new Map<number, Book>();
+  ctx: Ctx;
   log: Logger;
+  galleryStorage = new Map<number, Gallery>();
 
-  constructor(opts: { log: Logger }) {
+  constructor(opts: { ctx: Ctx; log: Logger }) {
+    this.ctx = opts.ctx;
     this.log = opts.log;
   }
 
@@ -108,38 +105,65 @@ export class NhenHandler {
     }
   }
 
-  async createMessage({ code, pageNumber }: { code: number; pageNumber: number }) {
-    const bookCache = this.bookStorage.get(code);
-    const book = bookCache ?? (await nH.getBook(code));
+  async getGallery(code: number) {
+    const cache = this.galleryStorage.get(code);
+    const gallery = cache ?? (await this.fetchGallery(code));
+    if (!cache) this.galleryStorage.set(code, gallery);
+    return gallery;
+  }
 
-    if (!bookCache) this.bookStorage.set(code, book);
-    const totalPages = book.pages.length;
-    const index = pageNumber - 1;
-    const page = book.pages[index] ? nH.getImageURL(book.pages[index]) : null;
+  async fetchGallery(code: number) {
+    const res = await this.ctx.unblock.fetch(`https://nhentai.net/api/v2/galleries/${code}`);
+    const json = (await res.json()) as Gallery;
+    return json;
+  }
+
+  getImageUrl(gallery: Gallery, pageNumber: number) {
+    const url = new URL("https://i.nhentai.net");
+    const page = gallery.pages.find((page) => page.number === pageNumber);
     if (!page) throw new Error("No page found");
-    const newPage = new URL(page);
-    const url = new URL("https://nhentai.net");
-    const tags = book.tags.map((tag) => tag.name).join(", ");
-    const artist = book.tags.find((tag) => tag.type === TagTypes.Artist)?.name;
+    url.pathname = page.path;
+    return url.toString();
+  }
 
-    const artistUrl = new URL(url);
-    artistUrl.pathname = `/artist/${artist ?? "unknown"}/`;
-    url.pathname = `/g/${code}/`;
+  getArtist(gallery: Gallery) {
+    return gallery.tags.find((tag) => tag.type === "artist")?.name;
+  }
+
+  getArtistUrl(gallery: Gallery) {
+    const artist = this.getArtist(gallery);
+    if (!artist) return;
+    const url = new URL("https://nhentai.net");
+    url.pathname = `/artist/${artist}/`;
+    return url.toString();
+  }
+
+  getTags(gallery: Gallery) {
+    return gallery.tags.map((tag) => tag.name).join(", ");
+  }
+
+  async createMessage({ code, pageNumber }: { code: number; pageNumber: number }) {
+    const gallery = await this.getGallery(code);
+    const imageUrl = this.getImageUrl(gallery, pageNumber);
+    const artist = this.getArtist(gallery);
+    const artistUrl = this.getArtistUrl(gallery);
+    const tags = this.getTags(gallery);
+    const url = `https://nhentai.net/g/${code}/`;
 
     const embed = new EmbedBuilder()
-      .setTitle(book.title.pretty)
+      .setTitle(gallery.title.pretty)
       .setURL(url.toString())
       .setDescription(tags)
       .setAuthor({
         name: artist ?? "unknown",
-        url: artistUrl.toString(),
+        url: artistUrl,
         iconURL: "https://i.imgur.com/uLAimaY.png",
       })
       .setColor("#fef3c6")
       .setFooter({
-        text: `${code} - ${pageNumber}/${totalPages}`,
+        text: `${code} - ${pageNumber}/${gallery.num_pages}`,
       })
-      .setImage(newPage.toString());
+      .setImage(imageUrl);
 
     const first = new ButtonBuilder()
       .setCustomId(buttonId.first)

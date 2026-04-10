@@ -4,11 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-patchedDependencies:
-  nhentai-api@3.4.3:
-    hash: l32mczv3ai4lur5fgqbgryjtlm
-    path: patches/nhentai-api@3.4.3.patch
-
 importers:
 
   .:
@@ -101,9 +96,6 @@ importers:
       hono:
         specifier: ^4.12.11
         version: 4.12.11
-      nhentai-api:
-        specifier: ^3.4.3
-        version: 3.4.3(patch_hash=l32mczv3ai4lur5fgqbgryjtlm)
       openapi-fetch:
         specifier: ^0.14.0
         version: 0.14.0
@@ -2605,10 +2597,6 @@ packages:
       react: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
       react-dom: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
 
-  nhentai-api@3.4.3:
-    resolution: {integrity: sha512-IPzoB9/GRVF/wofyao6SfpFIak2GyE8+4F7ipDJXK/vmxV3QPa+7E7+cst2zsXis5j9Yxk3Cf/zodktaM9UU9w==}
-    engines: {node: '>=12'}
-
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
@@ -3090,6 +3078,7 @@ packages:
   typescript@5.8.2:
     resolution: {integrity: sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ==}
     engines: {node: '>=14.17'}
+    hasBin: true
 
   unconfig-core@7.5.0:
     resolution: {integrity: sha512-Su3FauozOGP44ZmKdHy2oE6LPjk51M/TRRjHv2HNCWiDvfvCoxC2lno6jevMA91MYAdCdwP05QnWdWpSbncX/w==}
@@ -5095,8 +5084,6 @@ snapshots:
     dependencies:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
-
-  nhentai-api@3.4.3(patch_hash=l32mczv3ai4lur5fgqbgryjtlm): {}
 
   node-domexception@1.0.0: {}
 
