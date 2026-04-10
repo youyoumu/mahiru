@@ -16,20 +16,25 @@ type Gallery =
 
 import type { Ctx } from "#/lib/ctx";
 
-import { z } from "zod";
-
-const buttonId = {
+const BUTTON_ID = {
   next: "next",
   prev: "prev",
   first: "first",
   last: "last",
 } as const;
-type ButtonId = keyof typeof buttonId;
+type ButtonId = keyof typeof BUTTON_ID;
+
+type MessageState = {
+  code: number;
+  currentPage: number;
+  totalPages: number;
+};
 
 export class NhenHandler {
   ctx: Ctx;
   log: Logger;
   galleryStorage = new Map<number, Gallery>();
+  messageState = new Map<string, MessageState>();
 
   constructor(opts: { ctx: Ctx; log: Logger }) {
     this.ctx = opts.ctx;
@@ -40,7 +45,15 @@ export class NhenHandler {
     if (!message.channel.isSendable()) return;
 
     try {
-      message.channel.send(await this.createMessage({ code, pageNumber: 1 }));
+      const gallery = await this.getGallery(code);
+      const sentMessage = await message.channel.send(
+        await this.createMessagePayload({ gallery, code, pageNumber: 1 }),
+      );
+      this.messageState.set(sentMessage.id, {
+        code,
+        currentPage: 1,
+        totalPages: gallery.num_pages,
+      });
     } catch (err) {
       this.log.error(
         err instanceof Error ? { message: err.message } : err,
@@ -49,29 +62,10 @@ export class NhenHandler {
     }
   }
 
-  async handleNHenButtonInteraction({ interaction }: { interaction: ButtonInteraction }) {
-    const str = interaction.message.embeds[0]?.footer?.text;
-    if (!str) return;
-    const [codeString, pageInfo] = str.split("-").map((part) => part.trim());
-    if (!pageInfo) return;
-    const [currentPageString, totalPagesString] = pageInfo.split("/");
-
-    const numberSchema = z
-      .string()
-      .regex(/^\d+$/)
-      .transform((s) => Number(s));
-
-    let code: number;
-    let currentPage: number;
-    let totalPages: number;
-
-    try {
-      code = numberSchema.parse(codeString);
-      currentPage = numberSchema.parse(currentPageString);
-      totalPages = numberSchema.parse(totalPagesString);
-    } catch {
-      return;
-    }
+  async handleInteraction({ interaction }: { interaction: ButtonInteraction }) {
+    const state = this.messageState.get(interaction.message.id);
+    if (!state) return;
+    const { code, currentPage, totalPages } = state;
 
     function getPageNumber() {
       let selectedButtonId: ButtonId = "next";
@@ -80,28 +74,34 @@ export class NhenHandler {
       }
 
       switch (selectedButtonId) {
-        case buttonId.next: {
+        case BUTTON_ID.next: {
           const pageNumber = currentPage + 1;
           return pageNumber > totalPages ? totalPages : pageNumber;
         }
-        case buttonId.prev: {
+        case BUTTON_ID.prev: {
           const pageNumber = currentPage - 1;
           return pageNumber < 1 ? 1 : pageNumber;
         }
-        case buttonId.first: {
+        case BUTTON_ID.first: {
           return 1;
         }
-        case buttonId.last: {
+        case BUTTON_ID.last: {
           return totalPages;
         }
       }
     }
 
+    const pageNumber = getPageNumber();
+    state.currentPage = pageNumber;
+
     try {
-      interaction.update(await this.createMessage({ code: code, pageNumber: getPageNumber() }));
-    } catch (error) {
-      console.error(error);
-      return;
+      const gallery = await this.getGallery(code);
+      interaction.update(await this.createMessagePayload({ gallery, code, pageNumber }));
+    } catch (err) {
+      this.log.error(
+        err instanceof Error ? { message: err.message } : err,
+        `Failed to update nhen embed`,
+      );
     }
   }
 
@@ -127,14 +127,14 @@ export class NhenHandler {
   }
 
   getArtist(gallery: Gallery) {
-    return gallery.tags.find((tag) => tag.type === "artist")?.name;
+    return gallery.tags.find((tag) => tag.type === "artist");
   }
 
   getArtistUrl(gallery: Gallery) {
     const artist = this.getArtist(gallery);
     if (!artist) return;
     const url = new URL("https://nhentai.net");
-    url.pathname = `/artist/${artist}/`;
+    url.pathname = artist.url;
     return url.toString();
   }
 
@@ -142,8 +142,15 @@ export class NhenHandler {
     return gallery.tags.map((tag) => tag.name).join(", ");
   }
 
-  async createMessage({ code, pageNumber }: { code: number; pageNumber: number }) {
-    const gallery = await this.getGallery(code);
+  async createMessagePayload({
+    gallery,
+    code,
+    pageNumber,
+  }: {
+    gallery: Gallery;
+    code: number;
+    pageNumber: number;
+  }) {
     const imageUrl = this.getImageUrl(gallery, pageNumber);
     const artist = this.getArtist(gallery);
     const artistUrl = this.getArtistUrl(gallery);
@@ -155,7 +162,7 @@ export class NhenHandler {
       .setURL(url.toString())
       .setDescription(tags)
       .setAuthor({
-        name: artist ?? "unknown",
+        name: artist?.name ?? "unknown",
         url: artistUrl,
         iconURL: "https://i.imgur.com/uLAimaY.png",
       })
@@ -166,19 +173,19 @@ export class NhenHandler {
       .setImage(imageUrl);
 
     const first = new ButtonBuilder()
-      .setCustomId(buttonId.first)
+      .setCustomId(BUTTON_ID.first)
       .setEmoji("⏪")
       .setStyle(ButtonStyle.Secondary);
     const prev = new ButtonBuilder()
-      .setCustomId(buttonId.prev)
+      .setCustomId(BUTTON_ID.prev)
       .setEmoji("⬅️")
       .setStyle(ButtonStyle.Secondary);
     const next = new ButtonBuilder()
-      .setCustomId(buttonId.next)
+      .setCustomId(BUTTON_ID.next)
       .setEmoji("➡️")
       .setStyle(ButtonStyle.Secondary);
     const last = new ButtonBuilder()
-      .setCustomId(buttonId.last)
+      .setCustomId(BUTTON_ID.last)
       .setEmoji("⏩")
       .setStyle(ButtonStyle.Secondary);
     const row = new ActionRowBuilder<ButtonBuilder>()

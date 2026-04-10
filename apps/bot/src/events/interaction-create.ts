@@ -59,7 +59,7 @@ export class InteractionCreate {
         }
       }
     } else if (isButton) {
-      this.nhenHandler.handleNHenButtonInteraction({ interaction });
+      this.nhenHandler.handleInteraction({ interaction });
     }
   }
 }
