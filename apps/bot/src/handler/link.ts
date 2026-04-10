@@ -3,9 +3,12 @@ import type { Logger } from "pino";
 import { env } from "#/env";
 import { emojis } from "#/lib/constants";
 import { type Message, type PartialMessage } from "discord.js";
+import { delay } from "es-toolkit";
 import { z } from "zod";
 
 import type { NhenHandler } from "./nhen";
+
+const zDigits = z.string().regex(/^\d+$/);
 
 export class LinkHandler {
   log: Logger;
@@ -29,27 +32,14 @@ export class LinkHandler {
     if (!message.channel.isSendable()) return;
     if (!message.content) return;
     if (!message.content.includes("https://")) return;
+    const url = this.getUrl(message.content);
+    if (!url) return;
 
-    const urlString = message.content.split(" ").find((string) => {
-      try {
-        return new URL(string);
-      } catch {
-        return false;
-      }
-    });
-    if (!urlString) return;
+    const pathname = url.pathname.split("/");
 
-    const url = new URL(urlString);
-    const pathnameSplit = url.pathname.split("/");
-    console.log("DEBUG[419]: pathnameSplit=", pathnameSplit);
-    const digitsSchema = z.string().regex(/^\d+$/);
-
-    const nhenCode = digitsSchema.safeParse(pathnameSplit[2]);
+    const nhenCode = zDigits.safeParse(pathname[2]);
     const isNhen =
-      url.hostname === "nhentai.net" &&
-      pathnameSplit[1] === "g" &&
-      nhenCode.success &&
-      nhenCode.data;
+      url.hostname === "nhentai.net" && pathname[1] === "g" && nhenCode.success && nhenCode.data;
     if (isNhen) {
       if (react) this.handleReact({ message, emoji: emojis.book });
       if (embed) {
@@ -57,13 +47,10 @@ export class LinkHandler {
       }
     }
 
-    // disable embed react until further development
-    if (env.ADMIN_KEY) return;
-
-    const tweetId = digitsSchema.safeParse(pathnameSplit[3]);
+    const tweetId = zDigits.safeParse(pathname[3]);
     const isTwitter =
       (url.hostname === "x.com" || url.hostname === "twitter.com") &&
-      pathnameSplit[2] === "status" &&
+      pathname[2] === "status" &&
       tweetId.success;
     if (isTwitter) {
       if (react) this.handleReact({ message });
@@ -76,10 +63,10 @@ export class LinkHandler {
       return;
     }
 
-    const pixivPostId = digitsSchema.safeParse(pathnameSplit[pathnameSplit.length - 1]);
+    const pixivPostId = zDigits.safeParse(pathname[pathname.length - 1]);
     const isPixiv =
       (url.hostname === "pixiv.net" || url.hostname === "www.pixiv.net") &&
-      (pathnameSplit[1] === "artworks" || pathnameSplit[2] === "artworks") &&
+      (pathname[1] === "artworks" || pathname[2] === "artworks") &&
       pixivPostId.success;
     if (isPixiv) {
       if (react) this.handleReact({ message });
@@ -93,7 +80,7 @@ export class LinkHandler {
 
     const isReddit =
       (url.hostname === "reddit.com" || url.hostname === "www.reddit.com") &&
-      (pathnameSplit[1] === "r" || pathnameSplit[3] === "comments");
+      (pathname[1] === "r" || pathname[3] === "comments");
     if (isReddit) {
       if (react) this.handleReact({ message });
       if (embed) {
@@ -105,8 +92,7 @@ export class LinkHandler {
     }
 
     const isInsta =
-      url.hostname === "www.instagram.com" &&
-      (pathnameSplit[1] === "p" || pathnameSplit[1] === "reel");
+      url.hostname === "www.instagram.com" && (pathname[1] === "p" || pathname[1] === "reel");
     if (isInsta) {
       if (react) this.handleReact({ message });
       if (embed) {
@@ -118,20 +104,24 @@ export class LinkHandler {
     }
   }
 
-  handleReact({ message, emoji }: { message: Message | PartialMessage; emoji?: string }) {
-    message.react(emoji ?? emojis.link);
-    setTimeout(async () => {
-      const myReactions = message.reactions.cache.filter((reaction) =>
-        reaction.users.cache.has(env.CLIENT_ID),
-      );
-      try {
-        for (const reaction of myReactions.values()) {
-          await reaction.users.remove(env.CLIENT_ID);
-        }
-      } catch {
-        console.error("Failed to remove reactions.");
-      }
-    }, 6000);
+  getUrl(content: string) {
+    const urlMatch = content.match(/https?:\/\/[^\s]+/);
+    try {
+      return urlMatch ? new URL(urlMatch[0]) : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  async handleReact({ message, emoji }: { message: Message | PartialMessage; emoji?: string }) {
+    const reactionEmoji = emoji ?? emojis.link;
+    try {
+      const reaction = await message.react(reactionEmoji);
+      await delay(6000);
+      await reaction.users.remove(env.CLIENT_ID);
+    } catch (err) {
+      this.log.error(err, "Could not complete reaction cycle:");
+    }
   }
 
   handleSendEmbed({ message, url }: { message: Message | PartialMessage; url: string }) {

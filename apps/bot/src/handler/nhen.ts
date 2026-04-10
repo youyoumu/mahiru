@@ -44,8 +44,11 @@ export class NhenHandler {
 
     try {
       message.channel.send(await this.createMessage({ code, pageNumber: 1 }));
-    } catch {
-      return;
+    } catch (err) {
+      this.log.error(
+        err instanceof Error ? { message: err.message } : err,
+        `Failed to embed nhen link`,
+      );
     }
   }
 
