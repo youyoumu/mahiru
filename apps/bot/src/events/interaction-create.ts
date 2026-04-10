@@ -1,16 +1,18 @@
+import type { NhenHandler } from "#/handler/nhen";
 import type { Command } from "#/lib/command";
 import type { Ctx } from "#/lib/ctx";
 
-import { handleNHenButtonInteraction } from "#/feature/nhen";
 import { BaseInteraction, MessageFlags } from "discord.js";
 
 export class InteractionCreate {
   ctx: Ctx;
   commandsPair: Record<string, Command>;
+  nhenHandler: NhenHandler;
 
-  constructor(opts: { ctx: Ctx; commandsPair: Record<string, Command> }) {
+  constructor(opts: { ctx: Ctx; commandsPair: Record<string, Command>; nhenHandler: NhenHandler }) {
     this.ctx = opts.ctx;
     this.commandsPair = opts.commandsPair;
+    this.nhenHandler = opts.nhenHandler;
   }
 
   async handler(interaction: BaseInteraction) {
@@ -35,9 +37,7 @@ export class InteractionCreate {
         }
       }
     } else if (interaction.isButton()) {
-      handleNHenButtonInteraction({
-        interaction,
-      });
+      this.nhenHandler.handleNHenButtonInteraction({ interaction });
     }
   }
 }

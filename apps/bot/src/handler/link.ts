@@ -1,17 +1,20 @@
 import type { Logger } from "pino";
 
 import { env } from "#/env";
-import { handleNhenLink } from "#/feature/nhen";
 import { emojis } from "#/lib/constants";
 import { type Message, type PartialMessage } from "discord.js";
 import { z } from "zod";
 
+import type { NhenHandler } from "./nhen";
+
 export class LinkHandler {
   log: Logger;
   embededMessageStorage = new Map<string, boolean>();
+  nhenHandler: NhenHandler;
 
-  constructor(options: { log: Logger }) {
-    this.log = options.log;
+  constructor(opts: { log: Logger; nhenHandler: NhenHandler }) {
+    this.log = opts.log;
+    this.nhenHandler = opts.nhenHandler;
   }
 
   async handle({
@@ -20,7 +23,6 @@ export class LinkHandler {
     embed,
   }: {
     message: Message | PartialMessage;
-
     react: boolean;
     embed: boolean;
   }) {
@@ -29,15 +31,12 @@ export class LinkHandler {
     if (!message.content.includes("https://")) return;
 
     const urlString = message.content.split(" ").find((string) => {
-      let validUrl: URL;
       try {
-        validUrl = new URL(string);
+        return new URL(string);
       } catch {
         return false;
       }
-      return validUrl;
     });
-
     if (!urlString) return;
 
     const url = new URL(urlString);
@@ -54,7 +53,7 @@ export class LinkHandler {
     if (isNhen) {
       if (react) this.handleReact({ message, emoji: emojis.book });
       if (embed) {
-        handleNhenLink({ code: Number(nhenCode.data), message });
+        this.nhenHandler.handleNhenLink({ code: Number(nhenCode.data), message });
       }
     }
 

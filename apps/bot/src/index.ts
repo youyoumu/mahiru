@@ -15,7 +15,8 @@ import { createLogger } from "./lib/logger";
 
 const log = createLogger({ level: "trace" }).child({ name: "main" });
 const chatbotHandler = new handler.ChatbotHandler({ log: log.child({ name: "chatbot" }) });
-const linkHandler = new handler.LinkHandler({ log: log.child({ name: "link" }) });
+const nhenHandler = new handler.NhenHandler({ log: log.child({ name: "nhen" }) });
+const linkHandler = new handler.LinkHandler({ log: log.child({ name: "link" }), nhenHandler });
 
 // Create a new client instance
 const client = new Client({
@@ -37,7 +38,7 @@ const commandsPair: Record<string, Command> = {
   [commands.Help.data.name]: new commands.Help({ ctx }),
 };
 const ready = new events.Ready({ ctx });
-const interactionCreate = new events.InteractionCreate({ ctx, commandsPair });
+const interactionCreate = new events.InteractionCreate({ ctx, commandsPair, nhenHandler });
 const messageCreate = new events.MessageCreate({ ctx, commandsPair, chatbotHandler, linkHandler });
 const messageReactionAdd = new events.MessageReactionAdd({ ctx, linkHandler });
 
