@@ -28,6 +28,7 @@ type MessageState = {
   code: number;
   currentPage: number;
   totalPages: number;
+  lastUpdatedAt: number;
 };
 
 export class NhenHandler {
@@ -45,14 +46,16 @@ export class NhenHandler {
     if (!message.channel.isSendable()) return;
 
     try {
+      const username = message.author?.username;
       const gallery = await this.getGallery(code);
       const sentMessage = await message.channel.send(
-        await this.createMessagePayload({ gallery, code, pageNumber: 1 }),
+        await this.createMessagePayload({ gallery, code, pageNumber: 1, username }),
       );
       this.messageState.set(sentMessage.id, {
         code,
         currentPage: 1,
         totalPages: gallery.num_pages,
+        lastUpdatedAt: Date.now(),
       });
     } catch (err) {
       this.log.error(
@@ -65,6 +68,18 @@ export class NhenHandler {
   async handleInteraction({ interaction }: { interaction: ButtonInteraction }) {
     const state = this.messageState.get(interaction.message.id);
     if (!state) return;
+
+    const now = Date.now();
+    const timeSinceLastUpdate = now - state.lastUpdatedAt;
+    if (timeSinceLastUpdate < 500) {
+      await interaction.reply({
+        content: "Please wait a moment before clicking again!",
+        ephemeral: true,
+      });
+      return;
+    }
+
+    const username = interaction.user.username;
     const { code, currentPage, totalPages } = state;
 
     function getPageNumber() {
@@ -93,10 +108,11 @@ export class NhenHandler {
 
     const pageNumber = getPageNumber();
     state.currentPage = pageNumber;
+    state.lastUpdatedAt = now;
 
     try {
       const gallery = await this.getGallery(code);
-      interaction.update(await this.createMessagePayload({ gallery, code, pageNumber }));
+      interaction.update(await this.createMessagePayload({ gallery, code, pageNumber, username }));
     } catch (err) {
       this.log.error(
         err instanceof Error ? { message: err.message } : err,
@@ -146,16 +162,19 @@ export class NhenHandler {
     gallery,
     code,
     pageNumber,
+    username,
   }: {
     gallery: Gallery;
     code: number;
     pageNumber: number;
+    username: string | undefined;
   }) {
     const imageUrl = this.getImageUrl(gallery, pageNumber);
     const artist = this.getArtist(gallery);
     const artistUrl = this.getArtistUrl(gallery);
     const tags = this.getTags(gallery);
     const url = `https://nhentai.net/g/${code}/`;
+    const updatedBy = username ? `updated by ${username}` : "";
 
     const embed = new EmbedBuilder()
       .setTitle(gallery.title.pretty)
@@ -168,7 +187,7 @@ export class NhenHandler {
       })
       .setColor("#fef3c6")
       .setFooter({
-        text: `${code} - ${pageNumber}/${gallery.num_pages}`,
+        text: `${pageNumber}/${gallery.num_pages} ${updatedBy}`,
       })
       .setImage(imageUrl);
 
