@@ -1,6 +1,7 @@
 import type { LinkHandler } from "#/handler";
 import type { Command } from "#/lib/command";
 import type { Ctx } from "#/lib/ctx";
+import type { Logger } from "pino";
 
 import { ChatbotHandler } from "#/handler/chatbot";
 import { DbSvc } from "#/lib/db";
@@ -12,24 +13,30 @@ const shortcut: Record<string, string> = {
 
 export class MessageCreate {
   ctx: Ctx;
+  log: Logger;
   commandsPair: Record<string, Command>;
   chatbotHandler: ChatbotHandler;
   linkHandler: LinkHandler;
 
   constructor(opts: {
     ctx: Ctx;
+    log: Logger;
     commandsPair: Record<string, Command>;
     chatbotHandler: ChatbotHandler;
     linkHandler: LinkHandler;
   }) {
     this.ctx = opts.ctx;
+    this.log = opts.log;
     this.commandsPair = opts.commandsPair;
     this.chatbotHandler = opts.chatbotHandler;
     this.linkHandler = opts.linkHandler;
   }
 
   async handler(message: Message) {
-    console.log("Message:", message.member?.id, message.guildId, message.content);
+    const messageSlice = message.content?.slice(0, 30);
+    const guildName = message.guild?.name;
+    const guildPreview = guildName ? `[${guildName}] ` : "";
+    this.log.trace(`${guildPreview}${message.author.username}: ${messageSlice}`);
     if (message.author.bot) return;
 
     this.linkHandler.handle({ message, react: true, embed: false });

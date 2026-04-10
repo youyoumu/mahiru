@@ -37,10 +37,28 @@ const commandsPair: Record<string, Command> = {
   [commands.Prefix.data.name]: new commands.Prefix({ ctx }),
   [commands.Help.data.name]: new commands.Help({ ctx }),
 };
-const ready = new events.Ready({ ctx });
-const interactionCreate = new events.InteractionCreate({ ctx, commandsPair, nhenHandler });
-const messageCreate = new events.MessageCreate({ ctx, commandsPair, chatbotHandler, linkHandler });
-const messageReactionAdd = new events.MessageReactionAdd({ ctx, linkHandler });
+const ready = new events.Ready({
+  ctx,
+  log: log.child({ name: "ready" }),
+});
+const interactionCreate = new events.InteractionCreate({
+  ctx,
+  log: log.child({ name: "interaction-create" }),
+  commandsPair,
+  nhenHandler,
+});
+const messageCreate = new events.MessageCreate({
+  ctx,
+  log: log.child({ name: "message-create" }),
+  commandsPair,
+  chatbotHandler,
+  linkHandler,
+});
+const messageReactionAdd = new events.MessageReactionAdd({
+  ctx,
+  log: log.child({ name: "message-reaction-add" }),
+  linkHandler,
+});
 
 // Log in to Discord with your client's token
 client.login(env.DISCORD_TOKEN);
