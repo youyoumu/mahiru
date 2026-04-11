@@ -41,25 +41,22 @@ export class InteractionCreate {
     if (isChatInputCommand) {
       const command = this.commandsPair[interaction.commandName];
       if (!command) return;
-
-      try {
-        await command.execute(interaction);
-      } catch (error) {
-        console.error(error);
+      command.execute(interaction).catch((err) => {
+        this.log.error(err);
+        const interactionRes = {
+          content: "There was an error while executing this command!",
+          flags: MessageFlags.Ephemeral,
+        } as const;
         if (interaction.replied || interaction.deferred) {
-          await interaction.followUp({
-            content: "There was an error while executing this command!",
-            flags: MessageFlags.Ephemeral,
-          });
+          interaction.followUp(interactionRes);
         } else {
-          await interaction.reply({
-            content: "There was an error while executing this command!",
-            flags: MessageFlags.Ephemeral,
-          });
+          interaction.reply(interactionRes);
         }
-      }
+      });
     } else if (isButton) {
-      this.nhenHandler.handleInteraction({ interaction });
+      this.nhenHandler.handleInteraction({ interaction }).catch((err) => {
+        this.log.error(err);
+      });
     }
   }
 }

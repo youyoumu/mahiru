@@ -23,6 +23,8 @@ export class MessageReactionAdd {
     this.log.trace(`${guildPreview}${user.username} (${reaction.emoji.name}): ${messageSlice}`);
     if (user.id === env.CLIENT_ID || user.id !== reaction.message.author?.id) return;
 
-    this.linkHandler.handleMessageReactionAdd(reaction);
+    this.linkHandler.handleMessageReactionAdd(reaction)?.catch((err) => {
+      this.log.error(err);
+    });
   }
 }

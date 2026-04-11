@@ -39,19 +39,20 @@ export class MessageCreate {
     this.log.trace(`${guildPreview}${message.author.username}: ${messageSlice}`);
     if (message.author.bot) return;
 
-    this.linkHandler.handle(Events.MessageCreate, message);
-    this.chatbotHandler.handle({ message });
+    this.linkHandler.handle(Events.MessageCreate, message).catch((err) => {
+      this.log.error(err);
+    });
+    this.chatbotHandler.handle({ message }).catch((err) => {
+      this.log.error(err);
+    });
 
     let args: string[] = [];
     if (message.guild) {
       let prefix: string | undefined;
-
       const guildPrefix = await this.ctx.dbSvc.getGuildPrefix(message.guildId);
-
       if (guildPrefix && message.content.startsWith(guildPrefix)) {
         prefix = guildPrefix;
       }
-
       // if we found a prefix, setup args; otherwise, this isn't a command
       if (!prefix) return;
       args = message.content.slice(prefix.length).trim().split(/\s+/);
@@ -67,7 +68,9 @@ export class MessageCreate {
     if (command) {
       const selectedCommand = this.commandsPair[commandShortcut ?? command];
       if (!selectedCommand) return;
-      await selectedCommand.execute(undefined, { message, args });
+      selectedCommand.execute(undefined, { message, args }).catch((err) => {
+        this.log.error(err);
+      });
     }
   }
 }

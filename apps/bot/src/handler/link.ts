@@ -29,7 +29,7 @@ export class LinkHandler {
       if (this.sentEmbedMessages.has(reaction.message.id)) return;
       const hasBotReaction = reaction.users.cache.has(env.CLIENT_ID);
       if (!hasBotReaction) return;
-      this.handle(Events.MessageReactionAdd, reaction.message);
+      return this.handle(Events.MessageReactionAdd, reaction.message);
     }
   }
 

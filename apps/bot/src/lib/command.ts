@@ -16,7 +16,7 @@ export interface Command {
   execute(
     interaction?: ChatInputCommandInteraction,
     messageCtx?: PrefixExecuteOpts,
-  ): unknown | Promise<unknown>;
+  ): Promise<unknown>;
 }
 
 export interface CommandProto {
