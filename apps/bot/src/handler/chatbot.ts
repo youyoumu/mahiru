@@ -5,9 +5,9 @@ import { env } from "#/env";
 import { zCompletionResponse } from "#/lib/schema";
 import { openWebuiClient } from "#/utils/open-webui-client";
 
+import behaviorPrompt from "./behavior.prompt.txt";
 import discordContextPrompt from "./discord-context.prompt.txt";
 import personalityPrompt from "./personality.prompt.txt";
-import behaviorPrompt from "./behavior.prompt.txt";
 
 type MessagesPayload = {
   role: "system" | "user" | "assistant";
