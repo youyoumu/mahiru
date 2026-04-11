@@ -3,8 +3,7 @@ import type { Ctx } from "#/lib/ctx";
 import type { Logger } from "pino";
 
 import { env } from "#/env";
-import { emojis } from "#/lib/constants";
-import { Events, MessageReaction, User, type PartialMessageReaction, type PartialUser } from "discord.js";
+import { MessageReaction, User, type PartialMessageReaction, type PartialUser } from "discord.js";
 
 export class MessageReactionAdd {
   ctx: Ctx;
@@ -24,24 +23,6 @@ export class MessageReactionAdd {
     this.log.trace(`${guildPreview}${user.username} (${reaction.emoji.name}): ${messageSlice}`);
     if (user.id === env.CLIENT_ID || user.id !== reaction.message.author?.id) return;
 
-    // When a reaction is received, check if the structure is partial
-    if (reaction.partial) {
-      // If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
-      try {
-        await reaction.fetch();
-      } catch (error) {
-        console.error("Something went wrong when fetching the message:", error);
-        // Return as `reaction.message.author` may be undefined/null
-        return;
-      }
-    }
-
-    if (reaction.emoji.name === emojis.link || reaction.emoji.name === emojis.book) {
-      if (this.linkHandler.embededMessageStorage.get(reaction.message.id)) return;
-      const hasBotReaction = reaction.users.cache.has(env.CLIENT_ID);
-      if (!hasBotReaction) return;
-
-      this.linkHandler.handle(Events.MessageReactionAdd, reaction.message);
-    }
+    this.linkHandler.handleMessageReactionAdd(reaction);
   }
 }

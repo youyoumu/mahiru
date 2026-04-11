@@ -3,19 +3,34 @@ import type { Logger } from "pino";
 import { env } from "#/env";
 import { emojis } from "#/lib/constants";
 import { zDigits } from "#/lib/schema";
-import { type Message, type PartialMessage, Events } from "discord.js";
+import {
+  type Message,
+  type PartialMessage,
+  type PartialMessageReaction,
+  Events,
+  MessageReaction,
+} from "discord.js";
 import { delay } from "es-toolkit";
 
 import type { NhenHandler } from "./nhen";
 
 export class LinkHandler {
   log: Logger;
-  embededMessageStorage = new Map<string, boolean>();
+  sentEmbedMessages = new Set<string>();
   nhenHandler: NhenHandler;
 
   constructor(opts: { log: Logger; nhenHandler: NhenHandler }) {
     this.log = opts.log;
     this.nhenHandler = opts.nhenHandler;
+  }
+
+  handleMessageReactionAdd(reaction: MessageReaction | PartialMessageReaction) {
+    if (reaction.emoji.name === emojis.link || reaction.emoji.name === emojis.book) {
+      if (this.sentEmbedMessages.has(reaction.message.id)) return;
+      const hasBotReaction = reaction.users.cache.has(env.CLIENT_ID);
+      if (!hasBotReaction) return;
+      this.handle(Events.MessageReactionAdd, reaction.message);
+    }
   }
 
   async handle(
@@ -47,7 +62,6 @@ export class LinkHandler {
       tweetId.success;
     if (isTwitter) {
       if (event === Events.MessageCreate) this.addReaction({ message });
-
       if (event === Events.MessageReactionAdd) {
         const newUrl = new URL("https://fxtwitter.com");
         newUrl.pathname = url.pathname;
@@ -120,11 +134,6 @@ export class LinkHandler {
   sendEmbed({ message, url }: { message: Message | PartialMessage; url: string }) {
     if (!message.channel.isSendable()) return;
     message.channel.send(url);
-
-    if (this.embededMessageStorage.size >= 10000) {
-      const firstKey = this.embededMessageStorage.keys().next().value;
-      if (firstKey) this.embededMessageStorage.delete(firstKey);
-    }
-    this.embededMessageStorage.set(message.id, true);
+    this.sentEmbedMessages.add(message.id);
   }
 }
