@@ -34,7 +34,7 @@ export class LinkHandler {
     const isNhen =
       url.hostname === "nhentai.net" && pathname[1] === "g" && nhenCode.success && nhenCode.data;
     if (isNhen) {
-      if (event === Events.MessageCreate) this.handleReact({ message, emoji: emojis.book });
+      if (event === Events.MessageCreate) this.addReaction({ message, emoji: emojis.book });
       if (event === Events.MessageReactionAdd) {
         this.nhenHandler.handleNhenLink({ code: Number(nhenCode.data), message });
       }
@@ -46,12 +46,12 @@ export class LinkHandler {
       pathname[2] === "status" &&
       tweetId.success;
     if (isTwitter) {
-      if (event === Events.MessageCreate) this.handleReact({ message });
+      if (event === Events.MessageCreate) this.addReaction({ message });
 
       if (event === Events.MessageReactionAdd) {
         const newUrl = new URL("https://fxtwitter.com");
         newUrl.pathname = url.pathname;
-        this.handleSendEmbed({ message, url: newUrl.toString() });
+        this.sendEmbed({ message, url: newUrl.toString() });
       }
       return;
     }
@@ -62,11 +62,11 @@ export class LinkHandler {
       (pathname[1] === "artworks" || pathname[2] === "artworks") &&
       pixivPostId.success;
     if (isPixiv) {
-      if (event === Events.MessageCreate) this.handleReact({ message });
+      if (event === Events.MessageCreate) this.addReaction({ message });
       if (event === Events.MessageReactionAdd) {
         const newUrl = new URL("https://phixiv.net");
         newUrl.pathname = url.pathname;
-        this.handleSendEmbed({ message, url: newUrl.toString() });
+        this.sendEmbed({ message, url: newUrl.toString() });
       }
       return;
     }
@@ -75,11 +75,11 @@ export class LinkHandler {
       (url.hostname === "reddit.com" || url.hostname === "www.reddit.com") &&
       (pathname[1] === "r" || pathname[3] === "comments");
     if (isReddit) {
-      if (event === Events.MessageCreate) this.handleReact({ message });
+      if (event === Events.MessageCreate) this.addReaction({ message });
       if (event === Events.MessageReactionAdd) {
         const newUrl = new URL("https://vxreddit.com");
         newUrl.pathname = url.pathname;
-        this.handleSendEmbed({ message, url: newUrl.toString() });
+        this.sendEmbed({ message, url: newUrl.toString() });
       }
       return;
     }
@@ -87,11 +87,11 @@ export class LinkHandler {
     const isInsta =
       url.hostname === "www.instagram.com" && (pathname[1] === "p" || pathname[1] === "reel");
     if (isInsta) {
-      if (event === Events.MessageCreate) this.handleReact({ message });
+      if (event === Events.MessageCreate) this.addReaction({ message });
       if (event === Events.MessageReactionAdd) {
         const newUrl = new URL("https://www.ddinstagram.com");
         newUrl.pathname = url.pathname;
-        this.handleSendEmbed({ message, url: newUrl.toString() });
+        this.sendEmbed({ message, url: newUrl.toString() });
       }
       return;
     }
@@ -106,7 +106,7 @@ export class LinkHandler {
     }
   }
 
-  async handleReact({ message, emoji }: { message: Message | PartialMessage; emoji?: string }) {
+  async addReaction({ message, emoji }: { message: Message | PartialMessage; emoji?: string }) {
     const reactionEmoji = emoji ?? emojis.link;
     try {
       const reaction = await message.react(reactionEmoji);
@@ -117,7 +117,7 @@ export class LinkHandler {
     }
   }
 
-  handleSendEmbed({ message, url }: { message: Message | PartialMessage; url: string }) {
+  sendEmbed({ message, url }: { message: Message | PartialMessage; url: string }) {
     if (!message.channel.isSendable()) return;
     message.channel.send(url);
 
