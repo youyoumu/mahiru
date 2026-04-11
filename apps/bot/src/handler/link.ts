@@ -40,7 +40,7 @@ export class LinkHandler {
     if (!message.channel.isSendable()) return;
     if (!message.content) return;
     if (!message.content.includes("https://")) return;
-    const url = this.getUrl(message.content);
+    const url = LinkHandler.getUrl(message.content);
     if (!url) return;
 
     const pathname = url.pathname.split("/");
@@ -53,6 +53,7 @@ export class LinkHandler {
       if (event === Events.MessageReactionAdd) {
         this.nhenHandler.handleNhenLink({ code: Number(nhenCode.data), message });
       }
+      return;
     }
 
     const tweetId = zDigits.safeParse(pathname[3]);
@@ -63,9 +64,7 @@ export class LinkHandler {
     if (isTwitter) {
       if (event === Events.MessageCreate) this.addReaction({ message });
       if (event === Events.MessageReactionAdd) {
-        const newUrl = new URL("https://fxtwitter.com");
-        newUrl.pathname = url.pathname;
-        this.sendEmbed({ message, url: newUrl.toString() });
+        this.sendEmbed({ message, url: LinkHandler.createUrl(url, "fxtwitter.com") });
       }
       return;
     }
@@ -78,9 +77,7 @@ export class LinkHandler {
     if (isPixiv) {
       if (event === Events.MessageCreate) this.addReaction({ message });
       if (event === Events.MessageReactionAdd) {
-        const newUrl = new URL("https://phixiv.net");
-        newUrl.pathname = url.pathname;
-        this.sendEmbed({ message, url: newUrl.toString() });
+        this.sendEmbed({ message, url: LinkHandler.createUrl(url, "phixiv.net") });
       }
       return;
     }
@@ -91,9 +88,7 @@ export class LinkHandler {
     if (isReddit) {
       if (event === Events.MessageCreate) this.addReaction({ message });
       if (event === Events.MessageReactionAdd) {
-        const newUrl = new URL("https://vxreddit.com");
-        newUrl.pathname = url.pathname;
-        this.sendEmbed({ message, url: newUrl.toString() });
+        this.sendEmbed({ message, url: LinkHandler.createUrl(url, "vxreddit.com") });
       }
       return;
     }
@@ -103,20 +98,9 @@ export class LinkHandler {
     if (isInsta) {
       if (event === Events.MessageCreate) this.addReaction({ message });
       if (event === Events.MessageReactionAdd) {
-        const newUrl = new URL("https://www.ddinstagram.com");
-        newUrl.pathname = url.pathname;
-        this.sendEmbed({ message, url: newUrl.toString() });
+        this.sendEmbed({ message, url: LinkHandler.createUrl(url, "www.zzinstagram.com") });
       }
       return;
-    }
-  }
-
-  getUrl(content: string) {
-    const urlMatch = content.match(/https?:\/\/[^\s]+/);
-    try {
-      return urlMatch ? new URL(urlMatch[0]) : undefined;
-    } catch {
-      return undefined;
     }
   }
 
@@ -135,5 +119,20 @@ export class LinkHandler {
     if (!message.channel.isSendable()) return;
     message.channel.send(url);
     this.sentEmbedMessages.add(message.id);
+  }
+
+  static getUrl(content: string) {
+    const urlMatch = content.match(/https?:\/\/[^\s]+/);
+    try {
+      return urlMatch ? new URL(urlMatch[0]) : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  static createUrl(url: URL, hostname: string) {
+    const newUrl = new URL(url);
+    newUrl.hostname = hostname;
+    return newUrl.toString();
   }
 }
