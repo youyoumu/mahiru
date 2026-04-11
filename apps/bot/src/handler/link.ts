@@ -2,13 +2,11 @@ import type { Logger } from "pino";
 
 import { env } from "#/env";
 import { emojis } from "#/lib/constants";
+import { zDigits } from "#/lib/schema";
 import { type Message, type PartialMessage, Events } from "discord.js";
 import { delay } from "es-toolkit";
-import { z } from "zod";
 
 import type { NhenHandler } from "./nhen";
-
-const zDigits = z.string().regex(/^\d+$/);
 
 export class LinkHandler {
   log: Logger;
