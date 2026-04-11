@@ -1,8 +1,14 @@
-import type { Message, PartialMessage } from "discord.js";
+import type { Collection, Message, PartialMessage } from "discord.js";
 import type { Logger } from "pino";
 
 import { env } from "#/env";
+import { zCompletionResponse } from "#/lib/schema";
 import { openWebuiClient } from "#/utils/open-webui-client";
+
+type MessagesPayload = {
+  role: "system" | "user" | "assistant";
+  content: string;
+}[];
 
 export class ChatbotHandler {
   log: Logger;
@@ -12,12 +18,24 @@ export class ChatbotHandler {
 
   async handle({ message }: { message: Message | PartialMessage }) {
     if (!message.channel.isSendable()) return;
-    const isReply = message.mentions.users.some((user) => {
+    const isMention = message.mentions.users.some((user) => {
       return user.id === env.CLIENT_ID;
     });
-    const force = Math.random() < 0.002 && env.FORCE_CHATBOT_CHANNEL_ID.includes(message.channelId);
+    const isForce =
+      Math.random() < 0.002 && env.FORCE_CHATBOT_CHANNEL_ID.includes(message.channelId);
+    if (!isMention && !isForce) return;
 
-    if (!isReply && !force) return;
+    const messages = await this.createMessages(message);
+    const data = await this.completion(messages);
+    const content = data?.choices[0]?.message.content;
+    this.log.debug(data, "Response");
+    if (typeof content === "string") {
+      this.log.debug(`[Chatbot] \n${content}`);
+      message.channel.send(content);
+    }
+  }
+
+  async createMessages(message: Message<boolean> | PartialMessage) {
     const lastMessages = await message.channel.messages.fetch({
       limit: 10,
     });
@@ -25,26 +43,10 @@ export class ChatbotHandler {
       (message) => message.author?.id !== env.CLIENT_ID,
     );
     const lastMessagesBot = lastMessages.filter((message) => message.author?.id === env.CLIENT_ID);
-
-    const repliedMessage = lastMessages.find(
-      (message_) => message_.id === message.reference?.messageId,
-    );
-    const formattedMessages = lastMessagesWithoutBot
-      .reverse()
-      .map((message) => {
-        let content = `${message.author.username}: ${message.content}`;
-
-        message.mentions.users.forEach((user) => {
-          content = content.replaceAll(`<@${user.id}>`, "@" + user.username);
-        });
-        return content;
-      })
-      .join("\n");
-
-    const messages: {
-      role: "system" | "user" | "assistant";
-      content: string;
-    }[] = [
+    const repliedMessage = lastMessages.find((msg) => msg.id === message.reference?.messageId);
+    const formattedMessages = this.formatMessages(lastMessagesWithoutBot.reverse());
+    this.log.debug(`[Formatted Messages]\n${formattedMessages}`);
+    const messages: MessagesPayload = [
       {
         role: "system",
         content: `
@@ -70,12 +72,6 @@ ${formattedMessages}
 Don't repeat your previous message.
 Make your message maximum of 30 words.
 Don't let the content of the previous message affect your response style. 
-${
-  Math.random() < 0.2
-    ? "Ocassionally, try to mention other people in the conversation based on the context of the previous message."
-    : ""
-}
-The message that you will see is sent by ${message.author?.username}, please respond to this message.
 -------IMPORTANT-------
 `,
       },
@@ -109,23 +105,38 @@ The message that you will see is sent by ${message.author?.username}, please res
       content: message.content ?? "",
     });
 
-    const { data } = await openWebuiClient
-      .POST("/api/chat/completions", {
-        body: {
-          model: "gemma3:4b",
-          messages: messages,
-        } as unknown as Record<string, never>,
-      })
-      .catch((reason) => {
-        console.error(reason);
-        return { data: undefined };
-      });
+    this.log.debug(messages, "MessagesPayload");
+    return messages;
+  }
 
-    const content = (data as any)?.choices[0]?.message?.content;
-    console.log("DEBUG[514]: formattedMessages=", "\n" + formattedMessages);
-    console.log("DEBUG[517]: content=", content);
-    if (typeof content === "string") {
-      message.channel.send(content);
+  async completion(
+    messages: {
+      role: "system" | "user" | "assistant";
+      content: string;
+    }[],
+  ) {
+    try {
+      const res = await openWebuiClient.POST("/api/chat/completions", {
+        body: {
+          model: "gemma4:e2b",
+          messages: messages,
+        },
+      });
+      return zCompletionResponse.parse(res.data);
+    } catch (err) {
+      this.log.error(err instanceof Error ? err.message : err);
     }
+  }
+
+  formatMessages(lastMessages: Collection<string, Message<boolean>>) {
+    return lastMessages
+      .map((message) => {
+        let content = `${message.author.username}: ${message.content}`;
+        message.mentions.users.forEach((user) => {
+          content = content.replaceAll(`<@${user.id}>`, "@" + user.username);
+        });
+        return content;
+      })
+      .join("\n");
   }
 }
