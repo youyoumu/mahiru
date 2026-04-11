@@ -28,9 +28,9 @@ const PARAMS = {
   value: "value",
 };
 
-export const Tags: CommandProto = class Tags implements Command {
+export const Tag: CommandProto = class Tag implements Command {
   static data = new SlashCommandBuilder()
-    .setName("tags")
+    .setName("tag")
     .setDescription("Manage your tag collections")
 
     .addSubcommand((subCommand) =>
@@ -84,7 +84,7 @@ export const Tags: CommandProto = class Tags implements Command {
     )
 
     .addSubcommand((subCommand) =>
-      subCommand.setName(ACTION.help).setDescription("Explain tags command"),
+      subCommand.setName(ACTION.help).setDescription("Explain tag command"),
     );
   ctx: Ctx;
 
@@ -278,27 +278,27 @@ export const Tags: CommandProto = class Tags implements Command {
     const prefix = await this.ctx.dbSvc.getGuildPrefix(discord_guild_id);
 
     const embed = new EmbedBuilder()
-      .setTitle("Tags Help")
+      .setTitle("Tag Help")
       .setColor("#fef3c6")
       .setThumbnail(
         "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
       )
       .addFields({
-        name: `${discordEmojis.azusarelaxed} tags add`,
+        name: `${discordEmojis.azusarelaxed} tag add`,
         value:
           "Add a tag to your collection. If the command is used in a server, the tag will be added to the server's collection. If the same key already exists in the user or server collection, the value will be overwritten.",
       })
       .addFields({
-        name: `${discordEmojis.azusarelaxed} tags drop`,
+        name: `${discordEmojis.azusarelaxed} tag drop`,
         value: `Drop a tag from your collection or the server's collection. The user's tag will take priority. ${inlineCode(prefix + "t <key>")} can also be used as shortcut.`,
       })
       .addFields({
-        name: `${discordEmojis.azusarelaxed} tags list`,
+        name: `${discordEmojis.azusarelaxed} tag list`,
         value:
           "List all tags that can be dropped, including those from both the user and server collections.",
       })
       .addFields({
-        name: `${discordEmojis.azusarelaxed} tags remove`,
+        name: `${discordEmojis.azusarelaxed} tag remove`,
         value: "Remove a tag from your collection and/or the server's collection.",
       })
       .setFooter({
