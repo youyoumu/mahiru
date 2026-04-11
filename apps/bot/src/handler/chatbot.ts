@@ -1,4 +1,4 @@
-import type { Collection, Message, PartialMessage } from "discord.js";
+import type { Message, PartialMessage } from "discord.js";
 import type { Logger } from "pino";
 
 import { env } from "#/env";
@@ -28,7 +28,6 @@ export class ChatbotHandler {
     const messages = await this.createMessages(message);
     const data = await this.completion(messages);
     const content = data?.choices[0]?.message.content;
-    this.log.debug(data, "Response");
     if (typeof content === "string") {
       this.log.debug(`[Chatbot] \n${content}`);
       message.channel.send(content);
@@ -39,13 +38,53 @@ export class ChatbotHandler {
     const lastMessages = await message.channel.messages.fetch({
       limit: 10,
     });
-    const lastMessagesWithoutBot = lastMessages.filter(
-      (message) => message.author?.id !== env.CLIENT_ID,
-    );
-    const lastMessagesBot = lastMessages.filter((message) => message.author?.id === env.CLIENT_ID);
+
     const repliedMessage = lastMessages.find((msg) => msg.id === message.reference?.messageId);
-    const formattedMessages = this.formatMessages(lastMessagesWithoutBot.reverse());
-    this.log.debug(`[Formatted Messages]\n${formattedMessages}`);
+
+    // Collect users from chat history
+    const usersInChat = new Map<string, string>();
+    const allMessages = [...lastMessages.values(), message];
+    if (repliedMessage) allMessages.push(repliedMessage);
+    for (const msg of allMessages) {
+      if (msg.author && !msg.author.bot) {
+        usersInChat.set(msg.author.id, msg.author.username);
+      }
+    }
+
+    // Collect server emojis
+    const guild = message.guild;
+    const emojis: string[] = [];
+    if (guild) {
+      for (const emoji of guild.emojis.cache.values()) {
+        if (emoji.id) {
+          emojis.push(
+            emoji.animated
+              ? `<a:${emoji.name}:${emoji.id}>`
+              : `<:${emoji.name}:${emoji.id}>`,
+          );
+        }
+      }
+    }
+
+    const membersContext =
+      usersInChat.size > 0
+        ? `
+-------MEMBERS IN CHAT-------
+${[...usersInChat.values()].map((name) => `- ${name}`).join("\n")}
+-------MEMBERS IN CHAT-------
+`
+        : "";
+
+    const emojisContext =
+      emojis.length > 0
+        ? `
+-------AVAILABLE EMOJIS-------
+Use these exact strings when you want to use an emoji. Copy them verbatim.
+${emojis.join("\n")}
+-------AVAILABLE EMOJIS-------
+`
+        : "";
+
     const messages: MessagesPayload = [
       {
         role: "system",
@@ -59,50 +98,52 @@ Her clothing choices are trendy yet high-quality and practical. They are modest 
 
 # Personality
 Mahiru is innocent, cute, kind, and loving, with a strong moral compass and profound generosity. She goes out of her way to help others when she feels safe doing so. While she maintains a guarded demeanor, especially regarding her parents, she avoids lying and tends to become reserved or cold when discussing past trauma. Her private honesty emerges more clearly when she is alone, though she never expresses it harshly.
-
-----------------------------------------
-
-You are at a private Discord server. This is the last few messages from the server
-
--------PREVIOUS MESSAGES-------
-${formattedMessages}
--------PREVIOUS MESSAGES-------
-
+`,
+      },
+      {
+        role: "system",
+        content: `You are at a private Discord server. Messages are formatted as "username: content" for users. You are the assistant - respond directly without adding your name or any prefix to your messages.${membersContext}${emojisContext}`,
+      },
+      {
+        role: "system",
+        content: `
 -------IMPORTANT-------
 Don't repeat your previous message.
 Make your message maximum of 30 words.
-Don't let the content of the previous message affect your response style. 
+Don't let the content of the previous message affect your response style.
+
+To mention a user, use @username exactly as shown in the members list. Do NOT use Discord's raw mention format like <@id>.
+To use a custom emoji, copy the exact string from the AVAILABLE EMOJIS list. The format is <:name:id> with a colon after the opening angle bracket.
 -------IMPORTANT-------
 `,
       },
     ];
 
-    const fewLastMessagesBot: string[] = [];
-    let count = 0;
-    lastMessagesBot
-      .filter((message) => message.id !== repliedMessage?.id)
-      .forEach((message) => {
-        if (count > 2) return;
-        fewLastMessagesBot.push(message.content);
-        count++;
-      });
-    fewLastMessagesBot.reverse().forEach((message) => {
+    const filteredMessages = lastMessages
+      .filter((msg) => msg.id !== repliedMessage?.id && msg.id !== message.id)
+      .reverse();
+
+    for (const [, msg] of filteredMessages) {
+      const isBot = msg.author?.id === env.CLIENT_ID;
       messages.push({
-        role: "assistant",
-        content: message,
+        role: isBot ? "assistant" : "user",
+        content: isBot ? this.processMentions(msg) : `${msg.author?.username}: ${this.processMentions(msg)}`,
       });
-    });
+    }
 
     if (repliedMessage) {
+      const isBot = repliedMessage.author?.id === env.CLIENT_ID;
       messages.push({
-        role: "assistant",
-        content: repliedMessage.content,
+        role: isBot ? "assistant" : "user",
+        content: isBot
+          ? this.processMentions(repliedMessage)
+          : `${repliedMessage.author?.username}: ${this.processMentions(repliedMessage)}`,
       });
     }
 
     messages.push({
       role: "user",
-      content: message.content ?? "",
+      content: `${message.author?.username}: ${this.processMentions(message)}`,
     });
 
     this.log.debug(messages, "MessagesPayload");
@@ -128,15 +169,13 @@ Don't let the content of the previous message affect your response style.
     }
   }
 
-  formatMessages(lastMessages: Collection<string, Message<boolean>>) {
-    return lastMessages
-      .map((message) => {
-        let content = `${message.author.username}: ${message.content}`;
-        message.mentions.users.forEach((user) => {
-          content = content.replaceAll(`<@${user.id}>`, "@" + user.username);
-        });
-        return content;
-      })
-      .join("\n");
+  processMentions(message: Message<boolean> | PartialMessage): string {
+    let result = message.content ?? "";
+    message.mentions.users.forEach((user) => {
+      result = result.replaceAll(`<@${user.id}>`, `@${user.username}`);
+    });
+    // Also clean up any raw <@id> patterns that weren't resolved
+    result = result.replaceAll(/<@!?[0-9]+>/g, "");
+    return result;
   }
 }
