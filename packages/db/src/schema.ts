@@ -8,8 +8,13 @@ export const meme = sqliteTable("meme", {
   value: text().notNull(),
 });
 
-export const prefixes = sqliteTable("prefixes", {
+export type GuildSettings = {
+  prefix?: string;
+  language?: string;
+};
+
+export const guildSettings = sqliteTable("guild_settings", {
   id: int().primaryKey({ autoIncrement: true }),
-  discord_guild_id: text().notNull(),
-  prefix: text().notNull(),
+  discord_guild_id: text().notNull().unique(),
+  settings: text({ mode: "json" }).$type<GuildSettings>().notNull().default({}),
 });

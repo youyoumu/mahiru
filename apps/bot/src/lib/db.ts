@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/libsql";
 import { uniqBy } from "es-toolkit";
 
 export type DB = ReturnType<typeof drizzle<typeof schema>>;
+type GuildPrefixEntry = { prefix?: string };
 
 export class DbSvc {
   static globalPrefix = "!";
@@ -21,12 +22,10 @@ export class DbSvc {
 
     const prefix =
       (
-        await this.db.query.prefixes.findFirst({
-          where(fields, operators) {
-            return operators.eq(fields.discord_guild_id, discord_guild_id ?? "");
-          },
+        await this.db.query.guildSettings.findFirst({
+          where: eq(schema.guildSettings.discord_guild_id, discord_guild_id ?? ""),
         })
-      )?.prefix ?? DbSvc.globalPrefix;
+      )?.settings.prefix ?? DbSvc.globalPrefix;
 
     if (prefix && discord_guild_id) {
       this.prefixStorage.set(discord_guild_id, prefix);
@@ -142,26 +141,35 @@ export class DbSvc {
     return !!(guildMeme || userMeme);
   }
 
-  async getGuildPrefixEntry(discord_guild_id: string) {
-    return await this.db.query.prefixes.findFirst({
-      where(fields, operators) {
-        return operators.eq(fields.discord_guild_id, discord_guild_id);
-      },
+  async getGuildPrefixEntry(discord_guild_id: string): Promise<GuildPrefixEntry | undefined> {
+    const guildSettings = await this.db.query.guildSettings.findFirst({
+      where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
     });
+
+    if (!guildSettings) return undefined;
+
+    return { prefix: guildSettings.settings.prefix };
   }
 
   async changeGuildPrefix(discord_guild_id: string, prefix: string) {
-    const guildPrefix = await this.getGuildPrefixEntry(discord_guild_id);
+    const guildSettings = await this.db.query.guildSettings.findFirst({
+      where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
+    });
 
-    if (guildPrefix) {
+    if (guildSettings) {
       await this.db
-        .update(schema.prefixes)
-        .set({ prefix: prefix })
-        .where(eq(schema.prefixes.id, guildPrefix.id));
+        .update(schema.guildSettings)
+        .set({
+          settings: {
+            ...guildSettings.settings,
+            prefix,
+          },
+        })
+        .where(eq(schema.guildSettings.id, guildSettings.id));
     } else {
-      await this.db.insert(schema.prefixes).values({
-        discord_guild_id: discord_guild_id,
-        prefix: prefix,
+      await this.db.insert(schema.guildSettings).values({
+        discord_guild_id,
+        settings: { prefix },
       });
     }
 
