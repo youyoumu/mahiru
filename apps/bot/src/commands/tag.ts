@@ -128,7 +128,11 @@ export const Tag: CommandProto = class Tag implements Command {
       }
       default: {
         const key = args?.[0];
-        if (key) this.handleDrop({ discord_guild_id, discord_user_id, key, message });
+        if (key) {
+          this.handleDrop({ discord_guild_id, discord_user_id, key, message });
+        } else {
+          this.handleHelp({ interaction, message });
+        }
       }
     }
   }
