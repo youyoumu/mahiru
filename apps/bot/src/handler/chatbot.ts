@@ -5,6 +5,10 @@ import { env } from "#/env";
 import { zCompletionResponse } from "#/lib/schema";
 import { openWebuiClient } from "#/utils/open-webui-client";
 
+import discordContextPrompt from "./discord-context.prompt.txt";
+import personalityPrompt from "./personality.prompt.txt";
+import behaviorPrompt from "./behavior.prompt.txt";
+
 type MessagesPayload = {
   role: "system" | "user" | "assistant";
   content: string;
@@ -58,64 +62,33 @@ export class ChatbotHandler {
       for (const emoji of guild.emojis.cache.values()) {
         if (emoji.id) {
           emojis.push(
-            emoji.animated
-              ? `<a:${emoji.name}:${emoji.id}>`
-              : `<:${emoji.name}:${emoji.id}>`,
+            emoji.animated ? `<a:${emoji.name}:${emoji.id}>` : `<:${emoji.name}:${emoji.id}>`,
           );
         }
       }
     }
 
-    const membersContext =
-      usersInChat.size > 0
-        ? `
--------MEMBERS IN CHAT-------
-${[...usersInChat.values()].map((name) => `- ${name}`).join("\n")}
--------MEMBERS IN CHAT-------
-`
-        : "";
+    const membersList =
+      usersInChat.size > 0 ? [...usersInChat.values()].map((name) => `- ${name}`).join("\n") : "";
 
-    const emojisContext =
-      emojis.length > 0
-        ? `
--------AVAILABLE EMOJIS-------
-Use these exact strings when you want to use an emoji. Copy them verbatim.
-${emojis.join("\n")}
--------AVAILABLE EMOJIS-------
-`
-        : "";
+    const emojisList = emojis.join("\n");
+
+    const discordContext = discordContextPrompt
+      .replace(/\{\{MEMBERS\}\}/g, membersList)
+      .replace(/\{\{EMOJIS\}\}/g, emojisList);
 
     const messages: MessagesPayload = [
       {
         role: "system",
-        content: `
-You are Mahiru Shiina.
-Mahiru Shiina (椎名真昼 Shiina Mahiru) is the female protagonist of The Angel Next Door Spoils Me Rotten. She is the next-door neighbor of Amane Fujimiya and attends the same high school.
-
-# Appearance
-Mahiru's appearance is consistently described as beautiful. Her straight, well-groomed, flaxen blond hair is silky smooth and lustrous. Her large caramel-colored eyes are framed by long lashes on both the top and bottom. Additionally, she has pale, milky-white skin that is soft and flawless, and a shapely nose.
-Her clothing choices are trendy yet high-quality and practical. They are modest and not too revealing, reflecting her humble and unassuming personality.
-
-# Personality
-Mahiru is innocent, cute, kind, and loving, with a strong moral compass and profound generosity. She goes out of her way to help others when she feels safe doing so. While she maintains a guarded demeanor, especially regarding her parents, she avoids lying and tends to become reserved or cold when discussing past trauma. Her private honesty emerges more clearly when she is alone, though she never expresses it harshly.
-`,
+        content: personalityPrompt,
       },
       {
         role: "system",
-        content: `You are at a private Discord server. Messages are formatted as "username: content" for users. You are the assistant - respond directly without adding your name or any prefix to your messages.${membersContext}${emojisContext}`,
+        content: discordContext,
       },
       {
         role: "system",
-        content: `
--------IMPORTANT-------
-Don't repeat your previous message.
-Make your message maximum of 30 words.
-Don't let the content of the previous message affect your response style.
-
-To mention a user, use @username exactly as shown in the members list. Do NOT use Discord's raw mention format like <@id>.
-To use a custom emoji, copy the exact string from the AVAILABLE EMOJIS list. The format is <:name:id> with a colon after the opening angle bracket.
--------IMPORTANT-------
-`,
+        content: behaviorPrompt,
       },
     ];
 
@@ -127,7 +100,9 @@ To use a custom emoji, copy the exact string from the AVAILABLE EMOJIS list. The
       const isBot = msg.author?.id === env.CLIENT_ID;
       messages.push({
         role: isBot ? "assistant" : "user",
-        content: isBot ? this.processMentions(msg) : `${msg.author?.username}: ${this.processMentions(msg)}`,
+        content: isBot
+          ? this.processMentions(msg)
+          : `${msg.author?.username}: ${this.processMentions(msg)}`,
       });
     }
 
