@@ -7,7 +7,6 @@
     "start": "NODE_ENV=production vite --port 3000",
     "build": "vite build && tsc",
     "serve": "vite preview",
-    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

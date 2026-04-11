@@ -10,8 +10,9 @@
   "scripts": {
     "dev": "tsdown --watch --on-success \"node ./dist/index.mjs\"",
     "start": "node ./dist/index.mjs",
-    "typecheck": "tsc --noEmit",
     "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "deploy-commands": "tsx scripts/deploy-commands.ts",
     "deploy-commands:all": "tsx scripts/deploy-commands.ts --all-guilds"
   },
@@ -35,6 +36,7 @@
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",
     "openapi-typescript": "^7.13.0",
-    "tsdown": "^0.21.7"
+    "tsdown": "^0.21.7",
+    "vitest": "^4.1.4"
   }
 }
