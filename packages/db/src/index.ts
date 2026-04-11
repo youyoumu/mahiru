@@ -3,6 +3,6 @@ import { createSelectSchema } from "drizzle-zod";
 
 import * as schema from "./schema";
 
-export const zSelectMemes = createSelectSchema(schema.meme);
+export const zSelectTags = createSelectSchema(schema.tags);
 
 export { schema, drizzle };

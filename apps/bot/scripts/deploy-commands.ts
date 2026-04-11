@@ -1,10 +1,10 @@
 import { REST, Routes } from "discord.js";
 
-import { Help, Login, Meme, Ping, Prefix } from "../src/commands";
+import { Help, Login, Ping, Prefix, Tags } from "../src/commands";
 import { env } from "../src/env";
 
 export async function deployCommands() {
-  const validCommands = [Ping.data, Meme.data, Login.data, Prefix.data, Help.data].map((data) =>
+  const validCommands = [Ping.data, Tags.data, Login.data, Prefix.data, Help.data].map((data) =>
     data.toJSON(),
   );
 

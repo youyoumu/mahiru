@@ -14,6 +14,6 @@ export const Route = createFileRoute("/sign_in/")({
   },
   async loader({ deps: { t } }) {
     await writeTokenToCookie({ t });
-    throw redirect({ to: "/memes" });
+    throw redirect({ to: "/tags" });
   },
 });

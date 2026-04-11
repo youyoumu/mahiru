@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-import MemesPage from "./-components/MemesPage";
+import TagsPage from "./-components/TagsPage";
 
-export const Route = createFileRoute("/_layout/memes/")({
+export const Route = createFileRoute("/_layout/tags/")({
   validateSearch: z.object({ t: z.string().optional() }),
-  component: MemesPage,
+  component: TagsPage,
 });

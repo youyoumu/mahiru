@@ -14,7 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as IndexImport } from './routes/index'
 import { Route as SigninIndexImport } from './routes/sign_in/index'
-import { Route as LayoutMemesIndexImport } from './routes/_layout/memes/index'
+import { Route as LayoutTagsIndexImport } from './routes/_layout/tags/index'
 
 // Create/Update Routes
 
@@ -35,9 +35,9 @@ const SigninIndexRoute = SigninIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const LayoutMemesIndexRoute = LayoutMemesIndexImport.update({
-  id: '/memes/',
-  path: '/memes/',
+const LayoutTagsIndexRoute = LayoutTagsIndexImport.update({
+  id: '/tags/',
+  path: '/tags/',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -66,11 +66,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SigninIndexImport
       parentRoute: typeof rootRoute
     }
-    '/_layout/memes/': {
-      id: '/_layout/memes/'
-      path: '/memes'
-      fullPath: '/memes'
-      preLoaderRoute: typeof LayoutMemesIndexImport
+    '/_layout/tags/': {
+      id: '/_layout/tags/'
+      path: '/tags'
+      fullPath: '/tags'
+      preLoaderRoute: typeof LayoutTagsIndexImport
       parentRoute: typeof LayoutImport
     }
   }
@@ -79,11 +79,11 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface LayoutRouteChildren {
-  LayoutMemesIndexRoute: typeof LayoutMemesIndexRoute
+  LayoutTagsIndexRoute: typeof LayoutTagsIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
-  LayoutMemesIndexRoute: LayoutMemesIndexRoute,
+  LayoutTagsIndexRoute: LayoutTagsIndexRoute,
 }
 
 const LayoutRouteWithChildren =
@@ -93,14 +93,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '': typeof LayoutRouteWithChildren
   '/sign_in': typeof SigninIndexRoute
-  '/memes': typeof LayoutMemesIndexRoute
+  '/tags': typeof LayoutTagsIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '': typeof LayoutRouteWithChildren
   '/sign_in': typeof SigninIndexRoute
-  '/memes': typeof LayoutMemesIndexRoute
+  '/tags': typeof LayoutTagsIndexRoute
 }
 
 export interface FileRoutesById {
@@ -108,15 +108,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_layout': typeof LayoutRouteWithChildren
   '/sign_in/': typeof SigninIndexRoute
-  '/_layout/memes/': typeof LayoutMemesIndexRoute
+  '/_layout/tags/': typeof LayoutTagsIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/sign_in' | '/memes'
+  fullPaths: '/' | '' | '/sign_in' | '/tags'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/sign_in' | '/memes'
-  id: '__root__' | '/' | '/_layout' | '/sign_in/' | '/_layout/memes/'
+  to: '/' | '' | '/sign_in' | '/tags'
+  id: '__root__' | '/' | '/_layout' | '/sign_in/' | '/_layout/tags/'
   fileRoutesById: FileRoutesById
 }
 
@@ -153,14 +153,14 @@ export const routeTree = rootRoute
     "/_layout": {
       "filePath": "_layout.tsx",
       "children": [
-        "/_layout/memes/"
+        "/_layout/tags/"
       ]
     },
     "/sign_in/": {
       "filePath": "sign_in/index.tsx"
     },
-    "/_layout/memes/": {
-      "filePath": "_layout/memes/index.tsx",
+    "/_layout/tags/": {
+      "filePath": "_layout/tags/index.tsx",
       "parent": "/_layout"
     }
   }

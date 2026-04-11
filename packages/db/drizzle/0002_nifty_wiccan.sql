@@ -1,0 +1,1 @@
+ALTER TABLE `meme` RENAME TO `tags`;

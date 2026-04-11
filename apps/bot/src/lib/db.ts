@@ -35,81 +35,81 @@ export class DbSvc {
     return DbSvc.globalPrefix;
   }
 
-  async getUserMeme(key: string, discord_user_id: string) {
-    return await this.db.query.meme.findFirst({
+  async getUserTag(key: string, discord_user_id: string) {
+    return await this.db.query.tags.findFirst({
       where(fields, { eq, and }) {
         return and(eq(fields.key, key), eq(fields.discord_user_id, discord_user_id));
       },
     });
   }
 
-  async getUserMemes(discord_user_id: string) {
-    return await this.db.query.meme.findMany({
+  async getUserTags(discord_user_id: string) {
+    return await this.db.query.tags.findMany({
       where(fields, { eq, and }) {
         return and(eq(fields.discord_user_id, discord_user_id));
       },
     });
   }
 
-  async getGuildMeme(key: string, discord_guild_id: string | undefined | null) {
+  async getGuildTag(key: string, discord_guild_id: string | undefined | null) {
     if (!discord_guild_id) return undefined;
-    return await this.db.query.meme.findFirst({
+    return await this.db.query.tags.findFirst({
       where(fields, { eq, and }) {
         return and(eq(fields.key, key), eq(fields.discord_guild_id, discord_guild_id));
       },
     });
   }
 
-  async getGuildMemes(discord_guild_id: string | undefined | null) {
+  async getGuildTags(discord_guild_id: string | undefined | null) {
     if (!discord_guild_id) return [];
-    return await this.db.query.meme.findMany({
+    return await this.db.query.tags.findMany({
       where(fields, { eq, and }) {
         return and(eq(fields.discord_guild_id, discord_guild_id));
       },
     });
   }
 
-  async getMeme(key: string, discord_user_id: string, discord_guild_id: string | undefined | null) {
-    const userMeme = await this.getUserMeme(key, discord_user_id);
-    if (userMeme) return userMeme;
-    const guildMeme = await this.getGuildMeme(key, discord_guild_id);
-    return guildMeme;
+  async getTag(key: string, discord_user_id: string, discord_guild_id: string | undefined | null) {
+    const userTag = await this.getUserTag(key, discord_user_id);
+    if (userTag) return userTag;
+    const guildTag = await this.getGuildTag(key, discord_guild_id);
+    return guildTag;
   }
 
-  async getMemes(discord_user_id: string, discord_guild_id: string | undefined | null) {
-    const userMemes = await this.getUserMemes(discord_user_id);
-    const guildMemes = await this.getGuildMemes(discord_guild_id);
-    return uniqBy([...userMemes, ...guildMemes], (item) => item.id);
+  async getTags(discord_user_id: string, discord_guild_id: string | undefined | null) {
+    const userTags = await this.getUserTags(discord_user_id);
+    const guildTags = await this.getGuildTags(discord_guild_id);
+    return uniqBy([...userTags, ...guildTags], (item) => item.id);
   }
 
-  async addMeme(
+  async addTag(
     key: string,
     value: string,
     discord_user_id: string,
     discord_guild_id: string | undefined | null,
   ) {
-    const userMeme = await this.getUserMeme(key, discord_user_id);
-    const guildMeme = await this.getGuildMeme(key, discord_guild_id);
+    const userTag = await this.getUserTag(key, discord_user_id);
+    const guildTag = await this.getGuildTag(key, discord_guild_id);
 
-    // if this guild already has meme with this key, remove it from the guild
-    if (guildMeme) {
+    // If this guild already has a tag with this key, remove it from the guild.
+    if (guildTag) {
       await this.db
-        .update(schema.meme)
+        .update(schema.tags)
         .set({ discord_guild_id: "" })
-        .where(eq(schema.meme.id, guildMeme.id));
+        .where(eq(schema.tags.id, guildTag.id));
     }
 
-    // if user already has meme with this key, update it
-    if (userMeme) {
+    // If the user already has a tag with this key, update it.
+    if (userTag) {
       await this.db
-        .update(schema.meme)
+        .update(schema.tags)
         .set({ value, discord_guild_id: discord_guild_id ?? "" })
-        .where(eq(schema.meme.id, userMeme.id));
+        .where(eq(schema.tags.id, userTag.id));
     }
 
-    // else create new meme
+    // Otherwise create a new tag.
     else {
-      await this.db.insert(schema.meme).values({
+      await this.db.insert(schema.tags).values({
         key,
         value,
         discord_user_id,
@@ -118,27 +118,27 @@ export class DbSvc {
     }
   }
 
-  async removeMeme(
+  async removeTag(
     key: string,
     discord_user_id: string,
     discord_guild_id: string | undefined | null,
   ) {
-    const userMeme = await this.getUserMeme(key, discord_user_id);
-    const guildMeme = await this.getGuildMeme(key, discord_guild_id);
+    const userTag = await this.getUserTag(key, discord_user_id);
+    const guildTag = await this.getGuildTag(key, discord_guild_id);
 
-    // if this guild already has meme with this key, remove it from this server
-    if (guildMeme) {
+    // If this guild already has a tag with this key, remove it from this server.
+    if (guildTag) {
       await this.db
-        .update(schema.meme)
+        .update(schema.tags)
         .set({ discord_guild_id: "" })
-        .where(eq(schema.meme.id, guildMeme.id));
+        .where(eq(schema.tags.id, guildTag.id));
     }
 
-    if (userMeme) {
-      await this.db.delete(schema.meme).where(eq(schema.meme.id, userMeme.id));
+    if (userTag) {
+      await this.db.delete(schema.tags).where(eq(schema.tags.id, userTag.id));
     }
 
-    return !!(guildMeme || userMeme);
+    return !!(guildTag || userTag);
   }
 
   async getGuildPrefixEntry(discord_guild_id: string): Promise<GuildPrefixEntry | undefined> {

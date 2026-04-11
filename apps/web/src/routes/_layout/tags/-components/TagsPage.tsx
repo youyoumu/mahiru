@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "#/componen
 import { Form, FormControl, FormField, FormItem, FormMessage } from "#/components/ui/form";
 import { Input } from "#/components/ui/input";
 import { Textarea } from "#/components/ui/textarea";
-import { useMemes } from "#/hooks/use-memes";
+import { useTags } from "#/hooks/use-tags";
 import { useDiscordCdn } from "#/hooks/use-proxy";
 import { useTenorPost } from "#/hooks/use-tenor";
 import { useUser } from "#/hooks/use-users";
@@ -18,7 +18,7 @@ import { XEmbed, YouTubeEmbed } from "react-social-media-embed";
 import { toast } from "sonner";
 import { z } from "zod";
 
-export default function MemesPage() {
+export default function TagsPage() {
   const form = useForm({
     defaultValues: {
       searchText: "",
@@ -44,18 +44,18 @@ export default function MemesPage() {
           )}
         />
       </Form>
-      <Memes searchText={defferedSearchText} />
+      <TagsGrid searchText={defferedSearchText} />
     </div>
   );
 }
 
-const Memes = memo(function ({ searchText }: { searchText: string }) {
-  const routeApi = getRouteApi("/_layout/memes/");
+const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
+  const routeApi = getRouteApi("/_layout/tags/");
   const { t } = routeApi.useSearch();
-  const { data: memes = [] } = useMemes({ t });
+  const { data: tags = [] } = useTags({ t });
 
-  const filteredMemes = fuzzysort
-    .go(searchText, memes, {
+  const filteredTags = fuzzysort
+    .go(searchText, tags, {
       keys: ["value", "key"],
       all: !searchText,
     })
@@ -63,20 +63,20 @@ const Memes = memo(function ({ searchText }: { searchText: string }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {filteredMemes.map((meme) => (
-        <Card key={meme.id} className="max-h-[420px]">
+      {filteredTags.map((tag) => (
+        <Card key={tag.id} className="max-h-[420px]">
           <CardHeader>
             <div className="flex items-center justify-between gap-1">
-              <CardTitle>{meme.key}</CardTitle>
+              <CardTitle>{tag.key}</CardTitle>
 
               <Copy
                 className="w-5 cursor-pointer"
                 onClick={() => {
-                  navigator.clipboard.writeText(meme.key);
+                  navigator.clipboard.writeText(tag.key);
                   toast(
                     <div>
                       <div>Copied key to clipboard:</div>
-                      <div className="text-muted-foreground">{meme.key}</div>
+                      <div className="text-muted-foreground">{tag.key}</div>
                     </div>,
                   );
                 }}
@@ -85,21 +85,21 @@ const Memes = memo(function ({ searchText }: { searchText: string }) {
           </CardHeader>
           <CardContent>
             <div className="max-h-64 overflow-auto">
-              <Embed value={meme.value} />
+              <Embed value={tag.value} />
             </div>
           </CardContent>
           <CardFooter className="grow items-end">
             <div className="flex gap-2 justify-between grow items-end">
               <div className="text-muted-foreground">
-                <DiscordUsername discord_user_id={meme.discord_user_id} />
+                <DiscordUsername discord_user_id={tag.discord_user_id} />
               </div>
               <Button
                 onClick={() => {
-                  navigator.clipboard.writeText(meme.value);
+                  navigator.clipboard.writeText(tag.value);
                   toast(
                     <div>
                       <div>Copied value to clipboard:</div>
-                      <div className="text-muted-foreground">{meme.value}</div>
+                      <div className="text-muted-foreground">{tag.value}</div>
                     </div>,
                   );
                 }}

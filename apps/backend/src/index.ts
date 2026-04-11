@@ -53,7 +53,7 @@ const app = new OpenAPIHono<{
   // Protected routes
   .route("/admin", routes.admin)
   .route("/proxy", routes.proxy)
-  .route("/memes", routes.memes)
+  .route("/tags", routes.tags)
   .route("/tenor", routes.tenor)
   .route("/users", routes.users);
 

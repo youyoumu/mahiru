@@ -2,7 +2,7 @@ export * from "./admin";
 export * from "./auth";
 export * from "./docs";
 export * from "./health";
-export * from "./memes";
+export * from "./tags";
 export * from "./proxy";
 export * from "./root";
 export * from "./tenor";

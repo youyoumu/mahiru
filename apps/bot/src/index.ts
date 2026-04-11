@@ -34,7 +34,7 @@ const ctx = new Ctx({
 
 const commandsPair: Record<string, Command> = {
   [commands.Ping.data.name]: new commands.Ping({ ctx }),
-  [commands.Meme.data.name]: new commands.Meme({ ctx }),
+  [commands.Tags.data.name]: new commands.Tags({ ctx }),
   [commands.Login.data.name]: new commands.Login({ ctx }),
   [commands.Prefix.data.name]: new commands.Prefix({ ctx }),
   [commands.Help.data.name]: new commands.Help({ ctx }),

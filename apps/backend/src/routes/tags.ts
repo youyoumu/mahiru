@@ -3,21 +3,21 @@ import type { JwtPayload } from "#/lib/jwt";
 
 import { env } from "#/env";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { zSelectMemes } from "@repo/db";
+import { zSelectTags } from "@repo/db";
 import { verify } from "hono/jwt";
 
-const zRes = z.array(zSelectMemes);
+const zRes = z.array(zSelectTags);
 
 const zQuery = z.object({
   t: z.string().optional(),
 });
 
 const zDecodedPayload = z.object({
-  meme_ids: z.array(z.number()),
+  tag_ids: z.array(z.number()),
   exp: z.number(),
 });
 
-export const memes = new OpenAPIHono<{
+export const tags = new OpenAPIHono<{
   Variables: { jwtPayload: JwtPayload; ctx: { oneTimeTokens: Map<string, string>; db: DB } };
 }>().openapi(
   createRoute({
@@ -27,33 +27,33 @@ export const memes = new OpenAPIHono<{
     responses: {
       200: {
         content: { "application/json": { schema: zRes } },
-        description: "Memes key and value",
+        description: "Tags key and value",
       },
     },
   }),
   async (c) => {
     const { db } = c.get("ctx");
     const { discord_user_id } = c.get("jwtPayload");
-    const { t: memeIdsToken } = c.req.valid("query");
+    const { t: tagIdsToken } = c.req.valid("query");
     let decoded;
     try {
-      decoded = await verify(memeIdsToken ?? "", env.SECRET_KEY, { alg: "HS256" });
+      decoded = await verify(tagIdsToken ?? "", env.SECRET_KEY, { alg: "HS256" });
     } catch {
       decoded = null;
     }
 
     const parsedDecodedPayload = zDecodedPayload.safeParse(decoded);
-    let meme_ids: number[] = [];
+    let tag_ids: number[] = [];
     if (parsedDecodedPayload.success) {
-      meme_ids = parsedDecodedPayload.data.meme_ids;
+      tag_ids = parsedDecodedPayload.data.tag_ids;
     }
 
-    const memes = await db.query.meme.findMany({
+    const tags = await db.query.tags.findMany({
       where: (fields, { eq, or, inArray }) => {
-        return or(eq(fields.discord_user_id, discord_user_id), inArray(fields.id, meme_ids));
+        return or(eq(fields.discord_user_id, discord_user_id), inArray(fields.id, tag_ids));
       },
     });
 
-    return c.json(memes, 200);
+    return c.json(tags, 200);
   },
 );

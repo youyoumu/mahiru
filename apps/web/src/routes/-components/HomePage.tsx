@@ -14,8 +14,8 @@ export default function HomePage() {
         <div className="max-w-7xl grow justify-between flex items-center px-4">
           <div></div>
           {!isNotLogin && (
-            <Link className="text-secondary" to="/memes">
-              Memes
+            <Link className="text-secondary" to="/tags">
+              Tags
             </Link>
           )}
         </div>

@@ -7,9 +7,9 @@ export function getLoginUrl(token: string) {
   return url.toString();
 }
 
-export function getListUrl(token: string) {
+export function getTagsUrl(token: string) {
   const url = new URL(env.WEB_URL);
-  url.pathname = "/memes";
+  url.pathname = "/tags";
   url.searchParams.set("t", token);
   return url.toString();
 }

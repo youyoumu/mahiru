@@ -42,8 +42,8 @@ export const Help: CommandProto = class Help implements Command {
         value: "Get a link to log in to the Mahiru web app.",
       })
       .addFields({
-        name: `${discordEmojis.azusarelaxed} meme`,
-        value: `Manage your meme collection. Use ${inlineCode("/meme help")} for details`,
+        name: `${discordEmojis.azusarelaxed} tags`,
+        value: `Manage your tag collection. Use ${inlineCode("/tags help")} for details`,
       })
       .addFields({
         name: `${discordEmojis.azusarelaxed} prefix`,
@@ -51,7 +51,7 @@ export const Help: CommandProto = class Help implements Command {
       })
       .addFields({
         name: "\u200B",
-        value: `Every slash command has its prefix counterpart. For example, ${inlineCode(prefix + "meme")} is the same as ${inlineCode("/meme")}.`,
+        value: `Every slash command has its prefix counterpart. For example, ${inlineCode(prefix + "tags")} is the same as ${inlineCode("/tags")}.`,
       })
       .setFooter({
         text: "Mahiru",

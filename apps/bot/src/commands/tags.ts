@@ -1,7 +1,7 @@
 import type { Ctx } from "#/lib/ctx";
 
 import { discordEmojis } from "#/lib/constants";
-import { getListUrl } from "#/lib/url";
+import { getTagsUrl } from "#/lib/url";
 import {
   bold,
   ChatInputCommandInteraction,
@@ -28,19 +28,19 @@ const PARAMS = {
   value: "value",
 };
 
-export const Meme: CommandProto = class Meme implements Command {
+export const Tags: CommandProto = class Tags implements Command {
   static data = new SlashCommandBuilder()
-    .setName("meme")
-    .setDescription("Manage your meme collections")
+    .setName("tags")
+    .setDescription("Manage your tag collections")
 
     .addSubcommand((subCommand) =>
       subCommand
         .setName(ACTION.add)
-        .setDescription("Add a meme to your collection.")
+        .setDescription("Add a tag to your collection.")
         .addStringOption((option) =>
           option
             .setName(PARAMS.key)
-            .setDescription("Key to retrieve the meme")
+            .setDescription("Key to retrieve the tag")
             .setMaxLength(32)
             .setRequired(true),
         )
@@ -52,11 +52,11 @@ export const Meme: CommandProto = class Meme implements Command {
     .addSubcommand((subCommand) =>
       subCommand
         .setName(ACTION.drop)
-        .setDescription("Drop a meme from your collection or the server's collection.")
+        .setDescription("Drop a tag from your collection or the server's collection.")
         .addStringOption((option) =>
           option
             .setName(PARAMS.key)
-            .setDescription("Key to retrieve the meme")
+            .setDescription("Key to retrieve the tag")
             .setMaxLength(32)
             .setRequired(true),
         ),
@@ -66,25 +66,25 @@ export const Meme: CommandProto = class Meme implements Command {
       subCommand
         .setName(ACTION.list)
         .setDescription(
-          "List all memes that can be drop, including those from both the user and server collections.",
+          "List all tags that can be dropped, including those from both the user and server collections.",
         ),
     )
 
     .addSubcommand((subCommand) =>
       subCommand
         .setName(ACTION.remove)
-        .setDescription("Remove a meme from your collection and/or the server's collection.")
+        .setDescription("Remove a tag from your collection and/or the server's collection.")
         .addStringOption((option) =>
           option
             .setName(PARAMS.key)
-            .setDescription("Key to retrieve the meme")
+            .setDescription("Key to retrieve the tag")
             .setMaxLength(32)
             .setRequired(true),
         ),
     )
 
     .addSubcommand((subCommand) =>
-      subCommand.setName(ACTION.help).setDescription("Explain meme command"),
+      subCommand.setName(ACTION.help).setDescription("Explain tags command"),
     );
   ctx: Ctx;
 
@@ -152,10 +152,10 @@ export const Meme: CommandProto = class Meme implements Command {
       return;
     }
 
-    const meme = await this.ctx.dbSvc.getMeme(key, discord_user_id, discord_guild_id);
-    if (meme) {
-      interaction?.reply(meme.value);
-      if (message?.channel.isSendable()) message?.channel.send(meme.value);
+    const tag = await this.ctx.dbSvc.getTag(key, discord_user_id, discord_guild_id);
+    if (tag) {
+      interaction?.reply(tag.value);
+      if (message?.channel.isSendable()) message?.channel.send(tag.value);
       return;
     }
 
@@ -192,7 +192,7 @@ export const Meme: CommandProto = class Meme implements Command {
       return;
     }
 
-    await this.ctx.dbSvc.addMeme(key, value, discord_user_id, discord_guild_id);
+    await this.ctx.dbSvc.addTag(key, value, discord_user_id, discord_guild_id);
 
     interaction?.reply(bold(key) + "\n\n" + value);
     if (message?.channel.isSendable()) message.channel.send(bold(key) + "\n\n" + value);
@@ -209,27 +209,26 @@ export const Meme: CommandProto = class Meme implements Command {
     interaction?: ChatInputCommandInteraction;
     message?: Message;
   }) {
-    const allMemes = await this.ctx.dbSvc.getMemes(discord_user_id, discord_guild_id);
-    const meme_ids = allMemes.map((meme) => meme.id);
-    const res = await this.ctx.api.admin.memes.token.$post({ json: { meme_ids } });
+    const allTags = await this.ctx.dbSvc.getTags(discord_user_id, discord_guild_id);
+    const tag_ids = allTags.map((tag) => tag.id);
+    const res = await this.ctx.api.admin.tags.token.$post({ json: { tag_ids } });
     if (!res.ok) return;
     const token = (await res.json()).token;
 
-    // inside a command, event listener, etc.
     const embed = new EmbedBuilder()
-      .setDescription("Showing memes you can drop")
+      .setDescription("Showing tags you can drop")
       .addFields({
         name: "\u200B",
-        value: allMemes
-          .map((meme, i) => `${bold((i + 1).toString())}. ${meme.key} - <@${meme.discord_user_id}>`)
+        value: allTags
+          .map((tag, i) => `${bold((i + 1).toString())}. ${tag.key} - <@${tag.discord_user_id}>`)
           .join("\n"),
       })
       .addFields({
         name: "\u200B",
-        value: `[Open in Browser](${getListUrl(token)})`,
+        value: `[Open in Browser](${getTagsUrl(token)})`,
       })
       .setFooter({
-        text: `Page 1/1 (${allMemes.length} Total)`,
+        text: `Page 1/1 (${allTags.length} Total)`,
       });
 
     interaction?.reply({ embeds: [embed] });
@@ -255,7 +254,7 @@ export const Meme: CommandProto = class Meme implements Command {
       return;
     }
 
-    const removed = await this.ctx.dbSvc.removeMeme(key, discord_user_id, discord_guild_id);
+    const removed = await this.ctx.dbSvc.removeTag(key, discord_user_id, discord_guild_id);
     if (removed) {
       interaction?.reply(`${inlineCode(key)} has been deleted`);
       if (message?.channel.isSendable()) {
@@ -279,28 +278,28 @@ export const Meme: CommandProto = class Meme implements Command {
     const prefix = await this.ctx.dbSvc.getGuildPrefix(discord_guild_id);
 
     const embed = new EmbedBuilder()
-      .setTitle("Meme Help")
+      .setTitle("Tags Help")
       .setColor("#fef3c6")
       .setThumbnail(
         "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
       )
       .addFields({
-        name: `${discordEmojis.azusarelaxed} meme add`,
+        name: `${discordEmojis.azusarelaxed} tags add`,
         value:
-          "Add a meme to your collection. If the command is used in a server, the meme will be added to the server's collection. If the same key already exists in the user or server collection, the value will be overwritten.",
+          "Add a tag to your collection. If the command is used in a server, the tag will be added to the server's collection. If the same key already exists in the user or server collection, the value will be overwritten.",
       })
       .addFields({
-        name: `${discordEmojis.azusarelaxed} meme drop`,
-        value: `Drop a meme from your collection or the server's collection. The user's meme will take priority. ${inlineCode(prefix + "m <key>")} can also be used as shortcut.`,
+        name: `${discordEmojis.azusarelaxed} tags drop`,
+        value: `Drop a tag from your collection or the server's collection. The user's tag will take priority. ${inlineCode(prefix + "t <key>")} can also be used as shortcut.`,
       })
       .addFields({
-        name: `${discordEmojis.azusarelaxed} meme list`,
+        name: `${discordEmojis.azusarelaxed} tags list`,
         value:
-          "List all memes that can be drop, including those from both the user and server collections.",
+          "List all tags that can be dropped, including those from both the user and server collections.",
       })
       .addFields({
-        name: `${discordEmojis.azusarelaxed} meme remove`,
-        value: "Remove a meme from your collection and/or the server's collection.",
+        name: `${discordEmojis.azusarelaxed} tags remove`,
+        value: "Remove a tag from your collection and/or the server's collection.",
       })
       .setFooter({
         text: "Mahiru",

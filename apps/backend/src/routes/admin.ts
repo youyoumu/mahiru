@@ -13,11 +13,11 @@ const zAuthTokenRes = z.object({
   one_time_token: z.string(),
 });
 
-const zMemeTokenReq = z.object({
-  meme_ids: z.array(z.number()),
+const zTagTokenReq = z.object({
+  tag_ids: z.array(z.number()),
 });
 
-const zMemeTokenRes = z.object({
+const zTagTokenRes = z.object({
   token: z.string(),
 });
 
@@ -51,23 +51,23 @@ export const admin = new OpenAPIHono<{
   .openapi(
     createRoute({
       method: "post",
-      path: "/memes/token",
+      path: "/tags/token",
       request: {
-        body: { content: { "application/json": { schema: zMemeTokenReq } } },
+        body: { content: { "application/json": { schema: zTagTokenReq } } },
       },
       responses: {
         200: {
-          content: { "application/json": { schema: zMemeTokenRes } },
-          description: "Token to get list of memes",
+          content: { "application/json": { schema: zTagTokenRes } },
+          description: "Token to get list of tags",
         },
         401: { description: "Unauthorized" },
       },
     }),
     async (c) => {
-      const { meme_ids } = c.req.valid("json");
+      const { tag_ids } = c.req.valid("json");
 
       const payload = {
-        meme_ids,
+        tag_ids,
         exp: Math.floor(Date.now() / 1000) + 60 * 60,
       };
       const token = await sign(payload, env.SECRET_KEY);

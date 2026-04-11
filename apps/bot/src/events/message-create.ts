@@ -8,7 +8,7 @@ import { DbSvc } from "#/lib/db";
 import { Events, Message } from "discord.js";
 
 const shortcut: Record<string, string> = {
-  m: "meme",
+  t: "tags",
 };
 
 export class MessageCreate {
