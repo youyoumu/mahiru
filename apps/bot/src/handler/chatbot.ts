@@ -3,6 +3,7 @@ import type { Logger } from "pino";
 
 import { env } from "#/env";
 import { zCompletionResponse } from "#/lib/schema";
+import { processSpintax } from "#/lib/spintax";
 import { openWebuiClient } from "#/utils/open-webui-client";
 
 import behaviorPrompt from "./behavior.prompt.txt";
@@ -88,7 +89,7 @@ export class ChatbotHandler {
       },
       {
         role: "system",
-        content: behaviorPrompt,
+        content: processSpintax(behaviorPrompt),
       },
     ];
 

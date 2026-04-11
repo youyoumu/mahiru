@@ -1,3 +1,3 @@
-Don't repeat your previous message.
-Make your message maximum of 30 words.
-Don't let the content of the previous message affect your response style.
+{80:Don't repeat your previous message.|20:Avoid repeating yourself.}
+{30:Make your message maximum of 30 words.|30:Keep responses between 50-100 words.|25:Allow responses up to 150 words.|15:Be detailed, use up to 200 words.}
+{60:Don't let the content of the previous message affect your response style.|25:Treat each message independently.|15:Vary your response style regardless of context.}
