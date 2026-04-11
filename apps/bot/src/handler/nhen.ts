@@ -1,4 +1,4 @@
-import type { paths } from "#/types/openapi-nhen.d.ts";
+import type { paths } from "#/types/nhen-openapi";
 import type { Logger } from "pino";
 
 import {
