@@ -4,7 +4,7 @@ import type { Logger } from "pino";
 
 import { env } from "#/env";
 import { emojis } from "#/lib/constants";
-import { MessageReaction, User, type PartialMessageReaction, type PartialUser } from "discord.js";
+import { Events, MessageReaction, User, type PartialMessageReaction, type PartialUser } from "discord.js";
 
 export class MessageReactionAdd {
   ctx: Ctx;
@@ -41,7 +41,7 @@ export class MessageReactionAdd {
       const hasBotReaction = reaction.users.cache.has(env.CLIENT_ID);
       if (!hasBotReaction) return;
 
-      this.linkHandler.handle({ message: reaction.message, react: false, embed: true });
+      this.linkHandler.handle(Events.MessageReactionAdd, reaction.message);
     }
   }
 }

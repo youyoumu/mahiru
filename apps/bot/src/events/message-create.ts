@@ -5,7 +5,7 @@ import type { Logger } from "pino";
 
 import { ChatbotHandler } from "#/handler/chatbot";
 import { DbSvc } from "#/lib/db";
-import { Message } from "discord.js";
+import { Events, Message } from "discord.js";
 
 const shortcut: Record<string, string> = {
   m: "meme",
@@ -39,7 +39,7 @@ export class MessageCreate {
     this.log.trace(`${guildPreview}${message.author.username}: ${messageSlice}`);
     if (message.author.bot) return;
 
-    this.linkHandler.handle({ message, react: true, embed: false });
+    this.linkHandler.handle(Events.MessageCreate, message);
     this.chatbotHandler.handle({ message });
 
     let args: string[] = [];
