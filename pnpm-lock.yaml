@@ -63,9 +63,6 @@ importers:
       tsdown:
         specifier: ^0.21.7
         version: 0.21.7(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(typescript@5.8.2)
-      tsx:
-        specifier: ^4.19.4
-        version: 4.19.4
 
   apps/bot:
     dependencies:
@@ -124,9 +121,6 @@ importers:
       tsdown:
         specifier: ^0.21.7
         version: 0.21.7(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(typescript@5.8.2)
-      tsx:
-        specifier: ^4.19.4
-        version: 4.19.4
 
   apps/web:
     dependencies:
