@@ -34,11 +34,19 @@ const PARAMS = {
   personality: "personality",
 };
 
+type Params = {
+  discord_user_id: string | undefined;
+  discord_guild_id: string | undefined | null;
+  behavior: string | undefined;
+  personality: string | undefined;
+  interaction?: ChatInputCommandInteraction;
+  message?: Message;
+};
+
 export const Chatbot: CommandProto = class Chatbot implements Command {
   static data = new SlashCommandBuilder()
     .setName("chatbot")
     .setDescription("Configure chatbot settings for this server")
-
     .addSubcommand((subCommand) =>
       subCommand
         .setName(ACTION["set-behavior"])
@@ -50,13 +58,11 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
             .setRequired(true),
         ),
     )
-
     .addSubcommand((subCommand) =>
       subCommand
         .setName(ACTION["reset-behavior"])
         .setDescription("Reset the chatbot behavior to the default behavior prompt."),
     )
-
     .addSubcommand((subCommand) =>
       subCommand
         .setName(ACTION["set-personality"])
@@ -68,33 +74,27 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
             .setRequired(true),
         ),
     )
-
     .addSubcommand((subCommand) =>
       subCommand
         .setName(ACTION["reset-personality"])
         .setDescription("Reset the chatbot personality to the default personality prompt."),
     )
-
     .addSubcommand((subCommand) =>
       subCommand.setName(ACTION.help).setDescription("Show help information for chatbot commands."),
     )
-
     .addSubcommand((subCommand) =>
       subCommand
         .setName(ACTION["preview-behavior"])
         .setDescription("Preview the processed behavior prompt."),
     )
-
     .addSubcommand((subCommand) =>
       subCommand
         .setName(ACTION["preview-personality"])
         .setDescription("Preview the processed personality prompt."),
     )
-
     .addSubcommand((subCommand) =>
       subCommand.setName(ACTION["show-behavior"]).setDescription("Show the raw behavior prompt."),
     )
-
     .addSubcommand((subCommand) =>
       subCommand
         .setName(ACTION["show-personality"])
@@ -111,112 +111,65 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     const selectedAction = (interaction?.options.getSubcommand() ?? args?.[0]) as
       | Action
       | undefined;
-    const behavior =
-      interaction?.options.getString(PARAMS.behavior) ??
-      message?.content.split("set-behavior ").slice(1).join("set-behavior ").trim();
-    const personality =
-      interaction?.options.getString(PARAMS.personality) ??
-      message?.content.split("set-personality ").slice(1).join("set-personality ").trim();
-    const discord_user_id = interaction?.user.id ?? message?.author.id;
-    const discord_guild_id = interaction?.guildId ?? message?.guildId ?? null;
-    if (!discord_user_id) return;
+    const params = {
+      discord_user_id: interaction?.user.id ?? message?.author.id,
+      discord_guild_id: interaction?.guildId ?? message?.guildId ?? null,
+      behavior:
+        interaction?.options.getString(PARAMS.behavior) ??
+        message?.content.split("set-behavior ").slice(1).join("set-behavior ").trim(),
+      personality:
+        interaction?.options.getString(PARAMS.personality) ??
+        message?.content.split("set-personality ").slice(1).join("set-personality ").trim(),
+      interaction,
+      message,
+    };
+    if (!params.discord_user_id) return;
 
     switch (selectedAction) {
       case "set-behavior": {
-        this.handleSetBehavior({
-          discord_guild_id,
-          discord_user_id,
-          behavior,
-          interaction,
-          message,
-        });
+        this.handleSetBehavior(params);
         break;
       }
       case "reset-behavior": {
-        this.handleResetBehavior({
-          discord_guild_id,
-          discord_user_id,
-          interaction,
-          message,
-        });
+        this.handleResetBehavior(params);
         break;
       }
       case "set-personality": {
-        this.handleSetPersonality({
-          discord_guild_id,
-          discord_user_id,
-          personality,
-          interaction,
-          message,
-        });
+        this.handleSetPersonality(params);
         break;
       }
       case "reset-personality": {
-        this.handleResetPersonality({
-          discord_guild_id,
-          discord_user_id,
-          interaction,
-          message,
-        });
+        this.handleResetPersonality(params);
         break;
       }
       case "help": {
-        this.handleHelp({
-          interaction,
-          message,
-        });
+        this.handleHelp(params);
         break;
       }
       case "preview-behavior": {
-        this.handlePreviewBehavior({
-          discord_guild_id,
-          interaction,
-          message,
-        });
+        this.handlePreviewBehavior(params);
         break;
       }
       case "preview-personality": {
-        this.handlePreviewPersonality({
-          discord_guild_id,
-          interaction,
-          message,
-        });
+        this.handlePreviewPersonality(params);
         break;
       }
       case "show-behavior": {
-        this.handleShowBehavior({
-          discord_guild_id,
-          interaction,
-          message,
-        });
+        this.handleShowBehavior(params);
         break;
       }
       case "show-personality": {
-        this.handleShowPersonality({
-          discord_guild_id,
-          interaction,
-          message,
-        });
+        this.handleShowPersonality(params);
         break;
       }
       default: {
-        this.handleHelp({ interaction, message });
+        this.handleHelp(params);
       }
     }
   }
 
-  private async handleSetBehavior({
-    discord_guild_id,
-    behavior,
-    interaction,
-    message,
-  }: {
-    discord_guild_id: string | undefined | null;
-    discord_user_id: string;
-    behavior: string | undefined;
-    interaction?: ChatInputCommandInteraction;
-    message?: Message;
-  }) {
+  private async handleSetBehavior(params: Params) {
+    const { discord_guild_id, behavior, interaction, message } = params;
     if (!discord_guild_id) {
       interaction?.reply("⚠️ This command can only be used in a server.");
       if (message?.channel.isSendable())
@@ -250,16 +203,8 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
   }
 
-  private async handleResetBehavior({
-    discord_guild_id,
-    interaction,
-    message,
-  }: {
-    discord_guild_id: string | undefined | null;
-    discord_user_id: string;
-    interaction?: ChatInputCommandInteraction;
-    message?: Message;
-  }) {
+  private async handleResetBehavior(params: Params) {
+    const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
       interaction?.reply("⚠️ This command can only be used in a server.");
       if (message?.channel.isSendable())
@@ -282,18 +227,8 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
   }
 
-  private async handleSetPersonality({
-    discord_guild_id,
-    personality,
-    interaction,
-    message,
-  }: {
-    discord_guild_id: string | undefined | null;
-    discord_user_id: string;
-    personality: string | undefined;
-    interaction?: ChatInputCommandInteraction;
-    message?: Message;
-  }) {
+  private async handleSetPersonality(params: Params) {
+    const { discord_guild_id, personality, interaction, message } = params;
     if (!discord_guild_id) {
       interaction?.reply("⚠️ This command can only be used in a server.");
       if (message?.channel.isSendable())
@@ -329,16 +264,8 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
   }
 
-  private async handleResetPersonality({
-    discord_guild_id,
-    interaction,
-    message,
-  }: {
-    discord_guild_id: string | undefined | null;
-    discord_user_id: string;
-    interaction?: ChatInputCommandInteraction;
-    message?: Message;
-  }) {
+  private async handleResetPersonality(params: Params) {
+    const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
       interaction?.reply("⚠️ This command can only be used in a server.");
       if (message?.channel.isSendable())
@@ -361,15 +288,8 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
   }
 
-  private async handlePreviewBehavior({
-    discord_guild_id,
-    interaction,
-    message,
-  }: {
-    discord_guild_id: string | undefined | null;
-    interaction?: ChatInputCommandInteraction;
-    message?: Message;
-  }) {
+  private async handlePreviewBehavior(params: Params) {
+    const { discord_guild_id, interaction, message } = params;
     const customBehavior = await this.ctx.dbSvc.getGuildChatbotBehavior(discord_guild_id);
     const prompt = customBehavior ? processSpintax(customBehavior) : processSpintax(behaviorPrompt);
 
@@ -389,15 +309,8 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
   }
 
-  private async handlePreviewPersonality({
-    discord_guild_id,
-    interaction,
-    message,
-  }: {
-    discord_guild_id: string | undefined | null;
-    interaction?: ChatInputCommandInteraction;
-    message?: Message;
-  }) {
+  private async handlePreviewPersonality(params: Params) {
+    const { discord_guild_id, interaction, message } = params;
     const customPersonality = await this.ctx.dbSvc.getGuildChatbotPersonality(discord_guild_id);
     const prompt = customPersonality
       ? processSpintax(customPersonality)
@@ -419,15 +332,8 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
   }
 
-  private async handleShowBehavior({
-    discord_guild_id,
-    interaction,
-    message,
-  }: {
-    discord_guild_id: string | undefined | null;
-    interaction?: ChatInputCommandInteraction;
-    message?: Message;
-  }) {
+  private async handleShowBehavior(params: Params) {
+    const { discord_guild_id, interaction, message } = params;
     const customBehavior = await this.ctx.dbSvc.getGuildChatbotBehavior(discord_guild_id);
     const prompt = customBehavior ?? behaviorPrompt;
 
@@ -447,15 +353,8 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
   }
 
-  private async handleShowPersonality({
-    discord_guild_id,
-    interaction,
-    message,
-  }: {
-    discord_guild_id: string | undefined | null;
-    interaction?: ChatInputCommandInteraction;
-    message?: Message;
-  }) {
+  private async handleShowPersonality(params: Params) {
+    const { discord_guild_id, interaction, message } = params;
     const customPersonality = await this.ctx.dbSvc.getGuildChatbotPersonality(discord_guild_id);
     const prompt = customPersonality ?? personalityPrompt;
 
@@ -475,13 +374,8 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
   }
 
-  private async handleHelp({
-    interaction,
-    message,
-  }: {
-    interaction?: ChatInputCommandInteraction;
-    message?: Message;
-  }) {
+  private async handleHelp(params: Params) {
+    const { interaction, message } = params;
     const embed = new EmbedBuilder()
       .setTitle("Chatbot Help")
       .setColor(colors.pastelYellow)
