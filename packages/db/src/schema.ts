@@ -12,6 +12,7 @@ export type GuildSettings = {
   prefix?: string;
   language?: string;
   chatbotBehavior?: string;
+  chatbotPersonality?: string;
 };
 
 export const guildSettings = sqliteTable("guild_settings", {

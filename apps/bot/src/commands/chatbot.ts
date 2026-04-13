@@ -14,11 +14,14 @@ import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 const ACTION = {
   "set-behavior": "set-behavior",
   "reset-behavior": "reset-behavior",
+  "set-personality": "set-personality",
+  "reset-personality": "reset-personality",
 } as const;
 type Action = keyof typeof ACTION;
 
 const PARAMS = {
   behavior: "behavior",
+  personality: "personality",
 };
 
 export const Chatbot: CommandProto = class Chatbot implements Command {
@@ -42,6 +45,24 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       subCommand
         .setName(ACTION["reset-behavior"])
         .setDescription("Reset the chatbot behavior to the default behavior prompt."),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(ACTION["set-personality"])
+        .setDescription("Set a custom personality prompt for the chatbot in this server.")
+        .addStringOption((option) =>
+          option
+            .setName(PARAMS.personality)
+            .setDescription("The personality prompt text to use for the chatbot.")
+            .setRequired(true),
+        ),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(ACTION["reset-personality"])
+        .setDescription("Reset the chatbot personality to the default personality prompt."),
     );
   ctx: Ctx;
 
@@ -57,6 +78,9 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     const behavior =
       interaction?.options.getString(PARAMS.behavior) ??
       message?.content.split("set-behavior ").slice(1).join("set-behavior ").trim();
+    const personality =
+      interaction?.options.getString(PARAMS.personality) ??
+      message?.content.split("set-personality ").slice(1).join("set-personality ").trim();
     const discord_user_id = interaction?.user.id ?? message?.author.id;
     const discord_guild_id = interaction?.guildId ?? message?.guildId ?? null;
     if (!discord_user_id) return;
@@ -74,6 +98,25 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       }
       case "reset-behavior": {
         this.handleResetBehavior({
+          discord_guild_id,
+          discord_user_id,
+          interaction,
+          message,
+        });
+        break;
+      }
+      case "set-personality": {
+        this.handleSetPersonality({
+          discord_guild_id,
+          discord_user_id,
+          personality,
+          interaction,
+          message,
+        });
+        break;
+      }
+      case "reset-personality": {
+        this.handleResetPersonality({
           discord_guild_id,
           discord_user_id,
           interaction,
@@ -164,6 +207,85 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
   }
 
+  private async handleSetPersonality({
+    discord_guild_id,
+    personality,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string | undefined | null;
+    discord_user_id: string;
+    personality: string | undefined;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    if (!discord_guild_id) {
+      interaction?.reply("⚠️ This command can only be used in a server.");
+      if (message?.channel.isSendable())
+        message.channel.send("⚠️ This command can only be used in a server.");
+      return;
+    }
+
+    if (!personality) {
+      interaction?.reply("⚠️ Invalid arguments");
+      if (message?.channel.isSendable())
+        message.channel.send(codeBlock("chatbot set-personality <personality>"));
+      return;
+    }
+
+    await this.ctx.dbSvc.setGuildChatbotPersonality(discord_guild_id, personality);
+
+    const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
+    const embed = new EmbedBuilder()
+      .setTitle("Chatbot Personality Updated")
+      .setDescription("The chatbot personality has been updated for this server.")
+      .addFields({
+        name: "New Personality",
+        value: inlineCode(
+          personality.length > 1000 ? `${personality.slice(0, 1000)}...` : personality,
+        ),
+      })
+      .setFooter({
+        text: `Updated by ${username}`,
+      })
+      .setTimestamp();
+
+    interaction?.reply({ embeds: [embed] });
+    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+  }
+
+  private async handleResetPersonality({
+    discord_guild_id,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string | undefined | null;
+    discord_user_id: string;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    if (!discord_guild_id) {
+      interaction?.reply("⚠️ This command can only be used in a server.");
+      if (message?.channel.isSendable())
+        message.channel.send("⚠️ This command can only be used in a server.");
+      return;
+    }
+
+    await this.ctx.dbSvc.resetGuildChatbotPersonality(discord_guild_id);
+
+    const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
+    const embed = new EmbedBuilder()
+      .setTitle("Chatbot Personality Reset")
+      .setDescription("The chatbot personality has been reset to the default for this server.")
+      .setFooter({
+        text: `Reset by ${username}`,
+      })
+      .setTimestamp();
+
+    interaction?.reply({ embeds: [embed] });
+    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+  }
+
   private async handleHelp({
     interaction,
     message,
@@ -185,6 +307,16 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       .addFields({
         name: "chatbot reset-behavior",
         value: "Reset the chatbot behavior prompt to the default behavior prompt for this server.",
+      })
+      .addFields({
+        name: "chatbot set-personality",
+        value:
+          "Set a custom personality prompt for the chatbot in this server. This defines the chatbot's personality traits and characteristics.",
+      })
+      .addFields({
+        name: "chatbot reset-personality",
+        value:
+          "Reset the chatbot personality prompt to the default personality prompt for this server.",
       })
       .setFooter({
         text: "Mahiru",

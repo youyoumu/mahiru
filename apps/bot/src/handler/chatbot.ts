@@ -81,9 +81,11 @@ export class ChatbotHandler {
       .replace(/\{\{MEMBERS\}\}/g, membersList)
       .replace(/\{\{EMOJIS\}\}/g, emojisList);
 
-    // Get custom behavior if it exists for this guild
     const discordGuildId = message.guildId;
-    const personalityContext = processSpintax(personalityPrompt);
+    const customPersonality = await this.ctx.dbSvc.getGuildChatbotPersonality(discordGuildId);
+    const personalityContext = customPersonality
+      ? processSpintax(customPersonality)
+      : processSpintax(personalityPrompt);
     const customBehavior = await this.ctx.dbSvc.getGuildChatbotBehavior(discordGuildId);
     const behaviorContext = customBehavior
       ? processSpintax(customBehavior)
@@ -137,7 +139,7 @@ export class ChatbotHandler {
       content: `${message.author?.username}: ${this.processMentions(message)}`,
     });
 
-    this.log.debug(`Personality Context: \n${personalityPrompt}`);
+    this.log.debug(`Personality Context: \n${personalityContext}`);
     this.log.debug(`Discord Context: \n${discordContext}`);
     this.log.debug(`Behavior Context: \n${behaviorContext}`);
     this.log.debug(chatHistoryMessages, "ChatHistory");

@@ -181,11 +181,9 @@ export class DbSvc {
     discord_guild_id: string | null | undefined,
   ): Promise<string | undefined> {
     if (!discord_guild_id) return undefined;
-
     const guildSettings = await this.db.query.guildSettings.findFirst({
       where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
     });
-
     return guildSettings?.settings?.chatbotBehavior;
   }
 
@@ -219,6 +217,53 @@ export class DbSvc {
 
     if (guildSettings) {
       const { chatbotBehavior: _, ...restSettings } = guildSettings.settings;
+      await this.db
+        .update(schema.guildSettings)
+        .set({ settings: restSettings })
+        .where(eq(schema.guildSettings.id, guildSettings.id));
+    }
+  }
+
+  async getGuildChatbotPersonality(
+    discord_guild_id: string | null | undefined,
+  ): Promise<string | undefined> {
+    if (!discord_guild_id) return undefined;
+    const guildSettings = await this.db.query.guildSettings.findFirst({
+      where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
+    });
+    return guildSettings?.settings?.chatbotPersonality;
+  }
+
+  async setGuildChatbotPersonality(discord_guild_id: string, personality: string) {
+    const guildSettings = await this.db.query.guildSettings.findFirst({
+      where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
+    });
+
+    if (guildSettings) {
+      await this.db
+        .update(schema.guildSettings)
+        .set({
+          settings: {
+            ...guildSettings.settings,
+            chatbotPersonality: personality,
+          },
+        })
+        .where(eq(schema.guildSettings.id, guildSettings.id));
+    } else {
+      await this.db.insert(schema.guildSettings).values({
+        discord_guild_id,
+        settings: { chatbotPersonality: personality },
+      });
+    }
+  }
+
+  async resetGuildChatbotPersonality(discord_guild_id: string) {
+    const guildSettings = await this.db.query.guildSettings.findFirst({
+      where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
+    });
+
+    if (guildSettings) {
+      const { chatbotPersonality: _, ...restSettings } = guildSettings.settings;
       await this.db
         .update(schema.guildSettings)
         .set({ settings: restSettings })
