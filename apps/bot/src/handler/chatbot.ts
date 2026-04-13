@@ -3,10 +3,10 @@ import type { Message, PartialMessage } from "discord.js";
 import type { Logger } from "pino";
 
 import { env } from "#/env";
+import { openWebuiClient } from "#/lib/openapi";
 import { zCompletionResponse } from "#/lib/schema";
 import { processSpintax } from "#/lib/spintax";
 import { prompts } from "#/prompts";
-import { openWebuiClient } from "#/utils/open-webui-client";
 
 type MessagesPayload = {
   role: "system" | "user" | "assistant";
