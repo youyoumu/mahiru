@@ -1,7 +1,7 @@
 // https://github.com/oxc-project/oxc/issues/16394 oxfmt: extends option for shareable configurations
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["routeTree.gen.ts", "packages/db/drizzle/**"],
+  "ignorePatterns": ["routeTree.gen.ts", "*openapi.d.ts", "packages/db/drizzle/**"],
   "sortImports": {
     "groups": [
       "type-import",

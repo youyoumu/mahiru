@@ -1,5 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 
+import { colors, imageLinks } from "#/lib/constants";
 import {
   ChatInputCommandInteraction,
   codeBlock,
@@ -67,9 +68,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     )
 
     .addSubcommand((subCommand) =>
-      subCommand
-        .setName(ACTION.help)
-        .setDescription("Show help information for chatbot commands."),
+      subCommand.setName(ACTION.help).setDescription("Show help information for chatbot commands."),
     );
   ctx: Ctx;
 
@@ -309,10 +308,8 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
   }) {
     const embed = new EmbedBuilder()
       .setTitle("Chatbot Help")
-      .setColor("#fef3c6")
-      .setThumbnail(
-        "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
-      )
+      .setColor(colors.pastelYellow)
+      .setThumbnail(imageLinks.avatar)
       .setDescription(
         "Configure the chatbot's behavior and personality for this server. " +
           "Prompts support [spintax syntax](https://github.com/youyoumu/mahiru/blob/main/apps/bot/docs/spintax.md) for random variations.",

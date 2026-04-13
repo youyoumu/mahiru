@@ -1,6 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 
-import { discordEmojis } from "#/lib/constants";
+import { colors, discordEmojis, imageLinks } from "#/lib/constants";
 import { getTagsUrl } from "#/lib/url";
 import {
   bold,
@@ -283,10 +283,8 @@ export const Tag: CommandProto = class Tag implements Command {
 
     const embed = new EmbedBuilder()
       .setTitle("Tag Help")
-      .setColor("#fef3c6")
-      .setThumbnail(
-        "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
-      )
+      .setColor(colors.pastelYellow)
+      .setThumbnail(imageLinks.avatar)
       .addFields({
         name: `${discordEmojis.azusarelaxed} tag add`,
         value:
