@@ -313,6 +313,10 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       .setThumbnail(
         "https://cdn.discordapp.com/avatars/1366671964500000778/555dfb9cf6265ae505041deeaac95b05",
       )
+      .setDescription(
+        "Configure the chatbot's behavior and personality for this server. " +
+          "Prompts support [spintax syntax](https://github.com/youyoumu/mahiru/blob/main/apps/bot/docs/spintax.md) for random variations.",
+      )
       .addFields({
         name: "chatbot set-behavior",
         value:
