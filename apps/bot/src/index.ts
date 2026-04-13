@@ -38,9 +38,13 @@ const commandsPair: Record<string, Command> = {
   [commands.Login.data.name]: new commands.Login({ ctx }),
   [commands.Prefix.data.name]: new commands.Prefix({ ctx }),
   [commands.Help.data.name]: new commands.Help({ ctx }),
+  [commands.Chatbot.data.name]: new commands.Chatbot({ ctx }),
 };
 
-const chatbotHandler = new handler.ChatbotHandler({ log: log.child({ name: "chatbot" }) });
+const chatbotHandler = new handler.ChatbotHandler({
+  ctx,
+  log: log.child({ name: "chatbot" }),
+});
 const nhenHandler = new handler.NhenHandler({ ctx, log: log.child({ name: "nhen" }) });
 const linkHandler = new handler.LinkHandler({ log: log.child({ name: "link" }), nhenHandler });
 

@@ -1,3 +1,4 @@
+import type { Ctx } from "#/lib/ctx";
 import type { Message, PartialMessage } from "discord.js";
 import type { Logger } from "pino";
 
@@ -17,8 +18,10 @@ type MessagesPayload = {
 
 export class ChatbotHandler {
   log: Logger;
-  constructor(opts: { log: Logger }) {
+  ctx: Ctx;
+  constructor(opts: { log: Logger; ctx: Ctx }) {
     this.log = opts.log;
+    this.ctx = opts.ctx;
   }
 
   async handle({ message }: { message: Message | PartialMessage }) {
@@ -78,10 +81,18 @@ export class ChatbotHandler {
       .replace(/\{\{MEMBERS\}\}/g, membersList)
       .replace(/\{\{EMOJIS\}\}/g, emojisList);
 
+    // Get custom behavior if it exists for this guild
+    const discordGuildId = message.guildId;
+    const personalityContext = processSpintax(personalityPrompt);
+    const customBehavior = await this.ctx.dbSvc.getGuildChatbotBehavior(discordGuildId);
+    const behaviorContext = customBehavior
+      ? processSpintax(customBehavior)
+      : processSpintax(behaviorPrompt);
+
     const messages: MessagesPayload = [
       {
         role: "system",
-        content: personalityPrompt,
+        content: personalityContext,
       },
       {
         role: "system",
@@ -89,7 +100,7 @@ export class ChatbotHandler {
       },
       {
         role: "system",
-        content: processSpintax(behaviorPrompt),
+        content: behaviorContext,
       },
     ];
 
@@ -97,9 +108,11 @@ export class ChatbotHandler {
       .filter((msg) => msg.id !== repliedMessage?.id && msg.id !== message.id)
       .reverse();
 
+    const chatHistoryMessages: MessagesPayload = [];
+
     for (const [, msg] of filteredMessages) {
       const isBot = msg.author?.id === env.CLIENT_ID;
-      messages.push({
+      chatHistoryMessages.push({
         role: isBot ? "assistant" : "user",
         content: isBot
           ? this.processMentions(msg)
@@ -107,9 +120,10 @@ export class ChatbotHandler {
       });
     }
 
+    //TODO: do something about this
     if (repliedMessage) {
       const isBot = repliedMessage.author?.id === env.CLIENT_ID;
-      messages.push({
+      chatHistoryMessages.push({
         role: isBot ? "assistant" : "user",
         content: isBot
           ? this.processMentions(repliedMessage)
@@ -117,12 +131,17 @@ export class ChatbotHandler {
       });
     }
 
+    messages.push(...chatHistoryMessages);
     messages.push({
       role: "user",
       content: `${message.author?.username}: ${this.processMentions(message)}`,
     });
 
-    this.log.debug(messages, "MessagesPayload");
+    this.log.debug(`Personality Context: \n${personalityPrompt}`);
+    this.log.debug(`Discord Context: \n${discordContext}`);
+    this.log.debug(`Behavior Context: \n${behaviorContext}`);
+    this.log.debug(chatHistoryMessages, "ChatHistory");
+
     return messages;
   }
 

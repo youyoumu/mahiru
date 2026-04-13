@@ -175,4 +175,40 @@ export class DbSvc {
 
     this.prefixStorage.set(discord_guild_id, prefix);
   }
+
+  //TODO: cache
+  async getGuildChatbotBehavior(
+    discord_guild_id: string | null | undefined,
+  ): Promise<string | undefined> {
+    if (!discord_guild_id) return undefined;
+
+    const guildSettings = await this.db.query.guildSettings.findFirst({
+      where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
+    });
+
+    return guildSettings?.settings?.chatbotBehavior;
+  }
+
+  async setGuildChatbotBehavior(discord_guild_id: string, behavior: string) {
+    const guildSettings = await this.db.query.guildSettings.findFirst({
+      where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
+    });
+
+    if (guildSettings) {
+      await this.db
+        .update(schema.guildSettings)
+        .set({
+          settings: {
+            ...guildSettings.settings,
+            chatbotBehavior: behavior,
+          },
+        })
+        .where(eq(schema.guildSettings.id, guildSettings.id));
+    } else {
+      await this.db.insert(schema.guildSettings).values({
+        discord_guild_id,
+        settings: { chatbotBehavior: behavior },
+      });
+    }
+  }
 }

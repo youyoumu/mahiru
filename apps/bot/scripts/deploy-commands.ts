@@ -1,11 +1,11 @@
 import { REST, Routes } from "discord.js";
 
-import { Help, Login, Ping, Prefix, Tag } from "../src/commands";
+import { Help, Login, Ping, Prefix, Tag, Chatbot } from "../src/commands";
 import { env } from "../src/env";
 
 export async function deployCommands() {
-  const validCommands = [Ping.data, Tag.data, Login.data, Prefix.data, Help.data].map((data) =>
-    data.toJSON(),
+  const validCommands = [Ping.data, Tag.data, Login.data, Prefix.data, Help.data, Chatbot.data].map(
+    (data) => data.toJSON(),
   );
 
   const isAllGuilds = process.argv.includes("--all-guilds");

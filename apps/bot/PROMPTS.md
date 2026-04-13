@@ -13,6 +13,7 @@ Use curly braces `{}` with pipe `|` to define multiple options. One will be chos
 ```
 
 Possible outputs:
+
 - `Hello there!`
 - `Hi there!`
 - `Hey there!`
@@ -66,19 +67,21 @@ This creates 6 possible combinations (2 × 3).
 Use `\` to escape special characters (`{`, `}`, `|`, `:`, `\`) when you want them to appear literally in your prompt.
 
 | Escape | Output |
-|--------|--------|
-| `\{` | `{` |
-| `\}` | `}` |
-| `\|` | `\|` |
-| `\:` | `:` |
-| `\\` | `\` |
+| ------ | ------ |
+| `\{`   | `{`    |
+| `\}`   | `}`    |
+| `\|`   | `\|`   |
+| `\:`   | `:`    |
+| `\\`   | `\`    |
 
 Example:
+
 ```
 Explain operators like {AND|OR|\|\|} in programming.
 ```
 
 Output:
+
 - `Explain operators like AND in programming.`
 - `Explain operators like OR in programming.`
 - `Explain operators like || in programming.`
@@ -86,21 +89,25 @@ Output:
 ## Real-World Examples
 
 ### Greeting Variations
+
 ```
 {Hello|Hi|Hey|Greetings} {there|friend}, {80:how are you today?|15:hope you're doing well!|5:what can I help with?}
 ```
 
 ### Email Generation
+
 ```
 {70:Please write|20:Could you write|10:I need} a {80:friendly|20:professional} email to {50:the team|30:my manager|20:the client} about {60:the project deadline|40:the budget update}.
 ```
 
 ### Marketing Copy
+
 ```
 {50:Discover|30:Experience|20:Unlock} the {70:power|30:potential} of our new product and {40:transform|30:improve|30:enhance} your {business|workflow|daily routine} today!
 ```
 
 ### Technical Content
+
 ```
 Explain the difference between {C++|Java|Python} and how to use {operators like \|\||functions|classes}.
 ```

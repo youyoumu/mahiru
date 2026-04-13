@@ -11,6 +11,7 @@ export const tags = sqliteTable("tags", {
 export type GuildSettings = {
   prefix?: string;
   language?: string;
+  chatbotBehavior?: string;
 };
 
 export const guildSettings = sqliteTable("guild_settings", {
