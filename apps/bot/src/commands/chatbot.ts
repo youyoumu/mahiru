@@ -12,11 +12,19 @@ import {
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
+import behaviorPrompt from "../handler/behavior.prompt.txt";
+import personalityPrompt from "../handler/personality.prompt.txt";
+import { processSpintax } from "../lib/spintax";
+
 const ACTION = {
   "set-behavior": "set-behavior",
   "reset-behavior": "reset-behavior",
   "set-personality": "set-personality",
   "reset-personality": "reset-personality",
+  "preview-behavior": "preview-behavior",
+  "preview-personality": "preview-personality",
+  "show-behavior": "show-behavior",
+  "show-personality": "show-personality",
   help: "help",
 } as const;
 type Action = keyof typeof ACTION;
@@ -69,6 +77,28 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
 
     .addSubcommand((subCommand) =>
       subCommand.setName(ACTION.help).setDescription("Show help information for chatbot commands."),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(ACTION["preview-behavior"])
+        .setDescription("Preview the processed behavior prompt."),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(ACTION["preview-personality"])
+        .setDescription("Preview the processed personality prompt."),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand.setName(ACTION["show-behavior"]).setDescription("Show the raw behavior prompt."),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(ACTION["show-personality"])
+        .setDescription("Show the raw personality prompt."),
     );
   ctx: Ctx;
 
@@ -132,6 +162,38 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       }
       case "help": {
         this.handleHelp({
+          interaction,
+          message,
+        });
+        break;
+      }
+      case "preview-behavior": {
+        this.handlePreviewBehavior({
+          discord_guild_id,
+          interaction,
+          message,
+        });
+        break;
+      }
+      case "preview-personality": {
+        this.handlePreviewPersonality({
+          discord_guild_id,
+          interaction,
+          message,
+        });
+        break;
+      }
+      case "show-behavior": {
+        this.handleShowBehavior({
+          discord_guild_id,
+          interaction,
+          message,
+        });
+        break;
+      }
+      case "show-personality": {
+        this.handleShowPersonality({
+          discord_guild_id,
           interaction,
           message,
         });
@@ -299,6 +361,120 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
   }
 
+  private async handlePreviewBehavior({
+    discord_guild_id,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string | undefined | null;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    const customBehavior = await this.ctx.dbSvc.getGuildChatbotBehavior(discord_guild_id);
+    const prompt = customBehavior ? processSpintax(customBehavior) : processSpintax(behaviorPrompt);
+
+    const embed = new EmbedBuilder()
+      .setTitle("Behavior Prompt Preview")
+      .setDescription("This is a preview of the processed behavior prompt.")
+      .addFields({
+        name: "Preview",
+        value: codeBlock(prompt.length > 2000 ? `${prompt.slice(0, 1990)}...` : prompt),
+      })
+      .setFooter({
+        text: customBehavior ? "Custom behavior prompt" : "Default behavior prompt",
+      })
+      .setTimestamp();
+
+    interaction?.reply({ embeds: [embed] });
+    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+  }
+
+  private async handlePreviewPersonality({
+    discord_guild_id,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string | undefined | null;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    const customPersonality = await this.ctx.dbSvc.getGuildChatbotPersonality(discord_guild_id);
+    const prompt = customPersonality
+      ? processSpintax(customPersonality)
+      : processSpintax(personalityPrompt);
+
+    const embed = new EmbedBuilder()
+      .setTitle("Personality Prompt Preview")
+      .setDescription("This is a preview of the processed personality prompt.")
+      .addFields({
+        name: "Preview",
+        value: codeBlock(prompt.length > 2000 ? `${prompt.slice(0, 1990)}...` : prompt),
+      })
+      .setFooter({
+        text: customPersonality ? "Custom personality prompt" : "Default personality prompt",
+      })
+      .setTimestamp();
+
+    interaction?.reply({ embeds: [embed] });
+    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+  }
+
+  private async handleShowBehavior({
+    discord_guild_id,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string | undefined | null;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    const customBehavior = await this.ctx.dbSvc.getGuildChatbotBehavior(discord_guild_id);
+    const prompt = customBehavior ?? behaviorPrompt;
+
+    const embed = new EmbedBuilder()
+      .setTitle("Behavior Prompt")
+      .setDescription("This is the behavior prompt currently in use.")
+      .addFields({
+        name: "Raw Prompt",
+        value: codeBlock(prompt.length > 4000 ? `${prompt.slice(0, 3990)}...` : prompt),
+      })
+      .setFooter({
+        text: customBehavior ? "Custom behavior prompt" : "Default behavior prompt",
+      })
+      .setTimestamp();
+
+    interaction?.reply({ embeds: [embed] });
+    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+  }
+
+  private async handleShowPersonality({
+    discord_guild_id,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string | undefined | null;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    const customPersonality = await this.ctx.dbSvc.getGuildChatbotPersonality(discord_guild_id);
+    const prompt = customPersonality ?? personalityPrompt;
+
+    const embed = new EmbedBuilder()
+      .setTitle("Personality Prompt")
+      .setDescription("This is the personality prompt currently in use.")
+      .addFields({
+        name: "Raw Prompt",
+        value: codeBlock(prompt.length > 4000 ? `${prompt.slice(0, 3990)}...` : prompt),
+      })
+      .setFooter({
+        text: customPersonality ? "Custom personality prompt" : "Default personality prompt",
+      })
+      .setTimestamp();
+
+    interaction?.reply({ embeds: [embed] });
+    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+  }
+
   private async handleHelp({
     interaction,
     message,
@@ -332,6 +508,22 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         name: "chatbot reset-personality",
         value:
           "Reset the chatbot personality prompt to the default personality prompt for this server.",
+      })
+      .addFields({
+        name: "chatbot preview-behavior",
+        value: "Preview the processed behavior prompt to see what the bot will actually use.",
+      })
+      .addFields({
+        name: "chatbot preview-personality",
+        value: "Preview the processed personality prompt to see what the bot will actually use.",
+      })
+      .addFields({
+        name: "chatbot show-behavior",
+        value: "Show the raw behavior prompt.",
+      })
+      .addFields({
+        name: "chatbot show-personality",
+        value: "Show the raw personality prompt.",
       })
       .setFooter({
         text: "Mahiru",
