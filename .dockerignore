@@ -3,6 +3,7 @@
 **/.env
 **/dist
 **/.turbo
+**/.exec
 
 /storage/*
 !/storage/.keep

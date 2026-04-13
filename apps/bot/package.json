@@ -13,8 +13,8 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "deploy-commands": "tsx scripts/deploy-commands.ts",
-    "deploy-commands:all": "tsx scripts/deploy-commands.ts --all-guilds"
+    "deploy-commands": "tsdown scripts/deploy-commands.ts --config exec.tsdown.config.ts --on-success \"node ./.exec/deploy-commands.mjs\"",
+    "deploy-commands:all": "tsdown scripts/deploy-commands.ts --config exec.tsdown.config.ts --on-success \"node ./.exec/deploy-commands.mjs --all-guilds\""
   },
   "dependencies": {
     "@discordjs/rest": "^2.6.1",
