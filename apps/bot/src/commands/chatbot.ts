@@ -16,6 +16,7 @@ const ACTION = {
   "reset-behavior": "reset-behavior",
   "set-personality": "set-personality",
   "reset-personality": "reset-personality",
+  help: "help",
 } as const;
 type Action = keyof typeof ACTION;
 
@@ -63,6 +64,12 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       subCommand
         .setName(ACTION["reset-personality"])
         .setDescription("Reset the chatbot personality to the default personality prompt."),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(ACTION.help)
+        .setDescription("Show help information for chatbot commands."),
     );
   ctx: Ctx;
 
@@ -119,6 +126,13 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         this.handleResetPersonality({
           discord_guild_id,
           discord_user_id,
+          interaction,
+          message,
+        });
+        break;
+      }
+      case "help": {
+        this.handleHelp({
           interaction,
           message,
         });
