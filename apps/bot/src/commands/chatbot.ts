@@ -13,6 +13,7 @@ import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
 const ACTION = {
   "set-behavior": "set-behavior",
+  "reset-behavior": "reset-behavior",
 } as const;
 type Action = keyof typeof ACTION;
 
@@ -35,6 +36,12 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
             .setDescription("The behavior prompt text to use for the chatbot.")
             .setRequired(true),
         ),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(ACTION["reset-behavior"])
+        .setDescription("Reset the chatbot behavior to the default behavior prompt."),
     );
   ctx: Ctx;
 
@@ -65,6 +72,15 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         });
         break;
       }
+      case "reset-behavior": {
+        this.handleResetBehavior({
+          discord_guild_id,
+          discord_user_id,
+          interaction,
+          message,
+        });
+        break;
+      }
       default: {
         this.handleHelp({ interaction, message });
       }
@@ -73,7 +89,6 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
 
   private async handleSetBehavior({
     discord_guild_id,
-    discord_user_id,
     behavior,
     interaction,
     message,
@@ -100,6 +115,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
 
     await this.ctx.dbSvc.setGuildChatbotBehavior(discord_guild_id, behavior);
 
+    const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
     const embed = new EmbedBuilder()
       .setTitle("Chatbot Behavior Updated")
       .setDescription("The chatbot behavior has been updated for this server.")
@@ -108,7 +124,39 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         value: inlineCode(behavior.length > 1000 ? `${behavior.slice(0, 1000)}...` : behavior),
       })
       .setFooter({
-        text: `Updated by <@${discord_user_id}>`,
+        text: `Updated by ${username}`,
+      })
+      .setTimestamp();
+
+    interaction?.reply({ embeds: [embed] });
+    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+  }
+
+  private async handleResetBehavior({
+    discord_guild_id,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string | undefined | null;
+    discord_user_id: string;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    if (!discord_guild_id) {
+      interaction?.reply("⚠️ This command can only be used in a server.");
+      if (message?.channel.isSendable())
+        message.channel.send("⚠️ This command can only be used in a server.");
+      return;
+    }
+
+    await this.ctx.dbSvc.resetGuildChatbotBehavior(discord_guild_id);
+
+    const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
+    const embed = new EmbedBuilder()
+      .setTitle("Chatbot Behavior Reset")
+      .setDescription("The chatbot behavior has been reset to the default for this server.")
+      .setFooter({
+        text: `Reset by ${username}`,
       })
       .setTimestamp();
 
@@ -133,6 +181,10 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         name: "chatbot set-behavior",
         value:
           "Set a custom behavior prompt for the chatbot in this server. This will replace the default behavior prompt used by the chatbot.",
+      })
+      .addFields({
+        name: "chatbot reset-behavior",
+        value: "Reset the chatbot behavior prompt to the default behavior prompt for this server.",
       })
       .setFooter({
         text: "Mahiru",

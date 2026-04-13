@@ -211,4 +211,18 @@ export class DbSvc {
       });
     }
   }
+
+  async resetGuildChatbotBehavior(discord_guild_id: string) {
+    const guildSettings = await this.db.query.guildSettings.findFirst({
+      where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
+    });
+
+    if (guildSettings) {
+      const { chatbotBehavior: _, ...restSettings } = guildSettings.settings;
+      await this.db
+        .update(schema.guildSettings)
+        .set({ settings: restSettings })
+        .where(eq(schema.guildSettings.id, guildSettings.id));
+    }
+  }
 }
