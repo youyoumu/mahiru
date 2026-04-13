@@ -12,9 +12,8 @@ import {
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
-import behaviorPrompt from "../handler/behavior.prompt.txt";
-import personalityPrompt from "../handler/personality.prompt.txt";
 import { processSpintax } from "../lib/spintax";
+import { prompts } from "../prompts";
 
 const ACTION = {
   "set-behavior": "set-behavior",
@@ -291,7 +290,9 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
   private async handlePreviewBehavior(params: Params) {
     const { discord_guild_id, interaction, message } = params;
     const customBehavior = await this.ctx.dbSvc.getGuildChatbotBehavior(discord_guild_id);
-    const prompt = customBehavior ? processSpintax(customBehavior) : processSpintax(behaviorPrompt);
+    const prompt = customBehavior
+      ? processSpintax(customBehavior)
+      : processSpintax(prompts.behavior);
 
     const embed = new EmbedBuilder()
       .setTitle("Behavior Prompt Preview")
@@ -314,7 +315,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     const customPersonality = await this.ctx.dbSvc.getGuildChatbotPersonality(discord_guild_id);
     const prompt = customPersonality
       ? processSpintax(customPersonality)
-      : processSpintax(personalityPrompt);
+      : processSpintax(prompts.personality);
 
     const embed = new EmbedBuilder()
       .setTitle("Personality Prompt Preview")
@@ -335,7 +336,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
   private async handleShowBehavior(params: Params) {
     const { discord_guild_id, interaction, message } = params;
     const customBehavior = await this.ctx.dbSvc.getGuildChatbotBehavior(discord_guild_id);
-    const prompt = customBehavior ?? behaviorPrompt;
+    const prompt = customBehavior ?? prompts.behavior;
 
     const embed = new EmbedBuilder()
       .setTitle("Behavior Prompt")
@@ -356,7 +357,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
   private async handleShowPersonality(params: Params) {
     const { discord_guild_id, interaction, message } = params;
     const customPersonality = await this.ctx.dbSvc.getGuildChatbotPersonality(discord_guild_id);
-    const prompt = customPersonality ?? personalityPrompt;
+    const prompt = customPersonality ?? prompts.personality;
 
     const embed = new EmbedBuilder()
       .setTitle("Personality Prompt")

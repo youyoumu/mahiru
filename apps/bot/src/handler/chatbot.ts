@@ -5,11 +5,8 @@ import type { Logger } from "pino";
 import { env } from "#/env";
 import { zCompletionResponse } from "#/lib/schema";
 import { processSpintax } from "#/lib/spintax";
+import { prompts } from "#/prompts";
 import { openWebuiClient } from "#/utils/open-webui-client";
-
-import behaviorPrompt from "./behavior.prompt.txt";
-import discordContextPrompt from "./discord-context.prompt.txt";
-import personalityPrompt from "./personality.prompt.txt";
 
 type MessagesPayload = {
   role: "system" | "user" | "assistant";
@@ -77,7 +74,7 @@ export class ChatbotHandler {
 
     const emojisList = emojis.join("\n");
 
-    const discordContext = discordContextPrompt
+    const discordContext = prompts.discordContext
       .replace(/\{\{MEMBERS\}\}/g, membersList)
       .replace(/\{\{EMOJIS\}\}/g, emojisList);
 
@@ -85,11 +82,11 @@ export class ChatbotHandler {
     const customPersonality = await this.ctx.dbSvc.getGuildChatbotPersonality(discordGuildId);
     const personalityContext = customPersonality
       ? processSpintax(customPersonality)
-      : processSpintax(personalityPrompt);
+      : processSpintax(prompts.personality);
     const customBehavior = await this.ctx.dbSvc.getGuildChatbotBehavior(discordGuildId);
     const behaviorContext = customBehavior
       ? processSpintax(customBehavior)
-      : processSpintax(behaviorPrompt);
+      : processSpintax(prompts.behavior);
 
     const messages: MessagesPayload = [
       {
