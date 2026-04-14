@@ -7,6 +7,7 @@ import { openWebuiClient } from "#/lib/openapi";
 import { zCompletionResponse } from "#/lib/schema";
 import { processSpintax } from "#/lib/spintax";
 import { prompts } from "#/prompts";
+import { delay } from "es-toolkit";
 
 type MessagesPayload = {
   role: "system" | "user" | "assistant";
@@ -30,12 +31,23 @@ export class ChatbotHandler {
       Math.random() < 0.002 && env.FORCE_CHATBOT_CHANNEL_ID.includes(message.channelId);
     if (!isMention && !isForce) return;
 
-    const messages = await this.createMessages(message);
-    const data = await this.completion(messages, message.guildId);
-    const content = data?.choices[0]?.message.content;
-    if (typeof content === "string") {
-      this.log.debug(`[Chatbot] \n${content}`);
-      message.channel.send(content);
+    const channel = message.channel;
+    let typingInterval: ReturnType<typeof setInterval> | undefined;
+    if (message.channel.isTextBased()) {
+      typingInterval = setInterval(() => {
+        channel.sendTyping().catch(() => {});
+      }, 5000);
+    }
+    try {
+      const messages = await this.createMessages(message);
+      const data = await this.completion(messages, message.guildId);
+      const content = data?.choices[0]?.message.content;
+      if (typeof content === "string") {
+        this.log.debug(`[Chatbot] \n${content}`);
+        await message.channel.send(content);
+      }
+    } finally {
+      if (typingInterval) clearInterval(typingInterval);
     }
   }
 
