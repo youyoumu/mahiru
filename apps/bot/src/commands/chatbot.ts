@@ -60,8 +60,6 @@ function resolveAction(group: string | undefined, subcommand: string): Action | 
     switch (subcommand) {
       case "set":
         return "set-behavior";
-      case "reset":
-        return "reset-behavior";
       case "show":
         return "show-behavior";
       case "preview":
@@ -72,8 +70,6 @@ function resolveAction(group: string | undefined, subcommand: string): Action | 
     switch (subcommand) {
       case "set":
         return "set-personality";
-      case "reset":
-        return "reset-personality";
       case "show":
         return "show-personality";
       case "preview":
@@ -84,8 +80,6 @@ function resolveAction(group: string | undefined, subcommand: string): Action | 
     switch (subcommand) {
       case "set":
         return "set-model";
-      case "reset":
-        return "reset-model";
       case "show":
         return "show-model";
     }
@@ -105,16 +99,13 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         .addSubcommand((sub) =>
           sub
             .setName("set")
-            .setDescription("Set a custom behavior prompt for the chatbot in this server.")
+            .setDescription("Set or reset the behavior prompt for the chatbot in this server.")
             .addStringOption((option) =>
               option
                 .setName(PARAMS.behavior)
-                .setDescription("The behavior prompt text to use for the chatbot.")
-                .setRequired(true),
+                .setDescription("The behavior prompt text. Leave empty to reset to default.")
+                .setRequired(false),
             ),
-        )
-        .addSubcommand((sub) =>
-          sub.setName("reset").setDescription("Reset the chatbot behavior to the default behavior prompt."),
         )
         .addSubcommand((sub) =>
           sub.setName("show").setDescription("Show the raw behavior prompt."),
@@ -130,16 +121,13 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         .addSubcommand((sub) =>
           sub
             .setName("set")
-            .setDescription("Set a custom personality prompt for the chatbot in this server.")
+            .setDescription("Set or reset the personality prompt for the chatbot in this server.")
             .addStringOption((option) =>
               option
                 .setName(PARAMS.personality)
-                .setDescription("The personality prompt text to use for the chatbot.")
-                .setRequired(true),
+                .setDescription("The personality prompt text. Leave empty to reset to default.")
+                .setRequired(false),
             ),
-        )
-        .addSubcommand((sub) =>
-          sub.setName("reset").setDescription("Reset the chatbot personality to the default personality prompt."),
         )
         .addSubcommand((sub) =>
           sub.setName("show").setDescription("Show the raw personality prompt."),
@@ -155,13 +143,13 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         .addSubcommand((sub) =>
           sub
             .setName("set")
-            .setDescription("Set the chatbot model.")
+            .setDescription("Set the chatbot model. Leave empty to reset to default.")
             .addStringOption((option) =>
-              option.setName(PARAMS.model).setDescription("The model name to use.").setRequired(true),
+              option
+                .setName(PARAMS.model)
+                .setDescription("The model name to use. Leave empty to reset to default.")
+                .setRequired(false),
             ),
-        )
-        .addSubcommand((sub) =>
-          sub.setName("reset").setDescription("Reset the chatbot model to the default."),
         )
         .addSubcommand((sub) =>
           sub.setName("show").setDescription("Show the current chatbot model and available models."),
@@ -191,11 +179,10 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     // Build param extraction based on action
     const action = selectedAction;
     const extractParam = (): string | undefined => {
-      if (!args || args.length < 2) return undefined;
+      if (!args || args.length < 3) return undefined;
       // !chatbot behavior set hello world → args = ["behavior", "set", "hello", "world"]
       // group + subcmd = first 2 elements, rest is param
-      const paramStart = 2;
-      return args.length > paramStart ? args.slice(paramStart).join(" ") : undefined;
+      return args.slice(2).join(" ");
     };
 
     const params = {
@@ -217,19 +204,19 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
 
     switch (selectedAction) {
       case "set-behavior": {
-        this.handleSetBehavior(params);
-        break;
-      }
-      case "reset-behavior": {
-        this.handleResetBehavior(params);
+        if (!params.behavior) {
+          this.handleResetBehavior(params);
+        } else {
+          this.handleSetBehavior(params);
+        }
         break;
       }
       case "set-personality": {
-        this.handleSetPersonality(params);
-        break;
-      }
-      case "reset-personality": {
-        this.handleResetPersonality(params);
+        if (!params.personality) {
+          this.handleResetPersonality(params);
+        } else {
+          this.handleSetPersonality(params);
+        }
         break;
       }
       case "show-model": {
@@ -237,11 +224,11 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         break;
       }
       case "set-model": {
-        this.handleSetModel(params);
-        break;
-      }
-      case "reset-model": {
-        this.handleResetModel(params);
+        if (!params.model) {
+          this.handleResetModel(params);
+        } else {
+          this.handleSetModel(params);
+        }
         break;
       }
       case "help": {
@@ -594,11 +581,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       .addFields({
         name: "/chatbot behavior set",
         value:
-          "Set a custom behavior prompt for the chatbot in this server. This will replace the default behavior prompt used by the chatbot.",
-      })
-      .addFields({
-        name: "/chatbot behavior reset",
-        value: "Reset the chatbot behavior prompt to the default behavior prompt for this server.",
+          "Set or reset the behavior prompt. Provide a prompt to set, or leave empty to reset to default.",
       })
       .addFields({
         name: "/chatbot behavior show",
@@ -611,12 +594,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       .addFields({
         name: "/chatbot personality set",
         value:
-          "Set a custom personality prompt for the chatbot in this server. This defines the chatbot's personality traits and characteristics.",
-      })
-      .addFields({
-        name: "/chatbot personality reset",
-        value:
-          "Reset the chatbot personality prompt to the default personality prompt for this server.",
+          "Set or reset the personality prompt. Provide a prompt to set, or leave empty to reset to default.",
       })
       .addFields({
         name: "/chatbot personality show",
@@ -628,11 +606,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       })
       .addFields({
         name: "/chatbot model set",
-        value: "Set the chatbot model.",
-      })
-      .addFields({
-        name: "/chatbot model reset",
-        value: "Reset the chatbot model to the default.",
+        value: "Set the chatbot model. Leave empty to reset to default.",
       })
       .addFields({
         name: "/chatbot model show",
