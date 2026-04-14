@@ -2,6 +2,7 @@ import type { Ctx } from "#/lib/ctx";
 
 import { env } from "#/env";
 import { colors, imageLinks } from "#/lib/constants";
+import { replyToSource } from "#/lib/command";
 import {
   ChatInputCommandInteraction,
   codeBlock,
@@ -260,16 +261,12 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
   private async handleSetBehavior(params: Params) {
     const { discord_guild_id, behavior, interaction, message } = params;
     if (!discord_guild_id) {
-      interaction?.reply("⚠️ This command can only be used in a server.");
-      if (message?.channel.isSendable())
-        message.channel.send("⚠️ This command can only be used in a server.");
+      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
     if (!behavior) {
-      interaction?.reply("⚠️ Invalid arguments");
-      if (message?.channel.isSendable())
-        message.channel.send(codeBlock("chatbot set-behavior <behavior>"));
+      replyToSource(interaction, message, "⚠️ Usage: `chatbot behavior set <prompt>`");
       return;
     }
 
@@ -288,16 +285,13 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       })
       .setTimestamp();
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleResetBehavior(params: Params) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
-      interaction?.reply("⚠️ This command can only be used in a server.");
-      if (message?.channel.isSendable())
-        message.channel.send("⚠️ This command can only be used in a server.");
+      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
@@ -312,23 +306,18 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       })
       .setTimestamp();
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleSetPersonality(params: Params) {
     const { discord_guild_id, personality, interaction, message } = params;
     if (!discord_guild_id) {
-      interaction?.reply("⚠️ This command can only be used in a server.");
-      if (message?.channel.isSendable())
-        message.channel.send("⚠️ This command can only be used in a server.");
+      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
     if (!personality) {
-      interaction?.reply("⚠️ Invalid arguments");
-      if (message?.channel.isSendable())
-        message.channel.send(codeBlock("chatbot set-personality <personality>"));
+      replyToSource(interaction, message, "⚠️ Usage: `chatbot personality set <prompt>`");
       return;
     }
 
@@ -349,16 +338,13 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       })
       .setTimestamp();
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleResetPersonality(params: Params) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
-      interaction?.reply("⚠️ This command can only be used in a server.");
-      if (message?.channel.isSendable())
-        message.channel.send("⚠️ This command can only be used in a server.");
+      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
@@ -373,8 +359,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       })
       .setTimestamp();
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handlePreviewBehavior(params: Params) {
@@ -396,8 +381,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       })
       .setTimestamp();
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handlePreviewPersonality(params: Params) {
@@ -419,8 +403,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       })
       .setTimestamp();
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleShowBehavior(params: Params) {
@@ -440,8 +423,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       })
       .setTimestamp();
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleShowPersonality(params: Params) {
@@ -461,8 +443,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       })
       .setTimestamp();
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleShowModel(params: Params) {
@@ -489,23 +470,18 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       )
       .setTimestamp();
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleSetModel(params: Params) {
     const { discord_guild_id, model, interaction, message } = params;
     if (!discord_guild_id) {
-      interaction?.reply("⚠️ This command can only be used in a server.");
-      if (message?.channel.isSendable())
-        message.channel.send("⚠️ This command can only be used in a server.");
+      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
     if (!model) {
-      interaction?.reply("⚠️ Invalid arguments");
-      if (message?.channel.isSendable())
-        message.channel.send(codeBlock("chatbot set-model <model>"));
+      replyToSource(interaction, message, "⚠️ Usage: `chatbot model set <model>`");
       return;
     }
 
@@ -520,8 +496,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         })
         .setColor(colors.red);
 
-      interaction?.reply({ embeds: [embed] });
-      if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+      replyToSource(interaction, message, { embeds: [embed] });
       return;
     }
 
@@ -540,16 +515,13 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       })
       .setTimestamp();
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleResetModel(params: Params) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
-      interaction?.reply("⚠️ This command can only be used in a server.");
-      if (message?.channel.isSendable())
-        message.channel.send("⚠️ This command can only be used in a server.");
+      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
@@ -564,8 +536,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       })
       .setTimestamp();
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleHelp(params: Params) {
@@ -617,10 +588,6 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       })
       .setTimestamp();
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable())
-      message.channel.send({
-        embeds: [embed],
-      });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 };
