@@ -7,7 +7,6 @@ import { openWebuiClient } from "#/lib/openapi";
 import { zCompletionResponse } from "#/lib/schema";
 import { processSpintax } from "#/lib/spintax";
 import { prompts } from "#/prompts";
-import { delay } from "es-toolkit";
 
 type MessagesPayload = {
   role: "system" | "user" | "assistant";

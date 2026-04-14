@@ -50,6 +50,22 @@ export function parseCommand(
 }
 
 /**
+ * Extracts the trailing parameter from content after skipping known command words.
+ * @param content - The full message content (e.g. "!chatbot behavior set hello world")
+ * @param commandPattern - The known command words to skip (e.g. ["behavior", "set"])
+ * @returns The trailing parameter text, or undefined if content doesn't match
+ */
+export function extractTrailingParam(
+  content: string,
+  commandPattern: string[],
+): string | undefined {
+  const escaped = commandPattern.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const regex = new RegExp(`^.*?${escaped.map((w) => `${w}\\s+`).join("")}(.*)$`);
+  const match = content.match(regex);
+  return match?.[1];
+}
+
+/**
  * Sends a reply to both slash command interaction and message context.
  * Useful for commands that support both interaction and prefix invocation.
  * @param interaction - The slash command interaction (optional)

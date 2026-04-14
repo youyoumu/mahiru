@@ -1,7 +1,7 @@
 import type { Ctx } from "#/lib/ctx";
 
 import { env } from "#/env";
-import { replyToSource } from "#/lib/command";
+import { extractTrailingParam, replyToSource } from "#/lib/command";
 import { colors, discordEmojis, imageLinks } from "#/lib/constants";
 import {
   ChatInputCommandInteraction,
@@ -108,10 +108,18 @@ export function buildChatbotParams(opts: {
 
   // Build param extraction based on action
   const extractParam = (): string | undefined => {
-    if (!args || args.length < 3) return undefined;
-    // !chatbot behavior set hello world → args = ["behavior", "set", "hello", "world"]
-    // group + subcmd = first 2 elements, rest is param
-    return args.slice(2).join(" ");
+    if (!message?.content) return undefined;
+
+    const actionPatterns: Partial<Record<Action, string[]>> = {
+      "set-behavior": ["behavior", "set"],
+      "set-personality": ["personality", "set"],
+      "set-model": ["model", "set"],
+    };
+
+    const pattern = action ? actionPatterns[action] : undefined;
+    if (!pattern) return undefined;
+
+    return extractTrailingParam(message.content, pattern);
   };
 
   return {

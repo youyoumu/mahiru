@@ -1,13 +1,29 @@
+import type { Message } from "discord.js";
+
 import { describe, it, expect } from "vitest";
 
 import { buildChatbotParams } from "./chatbot";
 
 describe("buildChatbotParams", () => {
+  const mockMsg = (content: string) => ({ content, author: { id: "123" } }) as Message;
+
   describe("prefix command (args)", () => {
     it("should resolve behavior set action and extract param", () => {
-      const result = buildChatbotParams({ args: ["behavior", "set", "hello world"] });
+      const result = buildChatbotParams({
+        args: ["behavior", "set"],
+        message: mockMsg("!chatbot behavior set hello world"),
+      });
       expect(result.action).toBe("set-behavior");
       expect(result.behavior).toBe("hello world");
+    });
+
+    it("should preserve multiple spaces in param", () => {
+      const result = buildChatbotParams({
+        args: ["behavior", "set"],
+        message: mockMsg("!chatbot behavior set a      b"),
+      });
+      expect(result.action).toBe("set-behavior");
+      expect(result.behavior).toBe("a      b");
     });
 
     it("should resolve behavior show action", () => {
@@ -22,7 +38,10 @@ describe("buildChatbotParams", () => {
     });
 
     it("should resolve personality set action and extract param", () => {
-      const result = buildChatbotParams({ args: ["personality", "set", "be nice"] });
+      const result = buildChatbotParams({
+        args: ["personality", "set"],
+        message: mockMsg("!chatbot personality set be nice"),
+      });
       expect(result.action).toBe("set-personality");
       expect(result.personality).toBe("be nice");
     });
@@ -38,7 +57,10 @@ describe("buildChatbotParams", () => {
     });
 
     it("should resolve model set action and extract param", () => {
-      const result = buildChatbotParams({ args: ["model", "set", "gpt-4"] });
+      const result = buildChatbotParams({
+        args: ["model", "set"],
+        message: mockMsg("!chatbot model set gpt-4"),
+      });
       expect(result.action).toBe("set-model");
       expect(result.model).toBe("gpt-4");
     });
@@ -59,13 +81,19 @@ describe("buildChatbotParams", () => {
     });
 
     it("should join multiple words in param", () => {
-      const result = buildChatbotParams({ args: ["behavior", "set", "you", "are", "helpful"] });
+      const result = buildChatbotParams({
+        args: ["behavior", "set"],
+        message: mockMsg("!chatbot behavior set you are helpful"),
+      });
       expect(result.action).toBe("set-behavior");
       expect(result.behavior).toBe("you are helpful");
     });
 
-    it("should return undefined param when args length < 3 for set action", () => {
-      const result = buildChatbotParams({ args: ["behavior", "set"] });
+    it("should return undefined param when rawContent has less than 3 parts", () => {
+      const result = buildChatbotParams({
+        args: ["behavior", "set"],
+        message: mockMsg("!chatbot behavior set"),
+      });
       expect(result.action).toBe("set-behavior");
       expect(result.behavior).toBeUndefined();
     });
