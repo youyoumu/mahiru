@@ -1,5 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 
+import { env } from "#/env";
 import { colors, imageLinks } from "#/lib/constants";
 import {
   ChatInputCommandInteraction,
@@ -24,6 +25,9 @@ const ACTION = {
   "preview-personality": "preview-personality",
   "show-behavior": "show-behavior",
   "show-personality": "show-personality",
+  "show-model": "show-model",
+  "set-model": "set-model",
+  "reset-model": "reset-model",
   help: "help",
 } as const;
 type Action = keyof typeof ACTION;
@@ -31,6 +35,7 @@ type Action = keyof typeof ACTION;
 const PARAMS = {
   behavior: "behavior",
   personality: "personality",
+  model: "model",
 };
 
 type Params = {
@@ -38,6 +43,7 @@ type Params = {
   discord_guild_id: string | undefined | null;
   behavior: string | undefined;
   personality: string | undefined;
+  model: string | undefined;
   interaction?: ChatInputCommandInteraction;
   message?: Message;
 };
@@ -98,6 +104,24 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       subCommand
         .setName(ACTION["show-personality"])
         .setDescription("Show the raw personality prompt."),
+    )
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(ACTION["show-model"])
+        .setDescription("Show the current chatbot model and available models."),
+    )
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(ACTION["set-model"])
+        .setDescription("Set the chatbot model.")
+        .addStringOption((option) =>
+          option.setName(PARAMS.model).setDescription("The model name to use.").setRequired(true),
+        ),
+    )
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(ACTION["reset-model"])
+        .setDescription("Reset the chatbot model to the default."),
     );
   ctx: Ctx;
 
@@ -119,6 +143,9 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       personality:
         interaction?.options.getString(PARAMS.personality) ??
         message?.content.split("set-personality ").slice(1).join("set-personality ").trim(),
+      model:
+        interaction?.options.getString(PARAMS.model) ??
+        message?.content.split("set-model ").slice(1).join("set-model ").trim(),
       interaction,
       message,
     };
@@ -139,6 +166,18 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       }
       case "reset-personality": {
         this.handleResetPersonality(params);
+        break;
+      }
+      case "show-model": {
+        this.handleShowModel(params);
+        break;
+      }
+      case "set-model": {
+        this.handleSetModel(params);
+        break;
+      }
+      case "reset-model": {
+        this.handleResetModel(params);
         break;
       }
       case "help": {
@@ -375,6 +414,109 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
   }
 
+  private async handleShowModel(params: Params) {
+    const { discord_guild_id, interaction, message } = params;
+    const availableModels = env.CHATBOT_MODELS;
+    const guildModel = await this.ctx.dbSvc.getGuildChatbotModel(discord_guild_id);
+    const currentModel = guildModel ?? availableModels[0];
+
+    const embed = new EmbedBuilder()
+      .setTitle("Chatbot Model")
+      .setDescription("Current model and available models.")
+      .addFields(
+        {
+          name: "Current Model",
+          value: inlineCode(currentModel ?? ""),
+          inline: true,
+        },
+        {
+          name: "Available Models",
+          value: availableModels
+            .map((m) => (m === currentModel ? `⭐ ${inlineCode(m)} (current)` : inlineCode(m)))
+            .join("\n"),
+        },
+      )
+      .setTimestamp();
+
+    interaction?.reply({ embeds: [embed] });
+    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+  }
+
+  private async handleSetModel(params: Params) {
+    const { discord_guild_id, model, interaction, message } = params;
+    if (!discord_guild_id) {
+      interaction?.reply("⚠️ This command can only be used in a server.");
+      if (message?.channel.isSendable())
+        message.channel.send("⚠️ This command can only be used in a server.");
+      return;
+    }
+
+    if (!model) {
+      interaction?.reply("⚠️ Invalid arguments");
+      if (message?.channel.isSendable())
+        message.channel.send(codeBlock("chatbot set-model <model>"));
+      return;
+    }
+
+    const availableModels = env.CHATBOT_MODELS;
+    if (!availableModels.includes(model)) {
+      const embed = new EmbedBuilder()
+        .setTitle("Invalid Model")
+        .setDescription(`The model \`${model}\` is not available.`)
+        .addFields({
+          name: "Available Models",
+          value: availableModels.map((m) => inlineCode(m)).join(", "),
+        })
+        .setColor(colors.red);
+
+      interaction?.reply({ embeds: [embed] });
+      if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+      return;
+    }
+
+    await this.ctx.dbSvc.setGuildChatbotModel(discord_guild_id, model);
+
+    const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
+    const embed = new EmbedBuilder()
+      .setTitle("Chatbot Model Updated")
+      .setDescription("The chatbot model has been updated.")
+      .addFields({
+        name: "New Model",
+        value: inlineCode(model),
+      })
+      .setFooter({
+        text: `Updated by ${username}`,
+      })
+      .setTimestamp();
+
+    interaction?.reply({ embeds: [embed] });
+    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+  }
+
+  private async handleResetModel(params: Params) {
+    const { discord_guild_id, interaction, message } = params;
+    if (!discord_guild_id) {
+      interaction?.reply("⚠️ This command can only be used in a server.");
+      if (message?.channel.isSendable())
+        message.channel.send("⚠️ This command can only be used in a server.");
+      return;
+    }
+
+    await this.ctx.dbSvc.resetGuildChatbotModel(discord_guild_id);
+
+    const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
+    const embed = new EmbedBuilder()
+      .setTitle("Chatbot Model Reset")
+      .setDescription("The chatbot model has been reset to the default for this server.")
+      .setFooter({
+        text: `Reset by ${username}`,
+      })
+      .setTimestamp();
+
+    interaction?.reply({ embeds: [embed] });
+    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+  }
+
   private async handleHelp(params: Params) {
     const { interaction, message } = params;
     const embed = new EmbedBuilder()
@@ -419,6 +561,18 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       .addFields({
         name: "chatbot show-personality",
         value: "Show the raw personality prompt.",
+      })
+      .addFields({
+        name: "chatbot show-model",
+        value: "Show the current chatbot model and all available models.",
+      })
+      .addFields({
+        name: "chatbot set-model",
+        value: "Set the chatbot model.",
+      })
+      .addFields({
+        name: "chatbot reset-model",
+        value: "Reset the chatbot model to the default.",
       })
       .setFooter({
         text: "Mahiru",

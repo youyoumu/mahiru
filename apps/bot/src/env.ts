@@ -20,6 +20,10 @@ export const env = createEnv({
       .string()
       .transform((input) => input.split(",").map((s) => s.trim())),
     DISABLE_EMBEDS: z.stringbool(),
+    CHATBOT_MODELS: z
+      .string()
+      .transform((input) => input.split(",").map((s) => s.trim()))
+      .refine((models) => models.length > 0, "CHATBOT_MODELS must have at least 1 model"),
   },
 
   clientPrefix: "PUBLIC_",

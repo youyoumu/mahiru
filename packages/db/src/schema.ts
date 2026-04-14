@@ -13,6 +13,7 @@ export type GuildSettings = {
   language?: string;
   chatbotBehavior?: string;
   chatbotPersonality?: string;
+  chatbotModel?: string;
 };
 
 export const guildSettings = sqliteTable("guild_settings", {

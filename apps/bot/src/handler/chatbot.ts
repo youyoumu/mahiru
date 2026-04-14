@@ -31,7 +31,7 @@ export class ChatbotHandler {
     if (!isMention && !isForce) return;
 
     const messages = await this.createMessages(message);
-    const data = await this.completion(messages);
+    const data = await this.completion(messages, message.guildId);
     const content = data?.choices[0]?.message.content;
     if (typeof content === "string") {
       this.log.debug(`[Chatbot] \n${content}`);
@@ -149,11 +149,17 @@ export class ChatbotHandler {
       role: "system" | "user" | "assistant";
       content: string;
     }[],
+    discordGuildId?: string | null,
   ) {
     try {
+      const guildModel = await this.ctx.dbSvc.getGuildChatbotModel(discordGuildId);
+      const model = env.CHATBOT_MODELS.includes(guildModel ?? "")
+        ? guildModel
+        : env.CHATBOT_MODELS[0];
+
       const res = await openWebuiClient.POST("/api/chat/completions", {
         body: {
-          model: "gemma4:e2b",
+          model,
           messages: messages,
         },
       });

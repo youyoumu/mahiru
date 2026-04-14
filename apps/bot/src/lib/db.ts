@@ -270,4 +270,51 @@ export class DbSvc {
         .where(eq(schema.guildSettings.id, guildSettings.id));
     }
   }
+
+  async getGuildChatbotModel(
+    discord_guild_id: string | null | undefined,
+  ): Promise<string | undefined> {
+    if (!discord_guild_id) return undefined;
+    const guildSettings = await this.db.query.guildSettings.findFirst({
+      where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
+    });
+    return guildSettings?.settings?.chatbotModel;
+  }
+
+  async setGuildChatbotModel(discord_guild_id: string, model: string) {
+    const guildSettings = await this.db.query.guildSettings.findFirst({
+      where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
+    });
+
+    if (guildSettings) {
+      await this.db
+        .update(schema.guildSettings)
+        .set({
+          settings: {
+            ...guildSettings.settings,
+            chatbotModel: model,
+          },
+        })
+        .where(eq(schema.guildSettings.id, guildSettings.id));
+    } else {
+      await this.db.insert(schema.guildSettings).values({
+        discord_guild_id,
+        settings: { chatbotModel: model },
+      });
+    }
+  }
+
+  async resetGuildChatbotModel(discord_guild_id: string) {
+    const guildSettings = await this.db.query.guildSettings.findFirst({
+      where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
+    });
+
+    if (guildSettings) {
+      const { chatbotModel: _, ...restSettings } = guildSettings.settings;
+      await this.db
+        .update(schema.guildSettings)
+        .set({ settings: restSettings })
+        .where(eq(schema.guildSettings.id, guildSettings.id));
+    }
+  }
 }
