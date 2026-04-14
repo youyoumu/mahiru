@@ -32,6 +32,13 @@ const ACTION = {
 } as const;
 type Action = keyof typeof ACTION;
 
+const GROUPS = {
+  behavior: "behavior",
+  personality: "personality",
+  model: "model",
+} as const;
+type Group = keyof typeof GROUPS;
+
 const PARAMS = {
   behavior: "behavior",
   personality: "personality",
@@ -48,80 +55,120 @@ type Params = {
   message?: Message;
 };
 
+function resolveAction(group: string | undefined, subcommand: string): Action | undefined {
+  if (group === GROUPS.behavior) {
+    switch (subcommand) {
+      case "set":
+        return "set-behavior";
+      case "reset":
+        return "reset-behavior";
+      case "show":
+        return "show-behavior";
+      case "preview":
+        return "preview-behavior";
+    }
+  }
+  if (group === GROUPS.personality) {
+    switch (subcommand) {
+      case "set":
+        return "set-personality";
+      case "reset":
+        return "reset-personality";
+      case "show":
+        return "show-personality";
+      case "preview":
+        return "preview-personality";
+    }
+  }
+  if (group === GROUPS.model) {
+    switch (subcommand) {
+      case "set":
+        return "set-model";
+      case "reset":
+        return "reset-model";
+      case "show":
+        return "show-model";
+    }
+  }
+  if (subcommand === "help") return "help";
+  return undefined;
+}
+
 export const Chatbot: CommandProto = class Chatbot implements Command {
   static data = new SlashCommandBuilder()
     .setName("chatbot")
     .setDescription("Configure chatbot settings for this server")
-    .addSubcommand((subCommand) =>
-      subCommand
-        .setName(ACTION["set-behavior"])
-        .setDescription("Set a custom behavior prompt for the chatbot in this server.")
-        .addStringOption((option) =>
-          option
-            .setName(PARAMS.behavior)
-            .setDescription("The behavior prompt text to use for the chatbot.")
-            .setRequired(true),
+    .addSubcommandGroup((group) =>
+      group
+        .setName(GROUPS.behavior)
+        .setDescription("Manage chatbot behavior")
+        .addSubcommand((sub) =>
+          sub
+            .setName("set")
+            .setDescription("Set a custom behavior prompt for the chatbot in this server.")
+            .addStringOption((option) =>
+              option
+                .setName(PARAMS.behavior)
+                .setDescription("The behavior prompt text to use for the chatbot.")
+                .setRequired(true),
+            ),
+        )
+        .addSubcommand((sub) =>
+          sub.setName("reset").setDescription("Reset the chatbot behavior to the default behavior prompt."),
+        )
+        .addSubcommand((sub) =>
+          sub.setName("show").setDescription("Show the raw behavior prompt."),
+        )
+        .addSubcommand((sub) =>
+          sub.setName("preview").setDescription("Preview the processed behavior prompt."),
         ),
     )
-    .addSubcommand((subCommand) =>
-      subCommand
-        .setName(ACTION["reset-behavior"])
-        .setDescription("Reset the chatbot behavior to the default behavior prompt."),
-    )
-    .addSubcommand((subCommand) =>
-      subCommand
-        .setName(ACTION["set-personality"])
-        .setDescription("Set a custom personality prompt for the chatbot in this server.")
-        .addStringOption((option) =>
-          option
-            .setName(PARAMS.personality)
-            .setDescription("The personality prompt text to use for the chatbot.")
-            .setRequired(true),
+    .addSubcommandGroup((group) =>
+      group
+        .setName(GROUPS.personality)
+        .setDescription("Manage chatbot personality")
+        .addSubcommand((sub) =>
+          sub
+            .setName("set")
+            .setDescription("Set a custom personality prompt for the chatbot in this server.")
+            .addStringOption((option) =>
+              option
+                .setName(PARAMS.personality)
+                .setDescription("The personality prompt text to use for the chatbot.")
+                .setRequired(true),
+            ),
+        )
+        .addSubcommand((sub) =>
+          sub.setName("reset").setDescription("Reset the chatbot personality to the default personality prompt."),
+        )
+        .addSubcommand((sub) =>
+          sub.setName("show").setDescription("Show the raw personality prompt."),
+        )
+        .addSubcommand((sub) =>
+          sub.setName("preview").setDescription("Preview the processed personality prompt."),
         ),
     )
-    .addSubcommand((subCommand) =>
-      subCommand
-        .setName(ACTION["reset-personality"])
-        .setDescription("Reset the chatbot personality to the default personality prompt."),
-    )
-    .addSubcommand((subCommand) =>
-      subCommand.setName(ACTION.help).setDescription("Show help information for chatbot commands."),
-    )
-    .addSubcommand((subCommand) =>
-      subCommand
-        .setName(ACTION["preview-behavior"])
-        .setDescription("Preview the processed behavior prompt."),
-    )
-    .addSubcommand((subCommand) =>
-      subCommand
-        .setName(ACTION["preview-personality"])
-        .setDescription("Preview the processed personality prompt."),
-    )
-    .addSubcommand((subCommand) =>
-      subCommand.setName(ACTION["show-behavior"]).setDescription("Show the raw behavior prompt."),
-    )
-    .addSubcommand((subCommand) =>
-      subCommand
-        .setName(ACTION["show-personality"])
-        .setDescription("Show the raw personality prompt."),
-    )
-    .addSubcommand((subCommand) =>
-      subCommand
-        .setName(ACTION["show-model"])
-        .setDescription("Show the current chatbot model and available models."),
-    )
-    .addSubcommand((subCommand) =>
-      subCommand
-        .setName(ACTION["set-model"])
-        .setDescription("Set the chatbot model.")
-        .addStringOption((option) =>
-          option.setName(PARAMS.model).setDescription("The model name to use.").setRequired(true),
+    .addSubcommandGroup((group) =>
+      group
+        .setName(GROUPS.model)
+        .setDescription("Manage chatbot model")
+        .addSubcommand((sub) =>
+          sub
+            .setName("set")
+            .setDescription("Set the chatbot model.")
+            .addStringOption((option) =>
+              option.setName(PARAMS.model).setDescription("The model name to use.").setRequired(true),
+            ),
+        )
+        .addSubcommand((sub) =>
+          sub.setName("reset").setDescription("Reset the chatbot model to the default."),
+        )
+        .addSubcommand((sub) =>
+          sub.setName("show").setDescription("Show the current chatbot model and available models."),
         ),
     )
-    .addSubcommand((subCommand) =>
-      subCommand
-        .setName(ACTION["reset-model"])
-        .setDescription("Reset the chatbot model to the default."),
+    .addSubcommand((sub) =>
+      sub.setName("help").setDescription("Show help information for chatbot commands."),
     );
   ctx: Ctx;
 
@@ -131,21 +178,38 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
 
   async execute(interaction?: ChatInputCommandInteraction, commandCtx?: PrefixExecuteOpts) {
     const { message, args } = commandCtx ?? {};
-    const selectedAction = (interaction?.options.getSubcommand() ?? args?.[0]) as
-      | Action
-      | undefined;
+
+    // Resolve group and subcommand from either slash command or prefix args
+    const group =
+      interaction?.options.getSubcommandGroup() ??
+      (args && args.length >= 2 ? args[0] : undefined);
+    const subcommand =
+      interaction?.options.getSubcommand() ??
+      (args && args.length >= 2 ? args[1] : args?.[0]);
+    const selectedAction = resolveAction(group, subcommand as string);
+
+    // Build param extraction based on action
+    const action = selectedAction;
+    const extractParam = (): string | undefined => {
+      if (!args || args.length < 2) return undefined;
+      // !chatbot behavior set hello world → args = ["behavior", "set", "hello", "world"]
+      // group + subcmd = first 2 elements, rest is param
+      const paramStart = 2;
+      return args.length > paramStart ? args.slice(paramStart).join(" ") : undefined;
+    };
+
     const params = {
       discord_user_id: interaction?.user.id ?? message?.author.id,
       discord_guild_id: interaction?.guildId ?? message?.guildId ?? null,
       behavior:
         interaction?.options.getString(PARAMS.behavior) ??
-        message?.content.split("set-behavior ").slice(1).join("set-behavior ").trim(),
+        (action === "set-behavior" ? extractParam() : undefined),
       personality:
         interaction?.options.getString(PARAMS.personality) ??
-        message?.content.split("set-personality ").slice(1).join("set-personality ").trim(),
+        (action === "set-personality" ? extractParam() : undefined),
       model:
         interaction?.options.getString(PARAMS.model) ??
-        message?.content.split("set-model ").slice(1).join("set-model ").trim(),
+        (action === "set-model" ? extractParam() : undefined),
       interaction,
       message,
     };
@@ -528,51 +592,51 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
           "Prompts support [spintax syntax](https://github.com/youyoumu/mahiru/blob/main/apps/bot/docs/spintax.md) for random variations.",
       )
       .addFields({
-        name: "chatbot set-behavior",
+        name: "/chatbot behavior set",
         value:
           "Set a custom behavior prompt for the chatbot in this server. This will replace the default behavior prompt used by the chatbot.",
       })
       .addFields({
-        name: "chatbot reset-behavior",
+        name: "/chatbot behavior reset",
         value: "Reset the chatbot behavior prompt to the default behavior prompt for this server.",
       })
       .addFields({
-        name: "chatbot set-personality",
+        name: "/chatbot behavior show",
+        value: "Show the raw behavior prompt.",
+      })
+      .addFields({
+        name: "/chatbot behavior preview",
+        value: "Preview the processed behavior prompt to see what the bot will actually use.",
+      })
+      .addFields({
+        name: "/chatbot personality set",
         value:
           "Set a custom personality prompt for the chatbot in this server. This defines the chatbot's personality traits and characteristics.",
       })
       .addFields({
-        name: "chatbot reset-personality",
+        name: "/chatbot personality reset",
         value:
           "Reset the chatbot personality prompt to the default personality prompt for this server.",
       })
       .addFields({
-        name: "chatbot preview-behavior",
-        value: "Preview the processed behavior prompt to see what the bot will actually use.",
-      })
-      .addFields({
-        name: "chatbot preview-personality",
-        value: "Preview the processed personality prompt to see what the bot will actually use.",
-      })
-      .addFields({
-        name: "chatbot show-behavior",
-        value: "Show the raw behavior prompt.",
-      })
-      .addFields({
-        name: "chatbot show-personality",
+        name: "/chatbot personality show",
         value: "Show the raw personality prompt.",
       })
       .addFields({
-        name: "chatbot show-model",
-        value: "Show the current chatbot model and all available models.",
+        name: "/chatbot personality preview",
+        value: "Preview the processed personality prompt to see what the bot will actually use.",
       })
       .addFields({
-        name: "chatbot set-model",
+        name: "/chatbot model set",
         value: "Set the chatbot model.",
       })
       .addFields({
-        name: "chatbot reset-model",
+        name: "/chatbot model reset",
         value: "Reset the chatbot model to the default.",
+      })
+      .addFields({
+        name: "/chatbot model show",
+        value: "Show the current chatbot model and all available models.",
       })
       .setFooter({
         text: "Mahiru",
