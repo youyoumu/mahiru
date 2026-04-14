@@ -56,7 +56,6 @@ export const Help: CommandProto = class Help implements Command {
       footer: {
         text: "Mahiru",
       },
-      timestamp: new Date(),
     });
 
     interaction?.reply({ embeds: [embed] });

@@ -154,7 +154,6 @@ export const Prefix: CommandProto = class Prefix implements Command {
       footer: {
         text: "Mahiru",
       },
-      timestamp: new Date(),
     });
 
     interaction?.reply({ embeds: [embed] });

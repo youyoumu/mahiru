@@ -283,7 +283,6 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       footer: {
         text: `Updated by ${username}`,
       },
-      timestamp: new Date(),
     });
 
     replyToSource(interaction, message, { embeds: [embed] });
@@ -305,7 +304,6 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       footer: {
         text: `Reset by ${username}`,
       },
-      timestamp: new Date(),
     });
 
     replyToSource(interaction, message, { embeds: [embed] });
@@ -340,7 +338,6 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       footer: {
         text: `Updated by ${username}`,
       },
-      timestamp: new Date(),
     });
 
     replyToSource(interaction, message, { embeds: [embed] });
@@ -362,7 +359,6 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       footer: {
         text: `Reset by ${username}`,
       },
-      timestamp: new Date(),
     });
 
     replyToSource(interaction, message, { embeds: [embed] });
@@ -387,7 +383,6 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       footer: {
         text: customBehavior ? "Custom behavior prompt" : "Default behavior prompt",
       },
-      timestamp: new Date(),
     });
 
     replyToSource(interaction, message, { embeds: [embed] });
@@ -412,7 +407,6 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       footer: {
         text: customPersonality ? "Custom personality prompt" : "Default personality prompt",
       },
-      timestamp: new Date(),
     });
 
     replyToSource(interaction, message, { embeds: [embed] });
@@ -435,7 +429,6 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       footer: {
         text: customBehavior ? "Custom behavior prompt" : "Default behavior prompt",
       },
-      timestamp: new Date(),
     });
 
     replyToSource(interaction, message, { embeds: [embed] });
@@ -458,7 +451,6 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       footer: {
         text: customPersonality ? "Custom personality prompt" : "Default personality prompt",
       },
-      timestamp: new Date(),
     });
 
     replyToSource(interaction, message, { embeds: [embed] });
@@ -486,7 +478,6 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
             .join("\n"),
         },
       ],
-      timestamp: new Date(),
     });
 
     replyToSource(interaction, message, { embeds: [embed] });
@@ -537,7 +528,6 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       footer: {
         text: `Updated by ${username}`,
       },
-      timestamp: new Date(),
     });
 
     replyToSource(interaction, message, { embeds: [embed] });
@@ -559,7 +549,6 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       footer: {
         text: `Reset by ${username}`,
       },
-      timestamp: new Date(),
     });
 
     replyToSource(interaction, message, { embeds: [embed] });
@@ -576,44 +565,43 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         "Prompts support [spintax syntax](https://github.com/youyoumu/mahiru/blob/main/apps/bot/docs/spintax.md) for random variations.",
       fields: [
         {
-          name: "/chatbot behavior set",
+          name: "chatbot behavior set",
           value:
             "Set or reset the behavior prompt. Provide a prompt to set, or leave empty to reset to default.",
         },
         {
-          name: "/chatbot behavior show",
+          name: "chatbot behavior show",
           value: "Show the raw behavior prompt.",
         },
         {
-          name: "/chatbot behavior preview",
+          name: "chatbot behavior preview",
           value: "Preview the processed behavior prompt to see what the bot will actually use.",
         },
         {
-          name: "/chatbot personality set",
+          name: "chatbot personality set",
           value:
             "Set or reset the personality prompt. Provide a prompt to set, or leave empty to reset to default.",
         },
         {
-          name: "/chatbot personality show",
+          name: "chatbot personality show",
           value: "Show the raw personality prompt.",
         },
         {
-          name: "/chatbot personality preview",
+          name: "chatbot personality preview",
           value: "Preview the processed personality prompt to see what the bot will actually use.",
         },
         {
-          name: "/chatbot model set",
+          name: "chatbot model set",
           value: "Set the chatbot model. Leave empty to reset to default.",
         },
         {
-          name: "/chatbot model show",
+          name: "chatbot model show",
           value: "Show the current chatbot model and all available models.",
         },
       ],
       footer: {
         text: "Mahiru",
       },
-      timestamp: new Date(),
     });
 
     replyToSource(interaction, message, { embeds: [embed] });

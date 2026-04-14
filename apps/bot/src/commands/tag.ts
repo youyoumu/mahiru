@@ -311,7 +311,6 @@ export const Tag: CommandProto = class Tag implements Command {
       footer: {
         text: "Mahiru",
       },
-      timestamp: new Date(),
     });
 
     interaction?.reply({ embeds: [embed] });
