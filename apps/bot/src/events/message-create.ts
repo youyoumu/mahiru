@@ -4,7 +4,7 @@ import type { Ctx } from "#/lib/ctx";
 import type { Logger } from "pino";
 
 import { ChatbotHandler } from "#/handler/chatbot";
-import { DbSvc } from "#/lib/db";
+import { parseCommand } from "#/lib/command";
 import { Events, Message } from "discord.js";
 
 const shortcut: Record<string, string> = {
@@ -46,31 +46,17 @@ export class MessageCreate {
       this.log.error(err);
     });
 
-    let args: string[] = [];
-    if (message.guild) {
-      let prefix: string | undefined;
-      const guildPrefix = await this.ctx.dbSvc.getGuildPrefix(message.guildId);
-      if (guildPrefix && message.content.startsWith(guildPrefix)) {
-        prefix = guildPrefix;
-      }
-      // if we found a prefix, setup args; otherwise, this isn't a command
-      if (!prefix) return;
-      args = message.content.slice(prefix.length).trim().split(/\s+/);
-    } else {
-      // handle DMs
-      const slice = message.content.startsWith(DbSvc.globalPrefix) ? DbSvc.globalPrefix.length : 0;
-      args = message.content.slice(slice).split(/\s+/);
-    }
+    const prefix = await this.ctx.dbSvc.getGuildPrefix(message.guildId);
+    const parsedCommand = parseCommand(prefix, message.content);
+    if (!parsedCommand) return;
 
-    // get the first space-delimited argument after the prefix as the command
-    const command = args?.shift()?.toLowerCase();
-    const commandShortcut = shortcut[command ?? ""];
-    if (command) {
-      const selectedCommand = this.commandsPair[commandShortcut ?? command];
-      if (!selectedCommand) return;
-      selectedCommand.execute(undefined, { message, args }).catch((err) => {
-        this.log.error(err);
-      });
-    }
+    const { commandName, args } = parsedCommand;
+    const resolvedCommandName = shortcut[commandName] ?? commandName;
+    const selectedCommand = this.commandsPair[resolvedCommandName];
+    if (!selectedCommand) return;
+
+    selectedCommand.execute(undefined, { message, args }).catch((err) => {
+      this.log.error(err);
+    });
   }
 }
