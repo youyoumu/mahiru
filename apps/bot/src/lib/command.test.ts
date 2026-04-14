@@ -58,11 +58,15 @@ describe("parseCommand", () => {
 
 describe("extractTrailingParam", () => {
   it("should extract param after command words", () => {
-    expect(extractTrailingParam("!chatbot behavior set hello world", ["behavior", "set"])).toBe("hello world");
+    expect(extractTrailingParam("!chatbot behavior set hello world", ["behavior", "set"])).toBe(
+      "hello world",
+    );
   });
 
   it("should preserve multiple spaces", () => {
-    expect(extractTrailingParam("!chatbot behavior set a      b", ["behavior", "set"])).toBe("a      b");
+    expect(extractTrailingParam("!chatbot behavior set a      b", ["behavior", "set"])).toBe(
+      "a      b",
+    );
   });
 
   it("should return undefined when content doesn't match pattern", () => {
@@ -78,11 +82,15 @@ describe("extractTrailingParam", () => {
   });
 
   it("should handle multiple spaces between pattern words", () => {
-    expect(extractTrailingParam("!chatbot behavior   set hello world", ["behavior", "set"])).toBe("hello world");
+    expect(extractTrailingParam("!chatbot behavior   set hello world", ["behavior", "set"])).toBe(
+      "hello world",
+    );
   });
 
   it("should handle multiple spaces before pattern", () => {
-    expect(extractTrailingParam("!chatbot    behavior set hello world", ["behavior", "set"])).toBe("hello world");
+    expect(extractTrailingParam("!chatbot    behavior set hello world", ["behavior", "set"])).toBe(
+      "hello world",
+    );
   });
 
   it("should handle single-letter prefix", () => {
@@ -102,10 +110,14 @@ describe("extractTrailingParam", () => {
   });
 
   it("should handle prefix with spaces after it", () => {
-    expect(extractTrailingParam("!   chatbot behavior set hello", ["behavior", "set"])).toBe("hello");
+    expect(extractTrailingParam("!   chatbot behavior set hello", ["behavior", "set"])).toBe(
+      "hello",
+    );
   });
 
   it("should handle mixed spacing throughout", () => {
-    expect(extractTrailingParam("??   mybot    behavior   set hello world", ["behavior", "set"])).toBe("hello world");
+    expect(
+      extractTrailingParam("??   mybot    behavior   set hello world", ["behavior", "set"]),
+    ).toBe("hello world");
   });
 });

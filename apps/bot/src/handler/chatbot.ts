@@ -32,10 +32,13 @@ export class ChatbotHandler {
 
     const channel = message.channel;
     let typingInterval: ReturnType<typeof setInterval> | undefined;
+    let typingTimeout: ReturnType<typeof setTimeout> | undefined;
     if (message.channel.isTextBased()) {
-      typingInterval = setInterval(() => {
-        channel.sendTyping().catch(() => {});
-      }, 5000);
+      typingTimeout = setTimeout(() => {
+        typingInterval = setInterval(() => {
+          channel.sendTyping().catch(() => {});
+        }, 5000);
+      }, 1000);
     }
     try {
       const messages = await this.createMessages(message);
@@ -43,9 +46,14 @@ export class ChatbotHandler {
       const content = data?.choices[0]?.message.content;
       if (typeof content === "string") {
         this.log.debug(`[Chatbot] \n${content}`);
-        await message.channel.send(content);
+        const processedContent = ChatbotHandler.fixEmojis(
+          ChatbotHandler.fixMentions(content, message),
+          message,
+        );
+        await message.channel.send(processedContent);
       }
     } finally {
+      if (typingTimeout) clearTimeout(typingTimeout);
       if (typingInterval) clearInterval(typingInterval);
     }
   }
@@ -58,12 +66,15 @@ export class ChatbotHandler {
     const repliedMessage = lastMessages.find((msg) => msg.id === message.reference?.messageId);
 
     // Collect users from chat history
-    const usersInChat = new Map<string, string>();
+    const usersInChat = new Map<string, { username: string; displayName: string }>();
     const allMessages = [...lastMessages.values(), message];
     if (repliedMessage) allMessages.push(repliedMessage);
     for (const msg of allMessages) {
       if (msg.author && !msg.author.bot) {
-        usersInChat.set(msg.author.id, msg.author.username);
+        usersInChat.set(msg.author.id, {
+          username: msg.author.username,
+          displayName: msg.author.displayName,
+        });
       }
     }
 
@@ -81,13 +92,21 @@ export class ChatbotHandler {
     }
 
     const membersList =
-      usersInChat.size > 0 ? [...usersInChat.values()].map((name) => `- ${name}`).join("\n") : "";
+      usersInChat.size > 0
+        ? [...usersInChat.entries()]
+            .map(([id, { username, displayName }]) => `${displayName} -- @${username} -- ${id})`)
+            .join("\n")
+        : "";
 
     const emojisList = emojis.join("\n");
 
     const discordContext = prompts.discordContext
       .replace(/\{\{MEMBERS\}\}/g, membersList)
-      .replace(/\{\{EMOJIS\}\}/g, emojisList);
+      .replace(/\{\{EMOJIS\}\}/g, emojisList)
+      .replace(
+        /\{\{CURRENT_USER\}\}/g,
+        `${message.author?.displayName} -- @${message.author?.username} -- ${message.author?.id}`,
+      );
 
     const discordGuildId = message.guildId;
     const customPersonality = await this.ctx.dbSvc.getGuildChatbotPersonality(discordGuildId);
@@ -120,7 +139,24 @@ export class ChatbotHandler {
 
     const chatHistoryMessages: MessagesPayload = [];
 
-    for (const [, msg] of filteredMessages) {
+    // Convert to array for indexed iteration
+    const messagesArray = [...filteredMessages.values()];
+
+    // Find __CLEAR_CHAT__ marker and filter out messages before it
+    let clearChatIndex = -1;
+    for (let i = 0; i < messagesArray.length; i++) {
+      const msg = messagesArray[i];
+      if (!msg) continue;
+      const content = this.processMentions(msg);
+      if (content.includes("__CLEAR_CHAT__")) {
+        clearChatIndex = i;
+        break;
+      }
+    }
+
+    for (let i = Math.max(clearChatIndex, 0); i < messagesArray.length; i++) {
+      const msg = messagesArray[i];
+      if (!msg) continue;
       const isBot = msg.author?.id === env.CLIENT_ID;
       const processedContent = isBot
         ? this.processMentions(msg)
@@ -146,11 +182,11 @@ export class ChatbotHandler {
       }
     }
 
-    messages.push(...chatHistoryMessages);
-    messages.push({
+    chatHistoryMessages.push({
       role: "user",
       content: `${message.author?.username}: ${this.processMentions(message)}`,
     });
+    messages.push(...chatHistoryMessages);
 
     this.log.debug(`Personality Context: \n${personalityContext}`);
     this.log.debug(`Discord Context: \n${discordContext}`);
@@ -192,6 +228,120 @@ export class ChatbotHandler {
     });
     // Also clean up any raw <@id> patterns that weren't resolved
     result = result.replaceAll(/<@!?[0-9]+>/g, "");
+    return result;
+  }
+
+  /**
+   * Fixes mention formats in the bot's response to ensure proper Discord mention format.
+   * Detects all mention formats (@username, <@username>, <@user_id>) and normalizes to <@user_id>
+   */
+  static fixMentions(content: string, message: Message | PartialMessage): string {
+    let result = content;
+
+    // Build a map of username (lowercase) to user ID from available sources
+    const usernameToIdMap = new Map<string, string>();
+
+    // Add users from the message's guild cache if available
+    const guild = message.guild;
+    if (guild) {
+      for (const member of guild.members.cache.values()) {
+        if (member.user) {
+          usernameToIdMap.set(member.user.username.toLowerCase(), member.user.id);
+          if (
+            member.displayName &&
+            member.displayName.toLowerCase() !== member.user.username.toLowerCase()
+          ) {
+            usernameToIdMap.set(member.displayName.toLowerCase(), member.user.id);
+          }
+        }
+      }
+    }
+
+    // If we couldn't get any members from cache, try to use the client's user cache
+    if (usernameToIdMap.size === 0 && message.client) {
+      for (const user of message.client.users.cache.values()) {
+        usernameToIdMap.set(user.username.toLowerCase(), user.id);
+      }
+    }
+
+    // If still no members, we can't resolve usernames to IDs, so just return the content
+    if (usernameToIdMap.size === 0) {
+      return result;
+    }
+
+    // Pattern 1: Match <@username> format (with angle brackets but not a numeric ID)
+    result = result.replace(/<@([a-zA-Z0-9_]+)>/g, (match, username) => {
+      // If it's already a numeric ID, keep it
+      if (/^\d+$/.test(username)) {
+        return match;
+      }
+      // Otherwise, try to resolve the username
+      const userId = usernameToIdMap.get(username.toLowerCase());
+      return userId ? `<@${userId}>` : match;
+    });
+
+    // Pattern 2: Match plain @username mentions
+    // Avoid matching inside code blocks (``` or `)
+    // Split by code blocks to avoid replacing inside them
+    const parts = result.split(/(```[\s\S]*?```|`[^`]+`)/g);
+    const processedParts = parts.map((part) => {
+      // If it's a code block, return as-is
+      if (part.startsWith("```") || part.startsWith("`")) {
+        return part;
+      }
+      // Otherwise, replace @username mentions
+      return part.replace(/@([a-zA-Z0-9_]{2,32})/g, (match, username) => {
+        const userId = usernameToIdMap.get(username.toLowerCase());
+        return userId ? `<@${userId}>` : match;
+      });
+    });
+    result = processedParts.join("");
+
+    return result;
+  }
+
+  /**
+   * Fixes emoji formats in the bot's response to ensure proper Discord emoji format.
+   * Detects :emoji_name: format and converts to <:emoji_name:emoji_id> or <a:emoji_name:emoji_id>
+   */
+  static fixEmojis(content: string, message: Message | PartialMessage): string {
+    let result = content;
+
+    // Build a map of emoji name to emoji format (<:name:id> or <a:name:id>) from guild cache
+    const emojiMap = new Map<string, string>();
+    const guild = message.guild;
+    if (guild) {
+      for (const emoji of guild.emojis.cache.values()) {
+        if (emoji.id && emoji.name) {
+          const emojiFormat = emoji.animated
+            ? `<a:${emoji.name}:${emoji.id}>`
+            : `<:${emoji.name}:${emoji.id}>`;
+          emojiMap.set(emoji.name.toLowerCase(), emojiFormat);
+        }
+      }
+    }
+
+    // If no emojis in cache, return as-is
+    if (emojiMap.size === 0) {
+      return result;
+    }
+
+    // Split by code blocks to avoid replacing inside them
+    const parts = result.split(/(```[\s\S]*?```|`[^`]+`)/g);
+    const processedParts = parts.map((part) => {
+      // If it's a code block, return as-is
+      if (part.startsWith("```") || part.startsWith("`")) {
+        return part;
+      }
+      // Replace :emoji_name: with proper Discord format
+      // But skip already-formatted emojis like <:name:id> or <a:name:id>
+      return part.replace(/(?<![<a]):([a-zA-Z0-9_]+):/g, (match, emojiName) => {
+        const emojiFormat = emojiMap.get(emojiName.toLowerCase());
+        return emojiFormat || match;
+      });
+    });
+    result = processedParts.join("");
+
     return result;
   }
 }
