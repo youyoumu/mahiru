@@ -6,6 +6,7 @@ import { env } from "#/env";
 import { openWebuiClient } from "#/lib/openapi";
 import { zCompletionResponse } from "#/lib/schema";
 import { processSpintax } from "#/lib/spintax";
+import { hasClearToken } from "#/lib/chatbot";
 import { prompts } from "#/prompts";
 
 type MessagesPayload = {
@@ -142,25 +143,33 @@ export class ChatbotHandler {
     // Convert to array for indexed iteration
     const messagesArray = [...filteredMessages.values()];
 
-    // Find __CLEAR_CHAT__ marker and filter out messages before it
+    // Find the most recent clear token marker (search backwards)
     let clearChatIndex = -1;
-    for (let i = 0; i < messagesArray.length; i++) {
+    for (let i = messagesArray.length - 1; i >= 0; i--) {
       const msg = messagesArray[i];
       if (!msg) continue;
       const content = this.processMentions(msg);
-      if (content.includes("__CLEAR_CHAT__")) {
+      if (hasClearToken(content)) {
         clearChatIndex = i;
         break;
       }
     }
 
-    for (let i = Math.max(clearChatIndex, 0); i < messagesArray.length; i++) {
+    // Start from AFTER the clear token message (skip the message itself)
+    const startIndex = clearChatIndex >= 0 ? clearChatIndex + 1 : 0;
+
+    for (let i = startIndex; i < messagesArray.length; i++) {
       const msg = messagesArray[i];
       if (!msg) continue;
+      const content = this.processMentions(msg);
+
+      // Skip messages that contain the clear token marker
+      if (hasClearToken(content)) continue;
+
       const isBot = msg.author?.id === env.CLIENT_ID;
       const processedContent = isBot
-        ? this.processMentions(msg)
-        : `${msg.author?.username}: ${this.processMentions(msg)}`;
+        ? content
+        : `${msg.author?.username}: ${content}`;
       if (!processedContent.trim()) continue;
       chatHistoryMessages.push({
         role: isBot ? "assistant" : "user",
@@ -170,15 +179,20 @@ export class ChatbotHandler {
 
     //TODO: do something about this
     if (repliedMessage) {
-      const isBot = repliedMessage.author?.id === env.CLIENT_ID;
-      const processedContent = isBot
-        ? this.processMentions(repliedMessage)
-        : `${repliedMessage.author?.username}: ${this.processMentions(repliedMessage)}`;
-      if (processedContent.trim()) {
-        chatHistoryMessages.push({
-          role: isBot ? "assistant" : "user",
-          content: processedContent,
-        });
+      const repliedContent = this.processMentions(repliedMessage);
+
+      // Skip if the replied message contains the clear token marker
+      if (!hasClearToken(repliedContent)) {
+        const isBot = repliedMessage.author?.id === env.CLIENT_ID;
+        const processedContent = isBot
+          ? repliedContent
+          : `${repliedMessage.author?.username}: ${repliedContent}`;
+        if (processedContent.trim()) {
+          chatHistoryMessages.push({
+            role: isBot ? "assistant" : "user",
+            content: processedContent,
+          });
+        }
       }
     }
 

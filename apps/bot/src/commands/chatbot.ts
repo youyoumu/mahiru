@@ -15,6 +15,7 @@ import {
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
 import { processSpintax } from "../lib/spintax";
+import { generateClearToken, formatClearToken } from "../lib/chatbot";
 import { prompts } from "../prompts";
 
 const ACTION = {
@@ -29,6 +30,7 @@ const ACTION = {
   "show-model": "show-model",
   "set-model": "set-model",
   "reset-model": "reset-model",
+  clear: "clear",
   help: "help",
 } as const;
 type Action = keyof typeof ACTION;
@@ -37,6 +39,7 @@ const GROUPS = {
   behavior: "behavior",
   personality: "personality",
   model: "model",
+  clear: "clear",
 } as const;
 
 const PARAMS = {
@@ -87,6 +90,7 @@ function resolveAction(
         return "show-model";
     }
   }
+  if (subcommand === "clear") return "clear";
   if (subcommand === "help") return "help";
   return undefined;
 }
@@ -199,6 +203,11 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     )
     .addSubcommand((sub) =>
       sub.setName("help").setDescription("Show help information for chatbot commands."),
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("clear")
+        .setDescription("Clear the chat history for the chatbot in this channel."),
     );
   ctx: Ctx;
 
@@ -237,6 +246,10 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         } else {
           this.handleSetModel(params);
         }
+        break;
+      }
+      case "clear": {
+        this.handleClear(params);
         break;
       }
       case "help": {
@@ -563,6 +576,22 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
+  private async handleClear(params: ChatbotParams) {
+    const { interaction, message } = params;
+    const clearToken = generateClearToken();
+    const content = `Chat history cleared! I'll only remember messages sent after this point. ${formatClearToken(clearToken)}`;
+
+    const channel = interaction?.channel ?? message?.channel;
+    if (!channel?.isSendable()) return;
+
+    await channel.send(content);
+
+    // For slash commands, also acknowledge the interaction (ephemeral)
+    if (interaction) {
+      await interaction.reply({ content: "Chat history cleared! ✨", ephemeral: true });
+    }
+  }
+
   private async handleHelp(params: ChatbotParams) {
     const { interaction, message } = params;
     const embed = new EmbedBuilder({
@@ -606,6 +635,10 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         {
           name: `${discordEmojis.azusarelaxed} chatbot model show`,
           value: "Show the current chatbot model and all available models.",
+        },
+        {
+          name: `${discordEmojis.azusarelaxed} chatbot clear`,
+          value: "Clear the chatbot's chat history for this channel. The bot will only remember messages after this point.",
         },
       ],
       footer: {
