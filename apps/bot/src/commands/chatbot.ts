@@ -1,8 +1,8 @@
 import type { Ctx } from "#/lib/ctx";
 
 import { env } from "#/env";
-import { colors, imageLinks } from "#/lib/constants";
 import { replyToSource } from "#/lib/command";
+import { colors, imageLinks } from "#/lib/constants";
 import {
   ChatInputCommandInteraction,
   codeBlock,
@@ -108,9 +108,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
                 .setRequired(false),
             ),
         )
-        .addSubcommand((sub) =>
-          sub.setName("show").setDescription("Show the raw behavior prompt."),
-        )
+        .addSubcommand((sub) => sub.setName("show").setDescription("Show the raw behavior prompt."))
         .addSubcommand((sub) =>
           sub.setName("preview").setDescription("Preview the processed behavior prompt."),
         ),
@@ -153,7 +151,9 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
             ),
         )
         .addSubcommand((sub) =>
-          sub.setName("show").setDescription("Show the current chatbot model and available models."),
+          sub
+            .setName("show")
+            .setDescription("Show the current chatbot model and available models."),
         ),
     )
     .addSubcommand((sub) =>
@@ -170,11 +170,9 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
 
     // Resolve group and subcommand from either slash command or prefix args
     const group =
-      interaction?.options.getSubcommandGroup() ??
-      (args && args.length >= 2 ? args[0] : undefined);
+      interaction?.options.getSubcommandGroup() ?? (args && args.length >= 2 ? args[0] : undefined);
     const subcommand =
-      interaction?.options.getSubcommand() ??
-      (args && args.length >= 2 ? args[1] : args?.[0]);
+      interaction?.options.getSubcommand() ?? (args && args.length >= 2 ? args[1] : args?.[0]);
     const selectedAction = resolveAction(group, subcommand as string);
 
     // Build param extraction based on action
@@ -273,17 +271,20 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     await this.ctx.dbSvc.setGuildChatbotBehavior(discord_guild_id, behavior);
 
     const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
-    const embed = new EmbedBuilder()
-      .setTitle("Chatbot Behavior Updated")
-      .setDescription("The chatbot behavior has been updated for this server.")
-      .addFields({
-        name: "New Behavior",
-        value: inlineCode(behavior.length > 1000 ? `${behavior.slice(0, 1000)}...` : behavior),
-      })
-      .setFooter({
+    const embed = new EmbedBuilder({
+      title: "Chatbot Behavior Updated",
+      description: "The chatbot behavior has been updated for this server.",
+      fields: [
+        {
+          name: "New Behavior",
+          value: inlineCode(behavior.length > 1000 ? `${behavior.slice(0, 1000)}...` : behavior),
+        },
+      ],
+      footer: {
         text: `Updated by ${username}`,
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     replyToSource(interaction, message, { embeds: [embed] });
   }
@@ -298,13 +299,14 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     await this.ctx.dbSvc.resetGuildChatbotBehavior(discord_guild_id);
 
     const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
-    const embed = new EmbedBuilder()
-      .setTitle("Chatbot Behavior Reset")
-      .setDescription("The chatbot behavior has been reset to the default for this server.")
-      .setFooter({
+    const embed = new EmbedBuilder({
+      title: "Chatbot Behavior Reset",
+      description: "The chatbot behavior has been reset to the default for this server.",
+      footer: {
         text: `Reset by ${username}`,
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     replyToSource(interaction, message, { embeds: [embed] });
   }
@@ -324,19 +326,22 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     await this.ctx.dbSvc.setGuildChatbotPersonality(discord_guild_id, personality);
 
     const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
-    const embed = new EmbedBuilder()
-      .setTitle("Chatbot Personality Updated")
-      .setDescription("The chatbot personality has been updated for this server.")
-      .addFields({
-        name: "New Personality",
-        value: inlineCode(
-          personality.length > 1000 ? `${personality.slice(0, 1000)}...` : personality,
-        ),
-      })
-      .setFooter({
+    const embed = new EmbedBuilder({
+      title: "Chatbot Personality Updated",
+      description: "The chatbot personality has been updated for this server.",
+      fields: [
+        {
+          name: "New Personality",
+          value: inlineCode(
+            personality.length > 1000 ? `${personality.slice(0, 1000)}...` : personality,
+          ),
+        },
+      ],
+      footer: {
         text: `Updated by ${username}`,
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     replyToSource(interaction, message, { embeds: [embed] });
   }
@@ -351,13 +356,14 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     await this.ctx.dbSvc.resetGuildChatbotPersonality(discord_guild_id);
 
     const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
-    const embed = new EmbedBuilder()
-      .setTitle("Chatbot Personality Reset")
-      .setDescription("The chatbot personality has been reset to the default for this server.")
-      .setFooter({
+    const embed = new EmbedBuilder({
+      title: "Chatbot Personality Reset",
+      description: "The chatbot personality has been reset to the default for this server.",
+      footer: {
         text: `Reset by ${username}`,
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     replyToSource(interaction, message, { embeds: [embed] });
   }
@@ -369,17 +375,20 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       ? processSpintax(customBehavior)
       : processSpintax(prompts.behavior);
 
-    const embed = new EmbedBuilder()
-      .setTitle("Behavior Prompt Preview")
-      .setDescription("This is a preview of the processed behavior prompt.")
-      .addFields({
-        name: "Preview",
-        value: codeBlock(prompt.length > 2000 ? `${prompt.slice(0, 1990)}...` : prompt),
-      })
-      .setFooter({
+    const embed = new EmbedBuilder({
+      title: "Behavior Prompt Preview",
+      description: "This is a preview of the processed behavior prompt.",
+      fields: [
+        {
+          name: "Preview",
+          value: codeBlock(prompt.length > 2000 ? `${prompt.slice(0, 1990)}...` : prompt),
+        },
+      ],
+      footer: {
         text: customBehavior ? "Custom behavior prompt" : "Default behavior prompt",
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     replyToSource(interaction, message, { embeds: [embed] });
   }
@@ -391,17 +400,20 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       ? processSpintax(customPersonality)
       : processSpintax(prompts.personality);
 
-    const embed = new EmbedBuilder()
-      .setTitle("Personality Prompt Preview")
-      .setDescription("This is a preview of the processed personality prompt.")
-      .addFields({
-        name: "Preview",
-        value: codeBlock(prompt.length > 2000 ? `${prompt.slice(0, 1990)}...` : prompt),
-      })
-      .setFooter({
+    const embed = new EmbedBuilder({
+      title: "Personality Prompt Preview",
+      description: "This is a preview of the processed personality prompt.",
+      fields: [
+        {
+          name: "Preview",
+          value: codeBlock(prompt.length > 2000 ? `${prompt.slice(0, 1990)}...` : prompt),
+        },
+      ],
+      footer: {
         text: customPersonality ? "Custom personality prompt" : "Default personality prompt",
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     replyToSource(interaction, message, { embeds: [embed] });
   }
@@ -411,17 +423,20 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     const customBehavior = await this.ctx.dbSvc.getGuildChatbotBehavior(discord_guild_id);
     const prompt = customBehavior ?? prompts.behavior;
 
-    const embed = new EmbedBuilder()
-      .setTitle("Behavior Prompt")
-      .setDescription("This is the behavior prompt currently in use.")
-      .addFields({
-        name: "Raw Prompt",
-        value: codeBlock(prompt.length > 4000 ? `${prompt.slice(0, 3990)}...` : prompt),
-      })
-      .setFooter({
+    const embed = new EmbedBuilder({
+      title: "Behavior Prompt",
+      description: "This is the behavior prompt currently in use.",
+      fields: [
+        {
+          name: "Raw Prompt",
+          value: codeBlock(prompt.length > 4000 ? `${prompt.slice(0, 3990)}...` : prompt),
+        },
+      ],
+      footer: {
         text: customBehavior ? "Custom behavior prompt" : "Default behavior prompt",
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     replyToSource(interaction, message, { embeds: [embed] });
   }
@@ -431,17 +446,20 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     const customPersonality = await this.ctx.dbSvc.getGuildChatbotPersonality(discord_guild_id);
     const prompt = customPersonality ?? prompts.personality;
 
-    const embed = new EmbedBuilder()
-      .setTitle("Personality Prompt")
-      .setDescription("This is the personality prompt currently in use.")
-      .addFields({
-        name: "Raw Prompt",
-        value: codeBlock(prompt.length > 4000 ? `${prompt.slice(0, 3990)}...` : prompt),
-      })
-      .setFooter({
+    const embed = new EmbedBuilder({
+      title: "Personality Prompt",
+      description: "This is the personality prompt currently in use.",
+      fields: [
+        {
+          name: "Raw Prompt",
+          value: codeBlock(prompt.length > 4000 ? `${prompt.slice(0, 3990)}...` : prompt),
+        },
+      ],
+      footer: {
         text: customPersonality ? "Custom personality prompt" : "Default personality prompt",
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     replyToSource(interaction, message, { embeds: [embed] });
   }
@@ -452,10 +470,10 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     const guildModel = await this.ctx.dbSvc.getGuildChatbotModel(discord_guild_id);
     const currentModel = guildModel ?? availableModels[0];
 
-    const embed = new EmbedBuilder()
-      .setTitle("Chatbot Model")
-      .setDescription("Current model and available models.")
-      .addFields(
+    const embed = new EmbedBuilder({
+      title: "Chatbot Model",
+      description: "Current model and available models.",
+      fields: [
         {
           name: "Current Model",
           value: inlineCode(currentModel ?? ""),
@@ -467,8 +485,9 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
             .map((m) => (m === currentModel ? `⭐ ${inlineCode(m)} (current)` : inlineCode(m)))
             .join("\n"),
         },
-      )
-      .setTimestamp();
+      ],
+      timestamp: new Date(),
+    });
 
     replyToSource(interaction, message, { embeds: [embed] });
   }
@@ -487,14 +506,17 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
 
     const availableModels = env.CHATBOT_MODELS;
     if (!availableModels.includes(model)) {
-      const embed = new EmbedBuilder()
-        .setTitle("Invalid Model")
-        .setDescription(`The model \`${model}\` is not available.`)
-        .addFields({
-          name: "Available Models",
-          value: availableModels.map((m) => inlineCode(m)).join(", "),
-        })
-        .setColor(colors.red);
+      const embed = new EmbedBuilder({
+        title: "Invalid Model",
+        description: `The model \`${model}\` is not available.`,
+        fields: [
+          {
+            name: "Available Models",
+            value: availableModels.map((m) => inlineCode(m)).join(", "),
+          },
+        ],
+        color: colors.red,
+      });
 
       replyToSource(interaction, message, { embeds: [embed] });
       return;
@@ -503,17 +525,20 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     await this.ctx.dbSvc.setGuildChatbotModel(discord_guild_id, model);
 
     const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
-    const embed = new EmbedBuilder()
-      .setTitle("Chatbot Model Updated")
-      .setDescription("The chatbot model has been updated.")
-      .addFields({
-        name: "New Model",
-        value: inlineCode(model),
-      })
-      .setFooter({
+    const embed = new EmbedBuilder({
+      title: "Chatbot Model Updated",
+      description: "The chatbot model has been updated.",
+      fields: [
+        {
+          name: "New Model",
+          value: inlineCode(model),
+        },
+      ],
+      footer: {
         text: `Updated by ${username}`,
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     replyToSource(interaction, message, { embeds: [embed] });
   }
@@ -528,65 +553,68 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     await this.ctx.dbSvc.resetGuildChatbotModel(discord_guild_id);
 
     const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
-    const embed = new EmbedBuilder()
-      .setTitle("Chatbot Model Reset")
-      .setDescription("The chatbot model has been reset to the default for this server.")
-      .setFooter({
+    const embed = new EmbedBuilder({
+      title: "Chatbot Model Reset",
+      description: "The chatbot model has been reset to the default for this server.",
+      footer: {
         text: `Reset by ${username}`,
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleHelp(params: Params) {
     const { interaction, message } = params;
-    const embed = new EmbedBuilder()
-      .setTitle("Chatbot Help")
-      .setColor(colors.pastelYellow)
-      .setThumbnail(imageLinks.avatar)
-      .setDescription(
+    const embed = new EmbedBuilder({
+      title: "Chatbot Help",
+      color: colors.pastelYellow,
+      thumbnail: { url: imageLinks.avatar },
+      description:
         "Configure the chatbot's behavior and personality for this server. " +
-          "Prompts support [spintax syntax](https://github.com/youyoumu/mahiru/blob/main/apps/bot/docs/spintax.md) for random variations.",
-      )
-      .addFields({
-        name: "/chatbot behavior set",
-        value:
-          "Set or reset the behavior prompt. Provide a prompt to set, or leave empty to reset to default.",
-      })
-      .addFields({
-        name: "/chatbot behavior show",
-        value: "Show the raw behavior prompt.",
-      })
-      .addFields({
-        name: "/chatbot behavior preview",
-        value: "Preview the processed behavior prompt to see what the bot will actually use.",
-      })
-      .addFields({
-        name: "/chatbot personality set",
-        value:
-          "Set or reset the personality prompt. Provide a prompt to set, or leave empty to reset to default.",
-      })
-      .addFields({
-        name: "/chatbot personality show",
-        value: "Show the raw personality prompt.",
-      })
-      .addFields({
-        name: "/chatbot personality preview",
-        value: "Preview the processed personality prompt to see what the bot will actually use.",
-      })
-      .addFields({
-        name: "/chatbot model set",
-        value: "Set the chatbot model. Leave empty to reset to default.",
-      })
-      .addFields({
-        name: "/chatbot model show",
-        value: "Show the current chatbot model and all available models.",
-      })
-      .setFooter({
+        "Prompts support [spintax syntax](https://github.com/youyoumu/mahiru/blob/main/apps/bot/docs/spintax.md) for random variations.",
+      fields: [
+        {
+          name: "/chatbot behavior set",
+          value:
+            "Set or reset the behavior prompt. Provide a prompt to set, or leave empty to reset to default.",
+        },
+        {
+          name: "/chatbot behavior show",
+          value: "Show the raw behavior prompt.",
+        },
+        {
+          name: "/chatbot behavior preview",
+          value: "Preview the processed behavior prompt to see what the bot will actually use.",
+        },
+        {
+          name: "/chatbot personality set",
+          value:
+            "Set or reset the personality prompt. Provide a prompt to set, or leave empty to reset to default.",
+        },
+        {
+          name: "/chatbot personality show",
+          value: "Show the raw personality prompt.",
+        },
+        {
+          name: "/chatbot personality preview",
+          value: "Preview the processed personality prompt to see what the bot will actually use.",
+        },
+        {
+          name: "/chatbot model set",
+          value: "Set the chatbot model. Leave empty to reset to default.",
+        },
+        {
+          name: "/chatbot model show",
+          value: "Show the current chatbot model and all available models.",
+        },
+      ],
+      footer: {
         text: "Mahiru",
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     replyToSource(interaction, message, { embeds: [embed] });
   }

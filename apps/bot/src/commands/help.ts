@@ -23,38 +23,41 @@ export const Help: CommandProto = class Help implements Command {
 
     const discord_guild_id = message?.guildId ?? interaction?.guildId;
     const prefix = await this.ctx.dbSvc.getGuildPrefix(discord_guild_id);
-    const embed = new EmbedBuilder()
-      .setTitle("Help")
-      .setColor(colors.pastelYellow)
-      .setThumbnail(imageLinks.avatar)
-      .addFields({
-        name: `${discordEmojis.azusarelaxed} help`,
-        value: "Show this message.",
-      })
-      .addFields({
-        name: `${discordEmojis.azusarelaxed} ping`,
-        value: "Replies with Pong.",
-      })
-      .addFields({
-        name: `${discordEmojis.azusarelaxed} login`,
-        value: "Get a link to log in to the Mahiru web app.",
-      })
-      .addFields({
-        name: `${discordEmojis.azusarelaxed} tag`,
-        value: `Manage your tag collection. Use ${inlineCode("/tag help")} for details`,
-      })
-      .addFields({
-        name: `${discordEmojis.azusarelaxed} prefix`,
-        value: `Manage the bot prefix for this server. Use ${inlineCode("/prefix help")} for details`,
-      })
-      .addFields({
-        name: "\u200B",
-        value: `Every slash command has its prefix counterpart. For example, ${inlineCode(prefix + "tag")} is the same as ${inlineCode("/tag")}.`,
-      })
-      .setFooter({
+    const embed = new EmbedBuilder({
+      title: "Help",
+      color: colors.pastelYellow,
+      thumbnail: { url: imageLinks.avatar },
+      fields: [
+        {
+          name: `${discordEmojis.azusarelaxed} help`,
+          value: "Show this message.",
+        },
+        {
+          name: `${discordEmojis.azusarelaxed} ping`,
+          value: "Replies with Pong.",
+        },
+        {
+          name: `${discordEmojis.azusarelaxed} login`,
+          value: "Get a link to log in to the Mahiru web app.",
+        },
+        {
+          name: `${discordEmojis.azusarelaxed} tag`,
+          value: `Manage your tag collection. Use ${inlineCode("/tag help")} for details`,
+        },
+        {
+          name: `${discordEmojis.azusarelaxed} prefix`,
+          value: `Manage the bot prefix for this server. Use ${inlineCode("/prefix help")} for details`,
+        },
+        {
+          name: "\u200B",
+          value: `Every slash command has its prefix counterpart. For example, ${inlineCode(prefix + "tag")} is the same as ${inlineCode("/tag")}.`,
+        },
+      ],
+      footer: {
         text: "Mahiru",
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     interaction?.reply({ embeds: [embed] });
     if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });

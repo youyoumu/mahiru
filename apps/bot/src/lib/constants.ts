@@ -8,8 +8,8 @@ export const emojis = {
 } as const;
 
 export const colors = {
-  pastelYellow: "#fef3c6",
-  red: "#ff6b6b",
+  pastelYellow: 0xfef3c6,
+  red: 0xff6b6b,
 } as const;
 
 export const imageLinks = {

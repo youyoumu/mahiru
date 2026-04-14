@@ -136,22 +136,26 @@ export const Prefix: CommandProto = class Prefix implements Command {
     interaction?: ChatInputCommandInteraction;
     message?: Message;
   }) {
-    const embed = new EmbedBuilder()
-      .setTitle("Prefix Help")
-      .setColor(colors.pastelYellow)
-      .setThumbnail(imageLinks.avatar)
-      .addFields({
-        name: `${discordEmojis.azusarelaxed} prefix current`,
-        value: "Display the current bot prefix for this server.",
-      })
-      .addFields({
-        name: `${discordEmojis.azusarelaxed} prefix change`,
-        value: "Change the bot prefix for this server. The maximum prefix length is 2 characters.",
-      })
-      .setFooter({
+    const embed = new EmbedBuilder({
+      title: "Prefix Help",
+      color: colors.pastelYellow,
+      thumbnail: { url: imageLinks.avatar },
+      fields: [
+        {
+          name: `${discordEmojis.azusarelaxed} prefix current`,
+          value: "Display the current bot prefix for this server.",
+        },
+        {
+          name: `${discordEmojis.azusarelaxed} prefix change`,
+          value:
+            "Change the bot prefix for this server. The maximum prefix length is 2 characters.",
+        },
+      ],
+      footer: {
         text: "Mahiru",
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     interaction?.reply({ embeds: [embed] });
     if (message?.channel.isSendable())

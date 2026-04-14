@@ -1,6 +1,7 @@
 import type { paths } from "#/types/nhen-openapi";
 import type { Logger } from "pino";
 
+import { colors } from "#/lib/constants";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -176,20 +177,21 @@ export class NhenHandler {
     const url = `https://nhentai.net/g/${code}/`;
     const updatedBy = username ? `updated by ${username}` : "";
 
-    const embed = new EmbedBuilder()
-      .setTitle(gallery.title.pretty)
-      .setURL(url.toString())
-      .setDescription(tags)
-      .setAuthor({
+    const embed = new EmbedBuilder({
+      title: gallery.title.pretty,
+      url: url.toString(),
+      description: tags,
+      author: {
         name: artist?.name ?? "unknown",
         url: artistUrl,
         iconURL: "https://i.imgur.com/uLAimaY.png",
-      })
-      .setColor("#fef3c6")
-      .setFooter({
+      },
+      color: colors.pastelYellow,
+      footer: {
         text: `${pageNumber}/${gallery.num_pages} ${updatedBy}`,
-      })
-      .setImage(imageUrl);
+      },
+      image: { url: imageUrl },
+    });
 
     const first = new ButtonBuilder()
       .setCustomId(BUTTON_ID.first)

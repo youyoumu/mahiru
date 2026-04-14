@@ -219,21 +219,24 @@ export const Tag: CommandProto = class Tag implements Command {
     if (!res.ok) return;
     const token = (await res.json()).token;
 
-    const embed = new EmbedBuilder()
-      .setDescription("Showing tags you can drop")
-      .addFields({
-        name: "\u200B",
-        value: allTags
-          .map((tag, i) => `${bold((i + 1).toString())}. ${tag.key} - <@${tag.discord_user_id}>`)
-          .join("\n"),
-      })
-      .addFields({
-        name: "\u200B",
-        value: `[Open in Browser](${getTagsUrl(token)})`,
-      })
-      .setFooter({
+    const embed = new EmbedBuilder({
+      description: "Showing tags you can drop",
+      fields: [
+        {
+          name: "\u200B",
+          value: allTags
+            .map((tag, i) => `${bold((i + 1).toString())}. ${tag.key} - <@${tag.discord_user_id}>`)
+            .join("\n"),
+        },
+        {
+          name: "\u200B",
+          value: `[Open in Browser](${getTagsUrl(token)})`,
+        },
+      ],
+      footer: {
         text: `Page 1/1 (${allTags.length} Total)`,
-      });
+      },
+    });
 
     interaction?.reply({ embeds: [embed] });
     if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
@@ -281,32 +284,35 @@ export const Tag: CommandProto = class Tag implements Command {
     const discord_guild_id = message?.guildId ?? interaction?.guildId;
     const prefix = await this.ctx.dbSvc.getGuildPrefix(discord_guild_id);
 
-    const embed = new EmbedBuilder()
-      .setTitle("Tag Help")
-      .setColor(colors.pastelYellow)
-      .setThumbnail(imageLinks.avatar)
-      .addFields({
-        name: `${discordEmojis.azusarelaxed} tag add`,
-        value:
-          "Add a tag to your collection. If the command is used in a server, the tag will be added to the server's collection. If the same key already exists in the user or server collection, the value will be overwritten.",
-      })
-      .addFields({
-        name: `${discordEmojis.azusarelaxed} tag drop`,
-        value: `Drop a tag from your collection or the server's collection. The user's tag will take priority. ${inlineCode(prefix + "t <key>")} can also be used as shortcut.`,
-      })
-      .addFields({
-        name: `${discordEmojis.azusarelaxed} tag list`,
-        value:
-          "List all tags that can be dropped, including those from both the user and server collections.",
-      })
-      .addFields({
-        name: `${discordEmojis.azusarelaxed} tag remove`,
-        value: "Remove a tag from your collection and/or the server's collection.",
-      })
-      .setFooter({
+    const embed = new EmbedBuilder({
+      title: "Tag Help",
+      color: colors.pastelYellow,
+      thumbnail: { url: imageLinks.avatar },
+      fields: [
+        {
+          name: `${discordEmojis.azusarelaxed} tag add`,
+          value:
+            "Add a tag to your collection. If the command is used in a server, the tag will be added to the server's collection. If the same key already exists in the user or server collection, the value will be overwritten.",
+        },
+        {
+          name: `${discordEmojis.azusarelaxed} tag drop`,
+          value: `Drop a tag from your collection or the server's collection. The user's tag will take priority. ${inlineCode(prefix + "t <key>")} can also be used as shortcut.`,
+        },
+        {
+          name: `${discordEmojis.azusarelaxed} tag list`,
+          value:
+            "List all tags that can be dropped, including those from both the user and server collections.",
+        },
+        {
+          name: `${discordEmojis.azusarelaxed} tag remove`,
+          value: "Remove a tag from your collection and/or the server's collection.",
+        },
+      ],
+      footer: {
         text: "Mahiru",
-      })
-      .setTimestamp();
+      },
+      timestamp: new Date(),
+    });
 
     interaction?.reply({ embeds: [embed] });
     if (message?.channel.isSendable())
