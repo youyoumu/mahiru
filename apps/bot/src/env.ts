@@ -19,6 +19,7 @@ export const env = createEnv({
     FORCE_CHATBOT_CHANNEL_ID: z
       .string()
       .transform((input) => input.split(",").map((s) => s.trim())),
+    DISABLE_EMBEDS: z.stringbool(),
   },
 
   clientPrefix: "PUBLIC_",

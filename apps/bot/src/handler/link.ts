@@ -56,6 +56,8 @@ export class LinkHandler {
       return;
     }
 
+    if (env.DISABLE_EMBEDS) return;
+
     const tweetId = zDigits.safeParse(pathname[3]);
     const isTwitter =
       (url.hostname === "x.com" || url.hostname === "twitter.com") &&
