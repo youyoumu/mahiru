@@ -111,23 +111,28 @@ export class ChatbotHandler {
 
     for (const [, msg] of filteredMessages) {
       const isBot = msg.author?.id === env.CLIENT_ID;
+      const processedContent = isBot
+        ? this.processMentions(msg)
+        : `${msg.author?.username}: ${this.processMentions(msg)}`;
+      if (!processedContent.trim()) continue;
       chatHistoryMessages.push({
         role: isBot ? "assistant" : "user",
-        content: isBot
-          ? this.processMentions(msg)
-          : `${msg.author?.username}: ${this.processMentions(msg)}`,
+        content: processedContent,
       });
     }
 
     //TODO: do something about this
     if (repliedMessage) {
       const isBot = repliedMessage.author?.id === env.CLIENT_ID;
-      chatHistoryMessages.push({
-        role: isBot ? "assistant" : "user",
-        content: isBot
-          ? this.processMentions(repliedMessage)
-          : `${repliedMessage.author?.username}: ${this.processMentions(repliedMessage)}`,
-      });
+      const processedContent = isBot
+        ? this.processMentions(repliedMessage)
+        : `${repliedMessage.author?.username}: ${this.processMentions(repliedMessage)}`;
+      if (processedContent.trim()) {
+        chatHistoryMessages.push({
+          role: isBot ? "assistant" : "user",
+          content: processedContent,
+        });
+      }
     }
 
     messages.push(...chatHistoryMessages);

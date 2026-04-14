@@ -33,7 +33,7 @@ export class MessageCreate {
   }
 
   async handler(message: Message) {
-    const messageSlice = message.content?.slice(0, 30);
+    const messageSlice = message.content?.slice(0, 100);
     const guildName = message.guild?.name;
     const guildPreview = guildName ? `[${guildName}] ` : "";
     this.log.trace(`${guildPreview}${message.author.username}: ${messageSlice}`);
