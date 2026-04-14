@@ -46,7 +46,6 @@ const PARAMS = {
 };
 
 export interface ChatbotParams {
-  discord_user_id: string | undefined;
   discord_guild_id: string | undefined | null;
   behavior: string | undefined;
   personality: string | undefined;
@@ -56,7 +55,10 @@ export interface ChatbotParams {
   message?: Message;
 }
 
-function resolveAction(group: string | undefined, subcommand: string): Action | undefined {
+function resolveAction(
+  group: string | undefined,
+  subcommand: string | undefined,
+): Action | undefined {
   if (group === GROUPS.behavior) {
     switch (subcommand) {
       case "set":
@@ -104,36 +106,24 @@ export function buildChatbotParams(opts: {
     interaction?.options.getSubcommandGroup() ?? (args && args.length >= 2 ? args[0] : undefined);
   const subcommand =
     interaction?.options.getSubcommand() ?? (args && args.length >= 2 ? args[1] : args?.[0]);
-  const action = resolveAction(group, subcommand as string);
+  const action = resolveAction(group, subcommand);
 
   // Build param extraction based on action
   const extractParam = (): string | undefined => {
-    if (!message?.content) return undefined;
-
     const actionPatterns: Partial<Record<Action, string[]>> = {
       "set-behavior": ["behavior", "set"],
       "set-personality": ["personality", "set"],
       "set-model": ["model", "set"],
     };
-
     const pattern = action ? actionPatterns[action] : undefined;
-    if (!pattern) return undefined;
-
-    return extractTrailingParam(message.content, pattern);
+    return extractTrailingParam(message?.content, pattern);
   };
 
   return {
-    discord_user_id: interaction?.user.id ?? message?.author.id,
     discord_guild_id: interaction?.guildId ?? message?.guildId ?? null,
-    behavior:
-      interaction?.options.getString(PARAMS.behavior) ??
-      (action === "set-behavior" ? extractParam() : undefined),
-    personality:
-      interaction?.options.getString(PARAMS.personality) ??
-      (action === "set-personality" ? extractParam() : undefined),
-    model:
-      interaction?.options.getString(PARAMS.model) ??
-      (action === "set-model" ? extractParam() : undefined),
+    behavior: interaction?.options.getString(PARAMS.behavior) ?? extractParam(),
+    personality: interaction?.options.getString(PARAMS.personality) ?? extractParam(),
+    model: interaction?.options.getString(PARAMS.model) ?? extractParam(),
     action,
     interaction,
     message,
@@ -218,9 +208,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
 
   async execute(interaction?: ChatInputCommandInteraction, commandCtx?: PrefixExecuteOpts) {
     const { message, args } = commandCtx ?? {};
-
     const params = buildChatbotParams({ interaction, message, args });
-    if (!params.discord_user_id) return;
 
     switch (params.action) {
       case "set-behavior": {

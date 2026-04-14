@@ -56,9 +56,11 @@ export function parseCommand(
  * @returns The trailing parameter text, or undefined if content doesn't match
  */
 export function extractTrailingParam(
-  content: string,
-  commandPattern: string[],
+  content: string | undefined,
+  commandPattern: string[] | undefined,
 ): string | undefined {
+  if (!content) return undefined;
+  if (!commandPattern) return undefined;
   const escaped = commandPattern.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
   const regex = new RegExp(`^.*?${escaped.map((w) => `${w}\\s+`).join("")}(.*)$`);
   const match = content.match(regex);
