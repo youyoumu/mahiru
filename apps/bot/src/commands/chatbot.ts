@@ -2,7 +2,7 @@ import type { Ctx } from "#/lib/ctx";
 
 import { env } from "#/env";
 import { replyToSource } from "#/lib/command";
-import { colors, imageLinks } from "#/lib/constants";
+import { colors, discordEmojis, imageLinks } from "#/lib/constants";
 import {
   ChatInputCommandInteraction,
   codeBlock,
@@ -38,7 +38,6 @@ const GROUPS = {
   personality: "personality",
   model: "model",
 } as const;
-type Group = keyof typeof GROUPS;
 
 const PARAMS = {
   behavior: "behavior",
@@ -565,37 +564,37 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         "Prompts support [spintax syntax](https://github.com/youyoumu/mahiru/blob/main/apps/bot/docs/spintax.md) for random variations.",
       fields: [
         {
-          name: "chatbot behavior set",
+          name: `${discordEmojis.azusarelaxed} chatbot behavior set`,
           value:
             "Set or reset the behavior prompt. Provide a prompt to set, or leave empty to reset to default.",
         },
         {
-          name: "chatbot behavior show",
+          name: `${discordEmojis.azusarelaxed} chatbot behavior show`,
           value: "Show the raw behavior prompt.",
         },
         {
-          name: "chatbot behavior preview",
+          name: `${discordEmojis.azusarelaxed} chatbot behavior preview`,
           value: "Preview the processed behavior prompt to see what the bot will actually use.",
         },
         {
-          name: "chatbot personality set",
+          name: `${discordEmojis.azusarelaxed} chatbot personality set`,
           value:
             "Set or reset the personality prompt. Provide a prompt to set, or leave empty to reset to default.",
         },
         {
-          name: "chatbot personality show",
+          name: `${discordEmojis.azusarelaxed} chatbot personality show`,
           value: "Show the raw personality prompt.",
         },
         {
-          name: "chatbot personality preview",
+          name: `${discordEmojis.azusarelaxed} chatbot personality preview`,
           value: "Preview the processed personality prompt to see what the bot will actually use.",
         },
         {
-          name: "chatbot model set",
+          name: `${discordEmojis.azusarelaxed} chatbot model set`,
           value: "Set the chatbot model. Leave empty to reset to default.",
         },
         {
-          name: "chatbot model show",
+          name: `${discordEmojis.azusarelaxed} chatbot model show`,
           value: "Show the current chatbot model and all available models.",
         },
       ],
