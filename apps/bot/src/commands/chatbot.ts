@@ -45,15 +45,16 @@ const PARAMS = {
   model: "model",
 };
 
-type Params = {
+export interface ChatbotParams {
   discord_user_id: string | undefined;
   discord_guild_id: string | undefined | null;
   behavior: string | undefined;
   personality: string | undefined;
   model: string | undefined;
+  action: Action | undefined;
   interaction?: ChatInputCommandInteraction;
   message?: Message;
-};
+}
 
 function resolveAction(group: string | undefined, subcommand: string): Action | undefined {
   if (group === GROUPS.behavior) {
@@ -86,6 +87,49 @@ function resolveAction(group: string | undefined, subcommand: string): Action | 
   }
   if (subcommand === "help") return "help";
   return undefined;
+}
+
+/**
+ * Builds chatbot command parameters from either slash command interaction or prefix args.
+ */
+export function buildChatbotParams(opts: {
+  interaction?: ChatInputCommandInteraction;
+  message?: Message;
+  args?: string[];
+}): ChatbotParams {
+  const { interaction, message, args } = opts;
+
+  // Resolve group and subcommand from either slash command or prefix args
+  const group =
+    interaction?.options.getSubcommandGroup() ?? (args && args.length >= 2 ? args[0] : undefined);
+  const subcommand =
+    interaction?.options.getSubcommand() ?? (args && args.length >= 2 ? args[1] : args?.[0]);
+  const action = resolveAction(group, subcommand as string);
+
+  // Build param extraction based on action
+  const extractParam = (): string | undefined => {
+    if (!args || args.length < 3) return undefined;
+    // !chatbot behavior set hello world → args = ["behavior", "set", "hello", "world"]
+    // group + subcmd = first 2 elements, rest is param
+    return args.slice(2).join(" ");
+  };
+
+  return {
+    discord_user_id: interaction?.user.id ?? message?.author.id,
+    discord_guild_id: interaction?.guildId ?? message?.guildId ?? null,
+    behavior:
+      interaction?.options.getString(PARAMS.behavior) ??
+      (action === "set-behavior" ? extractParam() : undefined),
+    personality:
+      interaction?.options.getString(PARAMS.personality) ??
+      (action === "set-personality" ? extractParam() : undefined),
+    model:
+      interaction?.options.getString(PARAMS.model) ??
+      (action === "set-model" ? extractParam() : undefined),
+    action,
+    interaction,
+    message,
+  };
 }
 
 export const Chatbot: CommandProto = class Chatbot implements Command {
@@ -167,40 +211,10 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
   async execute(interaction?: ChatInputCommandInteraction, commandCtx?: PrefixExecuteOpts) {
     const { message, args } = commandCtx ?? {};
 
-    // Resolve group and subcommand from either slash command or prefix args
-    const group =
-      interaction?.options.getSubcommandGroup() ?? (args && args.length >= 2 ? args[0] : undefined);
-    const subcommand =
-      interaction?.options.getSubcommand() ?? (args && args.length >= 2 ? args[1] : args?.[0]);
-    const selectedAction = resolveAction(group, subcommand as string);
-
-    // Build param extraction based on action
-    const action = selectedAction;
-    const extractParam = (): string | undefined => {
-      if (!args || args.length < 3) return undefined;
-      // !chatbot behavior set hello world → args = ["behavior", "set", "hello", "world"]
-      // group + subcmd = first 2 elements, rest is param
-      return args.slice(2).join(" ");
-    };
-
-    const params = {
-      discord_user_id: interaction?.user.id ?? message?.author.id,
-      discord_guild_id: interaction?.guildId ?? message?.guildId ?? null,
-      behavior:
-        interaction?.options.getString(PARAMS.behavior) ??
-        (action === "set-behavior" ? extractParam() : undefined),
-      personality:
-        interaction?.options.getString(PARAMS.personality) ??
-        (action === "set-personality" ? extractParam() : undefined),
-      model:
-        interaction?.options.getString(PARAMS.model) ??
-        (action === "set-model" ? extractParam() : undefined),
-      interaction,
-      message,
-    };
+    const params = buildChatbotParams({ interaction, message, args });
     if (!params.discord_user_id) return;
 
-    switch (selectedAction) {
+    switch (params.action) {
       case "set-behavior": {
         if (!params.behavior) {
           this.handleResetBehavior(params);
@@ -255,7 +269,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     }
   }
 
-  private async handleSetBehavior(params: Params) {
+  private async handleSetBehavior(params: ChatbotParams) {
     const { discord_guild_id, behavior, interaction, message } = params;
     if (!discord_guild_id) {
       replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
@@ -287,7 +301,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
-  private async handleResetBehavior(params: Params) {
+  private async handleResetBehavior(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
       replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
@@ -308,7 +322,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
-  private async handleSetPersonality(params: Params) {
+  private async handleSetPersonality(params: ChatbotParams) {
     const { discord_guild_id, personality, interaction, message } = params;
     if (!discord_guild_id) {
       replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
@@ -342,7 +356,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
-  private async handleResetPersonality(params: Params) {
+  private async handleResetPersonality(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
       replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
@@ -363,7 +377,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
-  private async handlePreviewBehavior(params: Params) {
+  private async handlePreviewBehavior(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     const customBehavior = await this.ctx.dbSvc.getGuildChatbotBehavior(discord_guild_id);
     const prompt = customBehavior
@@ -387,7 +401,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
-  private async handlePreviewPersonality(params: Params) {
+  private async handlePreviewPersonality(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     const customPersonality = await this.ctx.dbSvc.getGuildChatbotPersonality(discord_guild_id);
     const prompt = customPersonality
@@ -411,7 +425,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
-  private async handleShowBehavior(params: Params) {
+  private async handleShowBehavior(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     const customBehavior = await this.ctx.dbSvc.getGuildChatbotBehavior(discord_guild_id);
     const prompt = customBehavior ?? prompts.behavior;
@@ -433,7 +447,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
-  private async handleShowPersonality(params: Params) {
+  private async handleShowPersonality(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     const customPersonality = await this.ctx.dbSvc.getGuildChatbotPersonality(discord_guild_id);
     const prompt = customPersonality ?? prompts.personality;
@@ -455,7 +469,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
-  private async handleShowModel(params: Params) {
+  private async handleShowModel(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     const availableModels = env.CHATBOT_MODELS;
     const guildModel = await this.ctx.dbSvc.getGuildChatbotModel(discord_guild_id);
@@ -482,7 +496,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
-  private async handleSetModel(params: Params) {
+  private async handleSetModel(params: ChatbotParams) {
     const { discord_guild_id, model, interaction, message } = params;
     if (!discord_guild_id) {
       replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
@@ -532,7 +546,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
-  private async handleResetModel(params: Params) {
+  private async handleResetModel(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
       replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
@@ -553,7 +567,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
-  private async handleHelp(params: Params) {
+  private async handleHelp(params: ChatbotParams) {
     const { interaction, message } = params;
     const embed = new EmbedBuilder({
       title: "Chatbot Help",
