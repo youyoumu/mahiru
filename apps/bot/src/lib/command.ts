@@ -62,7 +62,7 @@ export function extractTrailingParam(
   if (!content) return undefined;
   if (!commandPattern) return undefined;
   const escaped = commandPattern.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  const regex = new RegExp(`^.*?${escaped.map((w) => `${w}\\s+`).join("")}(.*)$`);
+  const regex = new RegExp(`^.*?${escaped.map((w) => `${w}\\s+`).join("")}(.*)$`, "s");
   const match = content.match(regex);
   return match?.[1];
 }

@@ -120,4 +120,14 @@ describe("extractTrailingParam", () => {
       extractTrailingParam("??   mybot    behavior   set hello world", ["behavior", "set"]),
     ).toBe("hello world");
   });
+
+  it("should handle complex behavior parameters with curly braces and newlines", () => {
+    const complexParam = `Always act like a massive tsundere.
+{30:Make your message maximum of 30 words.|30:Keep your message between 50-100 words.|25:Keep your message up to 150 words.|15:Be detailed, use up to 200 words.}
+{30:Use an emoji.|20:Use an animated emoji|50:Don't use any emojis.}
+{10:Mention some of the users in the chat.}`;
+    expect(
+      extractTrailingParam(`!chatbot behavior set ${complexParam}`, ["behavior", "set"]),
+    ).toBe(complexParam);
+  });
 });
