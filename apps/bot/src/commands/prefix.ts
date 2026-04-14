@@ -12,6 +12,7 @@ import {
 } from "discord.js";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
+import { replyToSource } from "../lib/command";
 
 const action = {
   current: "current",
@@ -95,22 +96,19 @@ export const Prefix: CommandProto = class Prefix implements Command {
     message?: Message;
   }) {
     if (!prefix) {
-      interaction?.reply("⚠️ Invalid arguments");
-      if (message?.channel.isSendable()) message.channel.send(codeBlock("change <new-prefix>"));
+      replyToSource(interaction, message, "⚠️ Invalid arguments");
+      replyToSource(interaction, message, codeBlock("change <new-prefix>"));
       return;
     }
 
     if (prefix.length > 2) {
-      interaction?.reply("The maximum prefix length is 2 characters.");
-      if (message?.channel.isSendable())
-        message.channel.send("The maximum prefix length is 2 characters.");
+      replyToSource(interaction, message, "The maximum prefix length is 2 characters.");
       return;
     }
 
     await this.ctx.dbSvc.changeGuildPrefix(discord_guild_id, prefix);
 
-    interaction?.reply(inlineCode(prefix));
-    if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));
+    replyToSource(interaction, message, inlineCode(prefix));
   }
 
   private async handleCurrent({
@@ -125,8 +123,7 @@ export const Prefix: CommandProto = class Prefix implements Command {
     const prefix =
       (await this.ctx.dbSvc.getGuildPrefixEntry(discord_guild_id))?.prefix ?? DbSvc.globalPrefix;
 
-    interaction?.reply(inlineCode(prefix));
-    if (message?.channel.isSendable()) message.channel.send(inlineCode(prefix));
+    replyToSource(interaction, message, inlineCode(prefix));
   }
 
   private handleHelp({
@@ -156,10 +153,6 @@ export const Prefix: CommandProto = class Prefix implements Command {
       },
     });
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable())
-      message.channel.send({
-        embeds: [embed],
-      });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 };

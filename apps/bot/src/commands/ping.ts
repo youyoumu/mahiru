@@ -3,6 +3,7 @@ import type { Ctx } from "#/lib/ctx";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
+import { replyToSource } from "../lib/command";
 
 export const Ping: CommandProto = class Ping implements Command {
   static data = new SlashCommandBuilder().setName("ping").setDescription("Replies with Pong!");
@@ -14,7 +15,6 @@ export const Ping: CommandProto = class Ping implements Command {
 
   async execute(interaction?: ChatInputCommandInteraction, messageCtx?: PrefixExecuteOpts) {
     const { message } = messageCtx ?? {};
-    await interaction?.reply("Pong!");
-    if (message?.channel.isSendable()) message.channel.send("Pong!");
+    replyToSource(interaction, message, "Pong!");
   }
 };

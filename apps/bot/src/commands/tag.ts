@@ -13,6 +13,7 @@ import {
 } from "discord.js";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
+import { replyToSource } from "../lib/command";
 
 const ACTION = {
   add: "add",
@@ -151,21 +152,18 @@ export const Tag: CommandProto = class Tag implements Command {
     message?: Message;
   }) {
     if (!key) {
-      interaction?.reply("⚠️ Invalid arguments");
-      if (message?.channel.isSendable()) message.channel.send(codeBlock("drop <key>"));
+      replyToSource(interaction, message, "⚠️ Invalid arguments");
+      replyToSource(interaction, message, codeBlock("drop <key>"));
       return;
     }
 
     const tag = await this.ctx.dbSvc.getTag(key, discord_user_id, discord_guild_id);
     if (tag) {
-      interaction?.reply(tag.value);
-      if (message?.channel.isSendable()) message?.channel.send(tag.value);
+      replyToSource(interaction, message, tag.value);
       return;
     }
 
-    const unknownKeyMessage = "⚠️ Unknown Key";
-    interaction?.reply(unknownKeyMessage);
-    if (message?.channel.isSendable()) message?.channel.send(unknownKeyMessage);
+    replyToSource(interaction, message, "⚠️ Unknown Key");
   }
 
   private async handleAdd({
@@ -184,22 +182,19 @@ export const Tag: CommandProto = class Tag implements Command {
     message?: Message;
   }) {
     if (!key || !value) {
-      interaction?.reply("⚠️ Invalid arguments");
-      if (message?.channel.isSendable()) message.channel.send(codeBlock("add <key> <value>"));
+      replyToSource(interaction, message, "⚠️ Invalid arguments");
+      replyToSource(interaction, message, codeBlock("add <key> <value>"));
       return;
     }
 
     if (key.length > 32) {
-      interaction?.reply("The maximum key length is 32 characters.");
-      if (message?.channel.isSendable())
-        message.channel.send("The maximum key length is 32 characters.");
+      replyToSource(interaction, message, "The maximum key length is 32 characters.");
       return;
     }
 
     await this.ctx.dbSvc.addTag(key, value, discord_user_id, discord_guild_id);
 
-    interaction?.reply(bold(key) + "\n\n" + value);
-    if (message?.channel.isSendable()) message.channel.send(bold(key) + "\n\n" + value);
+    replyToSource(interaction, message, bold(key) + "\n\n" + value);
   }
 
   private async handleList({
@@ -238,8 +233,7 @@ export const Tag: CommandProto = class Tag implements Command {
       },
     });
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleRemove({
@@ -256,22 +250,18 @@ export const Tag: CommandProto = class Tag implements Command {
     message?: Message;
   }) {
     if (!key) {
-      interaction?.reply("⚠️ Invalid arguments");
-      if (message?.channel.isSendable()) message.channel.send(codeBlock("remove <key>"));
+      replyToSource(interaction, message, "⚠️ Invalid arguments");
+      replyToSource(interaction, message, codeBlock("remove <key>"));
       return;
     }
 
     const removed = await this.ctx.dbSvc.removeTag(key, discord_user_id, discord_guild_id);
     if (removed) {
-      interaction?.reply(`${inlineCode(key)} has been deleted`);
-      if (message?.channel.isSendable()) {
-        message?.channel.send(`${inlineCode(key)} has been deleted`);
-      }
+      replyToSource(interaction, message, `${inlineCode(key)} has been deleted`);
       return;
     }
 
-    interaction?.reply("⚠️ Unknown Key");
-    if (message?.channel.isSendable()) message?.channel.send("⚠️ Unknown Key");
+    replyToSource(interaction, message, "⚠️ Unknown Key");
   }
 
   private async handleHelp({
@@ -313,10 +303,6 @@ export const Tag: CommandProto = class Tag implements Command {
       },
     });
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable())
-      message.channel.send({
-        embeds: [embed],
-      });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 };

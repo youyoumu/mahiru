@@ -5,6 +5,8 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
+import { replyToSource } from "../lib/command";
+
 export const Login: CommandProto = class Login implements Command {
   static data = new SlashCommandBuilder()
     .setName("login")
@@ -25,12 +27,13 @@ export const Login: CommandProto = class Login implements Command {
       const { one_time_token } = await res.json();
       const loginUrl = getLoginUrl(one_time_token);
       const messageContent = `Open the following link in your browser to login to the Mahiru web app:\n${loginUrl}`;
-      await interaction?.reply(messageContent);
-      await message?.author.send({ content: messageContent });
-      await message?.reply("Please check your DMs");
+      replyToSource(interaction, undefined, messageContent);
+      if (message) {
+        await message?.author.send({ content: messageContent });
+        await message?.reply("Please check your DMs");
+      }
     } else {
-      await interaction?.reply("Something went wrong");
-      await message?.reply("Something went wrong");
+      replyToSource(interaction, message, "Something went wrong");
     }
   }
 };

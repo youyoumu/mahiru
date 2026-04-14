@@ -9,6 +9,7 @@ import {
 } from "discord.js";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
+import { replyToSource } from "../lib/command";
 
 export const Help: CommandProto = class Help implements Command {
   static data = new SlashCommandBuilder().setName("help").setDescription("Explain all commands");
@@ -58,7 +59,6 @@ export const Help: CommandProto = class Help implements Command {
       },
     });
 
-    interaction?.reply({ embeds: [embed] });
-    if (message?.channel.isSendable()) message.channel.send({ embeds: [embed] });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 };
