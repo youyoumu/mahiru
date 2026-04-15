@@ -16,13 +16,20 @@ export async function deployCommands() {
   try {
     log.info(`Started refreshing ${validCommands.length} application (/) commands.`);
     log.info(`isAllGuilds=${isAllGuilds}`);
-    const data = isAllGuilds
-      ? await rest.put(Routes.applicationCommands(env.CLIENT_ID), {
-          body: validCommands,
-        })
-      : await rest.put(Routes.applicationGuildCommands(env.CLIENT_ID, env.GUILD_ID), {
+    let data: unknown | undefined;
+    if (isAllGuilds) {
+      data = await rest.put(Routes.applicationCommands(env.CLIENT_ID), {
+        body: validCommands,
+      });
+    } else {
+      if (env.DEV_GUILD_ID) {
+        data = await rest.put(Routes.applicationGuildCommands(env.CLIENT_ID, env.DEV_GUILD_ID), {
           body: validCommands,
         });
+      } else {
+        throw new Error("DEV_GUILD_ID is not set");
+      }
+    }
 
     if (Array.isArray(data)) {
       log.info(`Successfully reloaded ${data.length} application (/) commands.`);

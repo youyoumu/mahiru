@@ -11,7 +11,7 @@ export const env = createEnv({
   server: {
     DISCORD_TOKEN: z.string(),
     CLIENT_ID: z.string(),
-    GUILD_ID: z.string(),
+    DEV_GUILD_ID: z.string().optional(),
     DATABASE_URL: z.url(),
     ADMIN_KEY: z.string(),
     BE_URL: z.url(),
