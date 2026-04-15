@@ -10,14 +10,13 @@ export async function deployCommands() {
     (data) => data.toJSON(),
   );
 
-  const isAllGuilds = process.argv.includes("--all-guilds");
   const rest = new REST().setToken(env.DISCORD_TOKEN);
 
   try {
     log.info(`Started refreshing ${validCommands.length} application (/) commands.`);
-    log.info(`isAllGuilds=${isAllGuilds}`);
+    log.info(`DEV=${env.DEV}`);
     let data: unknown | undefined;
-    if (isAllGuilds) {
+    if (!env.DEV) {
       data = await rest.put(Routes.applicationCommands(env.CLIENT_ID), {
         body: validCommands,
       });

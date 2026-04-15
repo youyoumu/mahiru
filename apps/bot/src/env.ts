@@ -9,6 +9,7 @@ try {
 
 export const env = createEnv({
   server: {
+    DEV: z.stringbool().optional(),
     DISCORD_TOKEN: z.string(),
     CLIENT_ID: z.string(),
     DEV_GUILD_ID: z.string().optional(),

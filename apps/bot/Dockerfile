@@ -16,4 +16,4 @@ COPY --from=builder /home/node/mahiru/out/json .
 RUN pnpm install --frozen-lockfile
 COPY --from=builder /home/node/mahiru/out/full .
 RUN turbo run build
-CMD ["sh", "-c", "mkdir -p storage && DATABASE_URL=file:../../storage/local.db pnpm -F @repo/db run migrate && pnpm -F bot start"]
+CMD ["sh", "-c", "mkdir -p storage && DATABASE_URL=file:../../storage/local.db pnpm -F @repo/db run migrate && pnpm -F bot deploy-commands && pnpm -F bot start"]

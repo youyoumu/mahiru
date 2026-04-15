@@ -2,7 +2,8 @@ import { defineConfig } from "tsdown";
 
 export default defineConfig({
   format: ["esm"],
-  outDir: ".exec",
+  entry: ["./scripts/deploy-commands.ts"],
+  outDir: ".scripts.dist",
   clean: false,
   minify: false,
 });

@@ -10,11 +10,11 @@
   "scripts": {
     "dev": "tsdown --watch --on-success \"node ./dist/index.mjs\"",
     "start": "node ./dist/index.mjs",
-    "build": "tsdown",
+    "build": "tsdown && tsdown --config scripts.tsdown.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "deploy-commands": "tsdown scripts/deploy-commands.ts --config exec.tsdown.config.ts --on-success \"node ./.exec/deploy-commands.mjs\"",
-    "deploy-commands:all": "tsdown scripts/deploy-commands.ts --config exec.tsdown.config.ts --on-success \"node ./.exec/deploy-commands.mjs --all-guilds\""
+    "deploy-commands:dev": "DEV=true tsdown --config scripts.tsdown.config.ts --on-success \"node ./.scripts.dist/deploy-commands.mjs\"",
+    "deploy-commands": "tsdown --config scripts.tsdown.config.ts --on-success \"node ./.scripts.dist/deploy-commands.mjs\""
   },
   "dependencies": {
     "@discordjs/rest": "^2.6.1",
