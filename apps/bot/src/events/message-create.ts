@@ -8,7 +8,7 @@ import { parseCommand } from "#/lib/command";
 import { Events, Message } from "discord.js";
 
 const shortcut: Record<string, string> = {
-  t: "tags",
+  t: "tag",
 };
 
 export class MessageCreate {
