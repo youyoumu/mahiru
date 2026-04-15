@@ -27,6 +27,7 @@ out/
 build
 dist
 .exec
+.scripts.dist
 
 
 # Debug

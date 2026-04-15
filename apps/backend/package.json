@@ -12,8 +12,9 @@
   },
   "scripts": {
     "dev": "tsdown --watch --on-success \"node ./dist/index.mjs\"",
-    "build": "tsdown",
+    "build": "tsdown && tsdown --config scripts.tsdown.config.ts",
     "start": "node ./dist/index.mjs",
+    "healthcheck": "node ./.scripts.dist/healthcheck.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

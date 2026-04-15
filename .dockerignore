@@ -4,6 +4,7 @@
 **/dist
 **/.turbo
 **/.exec
+**/.scripts.dist
 
 /storage/*
 !/storage/.keep

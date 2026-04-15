@@ -9,7 +9,7 @@ services:
     ports:
       - "8100:8100"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8100/health"]
+      test: ["CMD", "pnpm", "-F", "@repo/backend", "healthcheck"]
       interval: 60s
       retries: 4
       start_period: 4s
