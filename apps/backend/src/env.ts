@@ -3,7 +3,9 @@ import path from "node:path";
 import { loadEnvFile } from "node:process";
 import { z } from "zod";
 
-loadEnvFile(path.join(import.meta.dirname, "../.env"));
+try {
+  loadEnvFile(path.join(import.meta.dirname, "../.env"));
+} catch {}
 
 export const env = createEnv({
   server: {
