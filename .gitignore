@@ -43,5 +43,14 @@ yarn-error.log*
 .mahiru-backend.env
 .mahiru-bot.env
 
+.root/nix/*
+!.root/nix/.keep
+.root/home/node/*
+!.root/home/node/justfile
+!.root/home/node/.config
+.root/home/node/.config/*
+!.root/home/node/.config/home-manager
+!.root/home/node/.config/nix
+
 .lazy.lua
 .TODO.md

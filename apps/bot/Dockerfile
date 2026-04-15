@@ -8,6 +8,7 @@ RUN apt-get update && \
   rm -rf /var/lib/apt/lists/* && \
   mkdir -m 0755 /nix && chown node /nix && \
   mkdir -m 0755 /apps && chown node /apps
+ENV USER=node
 RUN npm install -g pnpm@10.33.0 turbo@2.9.6
 
 FROM base AS builder
