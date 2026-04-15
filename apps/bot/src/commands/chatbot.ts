@@ -9,13 +9,14 @@ import {
   EmbedBuilder,
   inlineCode,
   Message,
+  MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
-import { processSpintax } from "../lib/spintax";
 import { generateClearToken, formatClearToken } from "../lib/chatbot";
+import { processSpintax } from "../lib/spintax";
 import { prompts } from "../prompts";
 
 const ACTION = {
@@ -583,12 +584,10 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
 
     const channel = interaction?.channel ?? message?.channel;
     if (!channel?.isSendable()) return;
-
     await channel.send(content);
-
-    // For slash commands, also acknowledge the interaction (ephemeral)
     if (interaction) {
-      await interaction.reply({ content: "Chat history cleared! ✨", ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+      await interaction.deleteReply();
     }
   }
 
@@ -638,7 +637,8 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         },
         {
           name: `${discordEmojis.azusarelaxed} chatbot clear`,
-          value: "Clear the chatbot's chat history for this channel. The bot will only remember messages after this point.",
+          value:
+            "Clear the chatbot's chat history for this channel. The bot will only remember messages after this point.",
         },
       ],
       footer: {

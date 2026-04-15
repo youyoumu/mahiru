@@ -9,6 +9,7 @@ import {
   ButtonStyle,
   EmbedBuilder,
   Message,
+  MessageFlags,
   type PartialMessage,
 } from "discord.js";
 
@@ -75,7 +76,7 @@ export class NhenHandler {
     if (timeSinceLastUpdate < 500) {
       await interaction.reply({
         content: "Please wait a moment before clicking again!",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
