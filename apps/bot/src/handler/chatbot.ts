@@ -3,10 +3,10 @@ import type { Message, PartialMessage } from "discord.js";
 import type { Logger } from "pino";
 
 import { env } from "#/env";
+import { hasClearToken } from "#/lib/chatbot";
 import { openWebuiClient } from "#/lib/openapi";
 import { zCompletionResponse } from "#/lib/schema";
 import { processSpintax } from "#/lib/spintax";
-import { hasClearToken } from "#/lib/chatbot";
 import { prompts } from "#/prompts";
 
 type MessagesPayload = {
@@ -33,13 +33,11 @@ export class ChatbotHandler {
 
     const channel = message.channel;
     let typingInterval: ReturnType<typeof setInterval> | undefined;
-    let typingTimeout: ReturnType<typeof setTimeout> | undefined;
     if (message.channel.isTextBased()) {
-      typingTimeout = setTimeout(() => {
-        typingInterval = setInterval(() => {
-          channel.sendTyping().catch(() => {});
-        }, 5000);
-      }, 1000);
+      channel.sendTyping().catch(() => {});
+      typingInterval = setInterval(() => {
+        channel.sendTyping().catch(() => {});
+      }, 5000);
     }
     try {
       const messages = await this.createMessages(message);
@@ -54,7 +52,6 @@ export class ChatbotHandler {
         await message.channel.send(processedContent);
       }
     } finally {
-      if (typingTimeout) clearTimeout(typingTimeout);
       if (typingInterval) clearInterval(typingInterval);
     }
   }
@@ -167,9 +164,7 @@ export class ChatbotHandler {
       if (hasClearToken(content)) continue;
 
       const isBot = msg.author?.id === env.CLIENT_ID;
-      const processedContent = isBot
-        ? content
-        : `${msg.author?.username}: ${content}`;
+      const processedContent = isBot ? content : `${msg.author?.username}: ${content}`;
       if (!processedContent.trim()) continue;
       chatHistoryMessages.push({
         role: isBot ? "assistant" : "user",
