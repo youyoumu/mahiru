@@ -1,3 +1,4 @@
+import { healthcheck } from "#/utils/healthcheck";
 import { serve } from "@hono/node-server";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
@@ -9,6 +10,10 @@ import type { JwtPayload } from "./lib/jwt";
 import { env } from "./env";
 import { createDb, type DB } from "./lib/db";
 import * as routes from "./routes";
+
+if (process.argv.includes("--healthcheck")) {
+  await healthcheck();
+}
 
 const ctx = {
   oneTimeTokens: new Map<string, string>(),

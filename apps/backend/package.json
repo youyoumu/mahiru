@@ -12,9 +12,10 @@
   },
   "scripts": {
     "dev": "tsdown --watch --on-success \"node ./dist/index.mjs\"",
-    "build": "tsdown && tsdown --config scripts.tsdown.config.ts",
+    "build": "tsdown",
+    "build:docker": "tsdown --on-docker",
     "start": "node ./dist/index.mjs",
-    "healthcheck": "node ./.scripts.dist/healthcheck.mjs",
+    "healthcheck": "node ./dist/index.mjs --healthcheck",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.19.17",
+    "rollup-plugin-bundle-stats": "^4.22.1",
     "tsdown": "^0.21.7"
   }
 }
