@@ -1,11 +1,11 @@
 import { env } from "#/env";
-import { schema } from "@repo/db";
+import { schema, drizzle } from "@repo/db";
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/libsql";
 import { uniqBy } from "es-toolkit";
+import { DatabaseSync } from "node:sqlite";
 
-export type DB = ReturnType<typeof drizzle<typeof schema>>;
 type GuildPrefixEntry = { prefix?: string };
+export type DB = ReturnType<typeof drizzle<typeof schema>>;
 
 export class DbSvc {
   static globalPrefix = "!";
@@ -13,7 +13,8 @@ export class DbSvc {
   private prefixStorage = new Map<string, string>();
 
   constructor() {
-    this.db = drizzle({ connection: { url: env.DATABASE_URL }, schema });
+    const client = new DatabaseSync(env.DATABASE_URL);
+    this.db = drizzle({ client, schema });
   }
 
   async getGuildPrefix(discord_guild_id: string | null | undefined): Promise<string> {
@@ -22,7 +23,7 @@ export class DbSvc {
 
     const prefix =
       (
-        await this.db.query.guildSettings.findFirst({
+        await this.db._query.guildSettings.findFirst({
           where: eq(schema.guildSettings.discord_guild_id, discord_guild_id ?? ""),
         })
       )?.settings.prefix ?? DbSvc.globalPrefix;
@@ -36,7 +37,7 @@ export class DbSvc {
   }
 
   async getUserTag(key: string, discord_user_id: string) {
-    return await this.db.query.tags.findFirst({
+    return await this.db._query.tags.findFirst({
       where(fields, { eq, and }) {
         return and(eq(fields.key, key), eq(fields.discord_user_id, discord_user_id));
       },
@@ -44,7 +45,7 @@ export class DbSvc {
   }
 
   async getUserTags(discord_user_id: string) {
-    return await this.db.query.tags.findMany({
+    return await this.db._query.tags.findMany({
       where(fields, { eq, and }) {
         return and(eq(fields.discord_user_id, discord_user_id));
       },
@@ -53,7 +54,7 @@ export class DbSvc {
 
   async getGuildTag(key: string, discord_guild_id: string | undefined | null) {
     if (!discord_guild_id) return undefined;
-    return await this.db.query.tags.findFirst({
+    return await this.db._query.tags.findFirst({
       where(fields, { eq, and }) {
         return and(eq(fields.key, key), eq(fields.discord_guild_id, discord_guild_id));
       },
@@ -62,7 +63,7 @@ export class DbSvc {
 
   async getGuildTags(discord_guild_id: string | undefined | null) {
     if (!discord_guild_id) return [];
-    return await this.db.query.tags.findMany({
+    return await this.db._query.tags.findMany({
       where(fields, { eq, and }) {
         return and(eq(fields.discord_guild_id, discord_guild_id));
       },
@@ -142,7 +143,7 @@ export class DbSvc {
   }
 
   async getGuildPrefixEntry(discord_guild_id: string): Promise<GuildPrefixEntry | undefined> {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
+    const guildSettings = await this.db._query.guildSettings.findFirst({
       where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
     });
 
@@ -152,7 +153,7 @@ export class DbSvc {
   }
 
   async changeGuildPrefix(discord_guild_id: string, prefix: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
+    const guildSettings = await this.db._query.guildSettings.findFirst({
       where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
     });
 
@@ -181,14 +182,14 @@ export class DbSvc {
     discord_guild_id: string | null | undefined,
   ): Promise<string | undefined> {
     if (!discord_guild_id) return undefined;
-    const guildSettings = await this.db.query.guildSettings.findFirst({
+    const guildSettings = await this.db._query.guildSettings.findFirst({
       where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
     });
     return guildSettings?.settings?.chatbotBehavior;
   }
 
   async setGuildChatbotBehavior(discord_guild_id: string, behavior: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
+    const guildSettings = await this.db._query.guildSettings.findFirst({
       where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
     });
 
@@ -211,7 +212,7 @@ export class DbSvc {
   }
 
   async resetGuildChatbotBehavior(discord_guild_id: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
+    const guildSettings = await this.db._query.guildSettings.findFirst({
       where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
     });
 
@@ -228,14 +229,14 @@ export class DbSvc {
     discord_guild_id: string | null | undefined,
   ): Promise<string | undefined> {
     if (!discord_guild_id) return undefined;
-    const guildSettings = await this.db.query.guildSettings.findFirst({
+    const guildSettings = await this.db._query.guildSettings.findFirst({
       where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
     });
     return guildSettings?.settings?.chatbotPersonality;
   }
 
   async setGuildChatbotPersonality(discord_guild_id: string, personality: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
+    const guildSettings = await this.db._query.guildSettings.findFirst({
       where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
     });
 
@@ -258,7 +259,7 @@ export class DbSvc {
   }
 
   async resetGuildChatbotPersonality(discord_guild_id: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
+    const guildSettings = await this.db._query.guildSettings.findFirst({
       where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
     });
 
@@ -275,14 +276,14 @@ export class DbSvc {
     discord_guild_id: string | null | undefined,
   ): Promise<string | undefined> {
     if (!discord_guild_id) return undefined;
-    const guildSettings = await this.db.query.guildSettings.findFirst({
+    const guildSettings = await this.db._query.guildSettings.findFirst({
       where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
     });
     return guildSettings?.settings?.chatbotModel;
   }
 
   async setGuildChatbotModel(discord_guild_id: string, model: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
+    const guildSettings = await this.db._query.guildSettings.findFirst({
       where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
     });
 
@@ -305,7 +306,7 @@ export class DbSvc {
   }
 
   async resetGuildChatbotModel(discord_guild_id: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
+    const guildSettings = await this.db._query.guildSettings.findFirst({
       where: eq(schema.guildSettings.discord_guild_id, discord_guild_id),
     });
 

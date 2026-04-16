@@ -48,7 +48,7 @@ export const tags = new OpenAPIHono<{
       tag_ids = parsedDecodedPayload.data.tag_ids;
     }
 
-    const tags = await db.query.tags.findMany({
+    const tags = await db._query.tags.findMany({
       where: (fields, { eq, or, inArray }) => {
         return or(eq(fields.discord_user_id, discord_user_id), inArray(fields.id, tag_ids));
       },

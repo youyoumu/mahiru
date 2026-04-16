@@ -1,7 +1,9 @@
 import { env } from "#/env";
 import { schema, drizzle } from "@repo/db";
+import { DatabaseSync } from "node:sqlite";
 
 export type DB = ReturnType<typeof drizzle<typeof schema>>;
 export function createDb(): DB {
-  return drizzle({ connection: { url: env.DATABASE_URL }, schema });
+  const client = new DatabaseSync(env.DATABASE_URL);
+  return drizzle({ client, schema });
 }

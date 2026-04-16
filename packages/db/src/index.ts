@@ -1,4 +1,4 @@
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/node-sqlite";
 import { createSelectSchema } from "drizzle-zod";
 
 import * as schema from "./schema";
