@@ -1,8 +1,7 @@
+import { Help, Login, Ping, Prefix, Tag, Chatbot } from "#/commands";
+import { env } from "#/env";
 import { createLogger } from "#/lib/logger";
 import { REST, Routes } from "discord.js";
-
-import { Help, Login, Ping, Prefix, Tag, Chatbot } from "../src/commands";
-import { env } from "../src/env";
 
 export async function deployCommands() {
   const log = createLogger({ level: "trace" }).child({ name: "deploy-commands" });
@@ -39,5 +38,3 @@ export async function deployCommands() {
     log.error(error);
   }
 }
-
-deployCommands();

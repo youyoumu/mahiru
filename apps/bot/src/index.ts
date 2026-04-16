@@ -13,6 +13,12 @@ import { Ctx } from "./lib/ctx";
 import { DbSvc } from "./lib/db";
 import { createLogger } from "./lib/logger";
 import { Unblock } from "./lib/unblock";
+import { deployCommands } from "./utils/deploy-commands";
+
+if (process.argv.includes("--deploy-commands")) {
+  deployCommands();
+  process.exit(0);
+}
 
 const log = createLogger({ level: "trace" }).child({ name: "main" });
 

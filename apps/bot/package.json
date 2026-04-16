@@ -14,8 +14,8 @@
     "build:docker": "tsdown --on-docker",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "deploy-commands:dev": "DEV=true tsdown --config scripts.tsdown.config.ts --on-success \"node ./.scripts.dist/deploy-commands.mjs\"",
-    "deploy-commands": "tsdown --config scripts.tsdown.config.ts --on-success \"node ./.scripts.dist/deploy-commands.mjs\""
+    "deploy-commands:dev": "DEV=true tsdown --on-success \"node ./dist/index.mjs\"",
+    "deploy-commands": "DEV=false node ./dist/index.mjs --deploy-commands"
   },
   "dependencies": {
     "@discordjs/rest": "^2.6.1",
