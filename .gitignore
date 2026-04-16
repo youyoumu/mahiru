@@ -11,6 +11,8 @@ node_modules
 .env.development.local
 .env.test.local
 .env.production.local
+.mahiru-backend.env
+.mahiru-bot.env
 
 # Testing
 coverage
@@ -28,6 +30,7 @@ build
 dist
 .exec
 .scripts.dist
+bundle-stats.html
 
 
 # Debug
@@ -39,10 +42,10 @@ yarn-error.log*
 .DS_Store
 *.pem
 
+# DB
 /storage/*
-.mahiru-backend.env
-.mahiru-bot.env
 
+# .root
 .root/nix/*
 !.root/nix/.keep
 .root/home/node/*

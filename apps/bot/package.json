@@ -11,6 +11,7 @@
     "dev": "tsdown --watch --on-success \"node ./dist/index.mjs\"",
     "start": "node ./dist/index.mjs",
     "build": "tsdown && tsdown --config scripts.tsdown.config.ts",
+    "build:docker": "tsdown --on-docker",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "deploy-commands:dev": "DEV=true tsdown --config scripts.tsdown.config.ts --on-success \"node ./.scripts.dist/deploy-commands.mjs\"",
@@ -35,6 +36,7 @@
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.19.17",
     "openapi-typescript": "^7.13.0",
+    "rollup-plugin-bundle-stats": "^4.22.1",
     "tsdown": "^0.21.7",
     "vitest": "^4.1.4"
   }
