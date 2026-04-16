@@ -1,11 +1,10 @@
 import { env } from "#/env";
-import { schema, drizzle } from "@repo/db";
-import { eq } from "drizzle-orm";
+import { schema, drizzle, eq, relations } from "@repo/db";
 import { uniqBy } from "es-toolkit";
 import { DatabaseSync } from "node:sqlite";
 
 type GuildPrefixEntry = { prefix?: string };
-export type DB = ReturnType<typeof drizzle<typeof schema>>;
+export type DB = ReturnType<typeof drizzle<typeof schema, typeof relations>>;
 
 export class DbSvc {
   static globalPrefix = "!";
@@ -14,7 +13,7 @@ export class DbSvc {
 
   constructor() {
     const client = new DatabaseSync(env.DATABASE_URL);
-    this.db = drizzle({ client, schema });
+    this.db = drizzle({ client, schema, relations });
   }
 
   async getGuildPrefix(discord_guild_id: string | null | undefined): Promise<string> {
