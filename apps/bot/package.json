@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "tsdown --watch --on-success \"node ./dist/index.mjs\"",
     "start": "node ./dist/index.mjs",
-    "build": "tsdown && tsdown --config scripts.tsdown.config.ts",
+    "build": "tsdown",
     "build:docker": "tsdown --on-docker",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

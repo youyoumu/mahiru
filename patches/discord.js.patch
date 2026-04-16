@@ -1,0 +1,22 @@
+diff --git a/src/client/Client.js b/src/client/Client.js
+index f73a70d1cebcd1371d8ce5c8df625fc93412525b..fd0663522ca7341fa8b883305f94382d8a76eba5 100644
+--- a/src/client/Client.js
++++ b/src/client/Client.js
+@@ -521,17 +521,6 @@ class Client extends BaseClient {
+       .join('.');
+   }
+ 
+-  /**
+-   * Calls {@link https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/eval} on a script
+-   * with the client as `this`.
+-   * @param {string} script Script to eval
+-   * @returns {*}
+-   * @private
+-   */
+-  _eval(script) {
+-    return eval(script);
+-  }
+-
+   /**
+    * Validates the client options.
+    * @param {ClientOptions} [options=this.options] Options to validate
