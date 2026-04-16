@@ -16,6 +16,7 @@ export const env = createEnv({
     DISCORD_USER_TOKEN: z.string(),
     TENOR_KEY: z.string(),
     DATABASE_URL: z.url(),
+    DRIZZLE_DIR: z.string().optional(),
   },
   clientPrefix: "PUBLIC_",
   client: {},

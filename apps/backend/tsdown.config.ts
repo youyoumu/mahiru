@@ -1,7 +1,7 @@
 import { bundleStats } from "rollup-plugin-bundle-stats";
 import { defineConfig } from "tsdown";
 
-const isDocker = process.argv.includes("--on-docker");
+const isDocker = process.env.DOCKER === "true";
 
 const config = {
   default: defineConfig({

@@ -11,7 +11,7 @@
     "dev": "tsdown --watch --on-success \"node ./dist/index.mjs\"",
     "start": "node ./dist/index.mjs",
     "build": "tsdown",
-    "build:docker": "tsdown --on-docker",
+    "build:docker": "DOCKER=true tsdown",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "deploy-commands:dev": "DEV=true tsdown --on-success \"node ./dist/index.mjs\"",

@@ -14,6 +14,7 @@ export const env = createEnv({
     CLIENT_ID: z.string(),
     DEV_GUILD_ID: z.string().optional(),
     DATABASE_URL: z.url(),
+    DRIZZLE_DIR: z.string().optional(),
     ADMIN_KEY: z.string(),
     BE_URL: z.url(),
     WEB_URL: z.url(),

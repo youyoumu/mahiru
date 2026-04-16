@@ -17,6 +17,7 @@
       "dependsOn": ["//#lint:fix", "//#format:fix"]
     },
     "build": {
+      "env": ["DOCKER"],
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["./dist/**"]

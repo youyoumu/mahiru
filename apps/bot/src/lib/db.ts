@@ -2,7 +2,7 @@ import type { Logger } from "@repo/db";
 import type { Logger as PinoLogger } from "pino";
 
 import { env } from "#/env";
-import { schema, drizzle, eq, relations } from "@repo/db";
+import { schema, drizzle, eq, relations, migrate } from "@repo/db";
 import { uniqBy } from "es-toolkit";
 import { DatabaseSync } from "node:sqlite";
 
@@ -28,6 +28,7 @@ export class DbSvc {
   constructor(log: PinoLogger) {
     const client = new DatabaseSync(env.DATABASE_URL);
     this.db = drizzle({ client, schema, relations, logger: new MyLogger(log) });
+    if (env.DRIZZLE_DIR) migrate(this.db, { migrationsFolder: env.DRIZZLE_DIR });
   }
 
   async getGuildPrefix(discord_guild_id: string | null | undefined): Promise<string> {

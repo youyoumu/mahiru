@@ -13,7 +13,7 @@
   "scripts": {
     "dev": "tsdown --watch --on-success \"node ./dist/index.mjs\"",
     "build": "tsdown",
-    "build:docker": "tsdown --on-docker",
+    "build:docker": "DOCKER=true tsdown",
     "start": "node ./dist/index.mjs",
     "healthcheck": "node ./dist/index.mjs --healthcheck",
     "typecheck": "tsc --noEmit"
