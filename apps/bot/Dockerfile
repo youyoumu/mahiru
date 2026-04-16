@@ -17,7 +17,7 @@ FROM base AS builder
 USER node
 WORKDIR /apps/mahiru
 COPY . .
-RUN turbo prune bot --docker
+RUN turbo prune @repo/bot --docker
 
 FROM base AS installer
 USER node
@@ -42,4 +42,4 @@ COPY --from=installer /apps/mahiru/apps/bot/package.json /apps/mahiru/apps/bot/
 COPY --from=installer /apps/mahiru/apps/bot/dist /apps/mahiru/apps/bot/dist/
 RUN mkdir -p storage
 ENV DRIZZLE_DIR=/apps/mahiru/packages/db/dist/drizzle
-CMD ["sh", "-c", "npm run deploy-commands -w bot && npm run start -w bot"]
+CMD ["sh", "-c", "npm run deploy-commands -w @repo/bot && npm run start -w @repo/bot"]
