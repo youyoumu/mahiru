@@ -1,7 +1,21 @@
+import type { Logger } from "@repo/db";
+import type { Logger as PinoLogger } from "pino";
+
 import { env } from "#/env";
 import { schema, drizzle, eq, relations } from "@repo/db";
 import { uniqBy } from "es-toolkit";
 import { DatabaseSync } from "node:sqlite";
+
+class MyLogger implements Logger {
+  log: PinoLogger;
+  constructor(log: PinoLogger) {
+    this.log = log;
+  }
+
+  logQuery = (query: string, params: unknown[]): void => {
+    this.log.trace(`[QUERY]: ${query} \n[PARAMS]: ${JSON.stringify(params)}`);
+  };
+}
 
 type GuildPrefixEntry = { prefix?: string };
 export type DB = ReturnType<typeof drizzle<typeof schema, typeof relations>>;
@@ -11,9 +25,9 @@ export class DbSvc {
   db: DB;
   private prefixStorage = new Map<string, string>();
 
-  constructor() {
+  constructor(log: PinoLogger) {
     const client = new DatabaseSync(env.DATABASE_URL);
-    this.db = drizzle({ client, schema, relations });
+    this.db = drizzle({ client, schema, relations, logger: new MyLogger(log) });
   }
 
   async getGuildPrefix(discord_guild_id: string | null | undefined): Promise<string> {

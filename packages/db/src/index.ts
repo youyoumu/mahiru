@@ -1,6 +1,7 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-sqlite";
 import { createSelectSchema } from "drizzle-zod";
+export type { Logger } from "drizzle-orm/logger";
 
 import { relations } from "./relations";
 import * as schema from "./schema";

@@ -28,7 +28,7 @@ const client = new Client({
 
 const ctx = new Ctx({
   api: hc<AppType>(env.BE_URL),
-  dbSvc: new DbSvc(),
+  dbSvc: new DbSvc(log.child({ name: "db" })),
   unblock: new Unblock(),
 });
 
