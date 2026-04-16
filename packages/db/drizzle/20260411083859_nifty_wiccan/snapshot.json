@@ -1,0 +1,133 @@
+{
+  "dialect": "sqlite",
+  "id": "38c897c0-a5c3-4c5d-9741-907d96e8fb96",
+  "prevIds": [
+    "ec759c9b-2430-46ab-b8e8-c53e3e1e5ef8"
+  ],
+  "version": "7",
+  "ddl": [
+    {
+      "name": "guild_settings",
+      "entityType": "tables"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "table": "guild_settings",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "guild_settings_pk",
+      "table": "guild_settings",
+      "entityType": "pks"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "discord_guild_id",
+      "table": "guild_settings",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'{}'",
+      "generated": null,
+      "name": "settings",
+      "table": "guild_settings",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        {
+          "value": "discord_guild_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "guild_settings_discord_guild_id_unique",
+      "table": "guild_settings",
+      "entityType": "indexes"
+    },
+    {
+      "name": "tags",
+      "entityType": "tables"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "table": "tags",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "tags_pk",
+      "table": "tags",
+      "entityType": "pks"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "discord_user_id",
+      "table": "tags",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "discord_guild_id",
+      "table": "tags",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "key",
+      "table": "tags",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "value",
+      "table": "tags",
+      "entityType": "columns"
+    }
+  ],
+  "renames": [
+    "\"meme\"->\"tags\""
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "dialect": "sqlite",
+  "id": "ec759c9b-2430-46ab-b8e8-c53e3e1e5ef8",
+  "prevIds": [
+    "3d2b2428-e70e-4425-87b7-9a27d72fcae8"
+  ],
+  "version": "7",
+  "ddl": [
+    {
+      "name": "guild_settings",
+      "entityType": "tables"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "table": "guild_settings",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "guild_settings_pk",
+      "table": "guild_settings",
+      "entityType": "pks"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "discord_guild_id",
+      "table": "guild_settings",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'{}'",
+      "generated": null,
+      "name": "settings",
+      "table": "guild_settings",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        {
+          "value": "discord_guild_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "guild_settings_discord_guild_id_unique",
+      "table": "guild_settings",
+      "entityType": "indexes"
+    },
+    {
+      "name": "meme",
+      "entityType": "tables"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "table": "meme",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "meme_pk",
+      "table": "meme",
+      "entityType": "pks"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "discord_user_id",
+      "table": "meme",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "discord_guild_id",
+      "table": "meme",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "key",
+      "table": "meme",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "value",
+      "table": "meme",
+      "entityType": "columns"
+    }
+  ],
+  "renames": []
+}
