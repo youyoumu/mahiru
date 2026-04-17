@@ -23,7 +23,7 @@ export type DB = ReturnType<typeof drizzle<typeof schema, typeof relations>>;
 export class DbSvc {
   static globalPrefix = "!";
   db: DB;
-  private prefixStorage = new Map<string, string>();
+  private guildSettingsCache = new Map<string, schema.GuildSettings>();
 
   constructor(log: PinoLogger) {
     const client = new DatabaseSync(env.DATABASE_URL);
@@ -31,23 +31,55 @@ export class DbSvc {
     if (env.DRIZZLE_DIR) migrate(this.db, { migrationsFolder: env.DRIZZLE_DIR });
   }
 
-  async getGuildPrefix(discord_guild_id: string | null | undefined): Promise<string> {
-    const prefixFromStorage = this.prefixStorage.get(discord_guild_id ?? "");
-    if (prefixFromStorage) return prefixFromStorage;
+  private async getGuildSettings(
+    discord_guild_id: string | null | undefined,
+  ): Promise<schema.GuildSettings | undefined> {
+    if (!discord_guild_id) return undefined;
 
-    const prefix =
-      (
-        await this.db.query.guildSettings.findFirst({
-          where: { discord_guild_id: discord_guild_id ?? "" },
-        })
-      )?.settings.prefix ?? DbSvc.globalPrefix;
+    const cached = this.guildSettingsCache.get(discord_guild_id);
+    if (cached) return cached;
 
-    if (prefix && discord_guild_id) {
-      this.prefixStorage.set(discord_guild_id, prefix);
-      return prefix;
+    const guildSettings = await this.db.query.guildSettings.findFirst({
+      where: { discord_guild_id },
+    });
+
+    if (guildSettings) {
+      this.guildSettingsCache.set(discord_guild_id, guildSettings.settings);
+      return guildSettings.settings;
     }
 
-    return DbSvc.globalPrefix;
+    return undefined;
+  }
+
+  private async setGuildSettings(
+    discord_guild_id: string,
+    updater: (settings: schema.GuildSettings) => schema.GuildSettings,
+  ) {
+    const guildSettings = await this.db.query.guildSettings.findFirst({
+      where: { discord_guild_id },
+    });
+
+    const currentSettings = guildSettings?.settings ?? {};
+    const newSettings = updater(currentSettings);
+
+    if (guildSettings) {
+      await this.db
+        .update(schema.guildSettings)
+        .set({ settings: newSettings })
+        .where(eq(schema.guildSettings.id, guildSettings.id));
+    } else {
+      await this.db.insert(schema.guildSettings).values({
+        discord_guild_id,
+        settings: newSettings,
+      });
+    }
+
+    this.guildSettingsCache.set(discord_guild_id, newSettings);
+  }
+
+  async getGuildPrefix(discord_guild_id: string | null | undefined): Promise<string> {
+    const settings = await this.getGuildSettings(discord_guild_id);
+    return settings?.prefix ?? DbSvc.globalPrefix;
   }
 
   async getUserTag(key: string, discord_user_id: string) {
@@ -149,179 +181,69 @@ export class DbSvc {
   }
 
   async getGuildPrefixEntry(discord_guild_id: string): Promise<GuildPrefixEntry | undefined> {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
-      where: { discord_guild_id },
-    });
-
-    if (!guildSettings) return undefined;
-
-    return { prefix: guildSettings.settings.prefix };
+    const settings = await this.getGuildSettings(discord_guild_id);
+    if (!settings) return undefined;
+    return { prefix: settings.prefix };
   }
 
   async changeGuildPrefix(discord_guild_id: string, prefix: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
-      where: { discord_guild_id },
-    });
-
-    if (guildSettings) {
-      await this.db
-        .update(schema.guildSettings)
-        .set({
-          settings: {
-            ...guildSettings.settings,
-            prefix,
-          },
-        })
-        .where(eq(schema.guildSettings.id, guildSettings.id));
-    } else {
-      await this.db.insert(schema.guildSettings).values({
-        discord_guild_id,
-        settings: { prefix },
-      });
-    }
-
-    this.prefixStorage.set(discord_guild_id, prefix);
+    await this.setGuildSettings(discord_guild_id, (s) => ({ ...s, prefix }));
   }
 
-  //TODO: cache
   async getGuildChatbotBehavior(
     discord_guild_id: string | null | undefined,
   ): Promise<string | undefined> {
-    if (!discord_guild_id) return undefined;
-    const guildSettings = await this.db.query.guildSettings.findFirst({
-      where: { discord_guild_id },
-    });
-    return guildSettings?.settings?.chatbotBehavior;
+    const settings = await this.getGuildSettings(discord_guild_id);
+    return settings?.chatbotBehavior;
   }
 
   async setGuildChatbotBehavior(discord_guild_id: string, behavior: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
-      where: { discord_guild_id },
-    });
-
-    if (guildSettings) {
-      await this.db
-        .update(schema.guildSettings)
-        .set({
-          settings: {
-            ...guildSettings.settings,
-            chatbotBehavior: behavior,
-          },
-        })
-        .where(eq(schema.guildSettings.id, guildSettings.id));
-    } else {
-      await this.db.insert(schema.guildSettings).values({
-        discord_guild_id,
-        settings: { chatbotBehavior: behavior },
-      });
-    }
+    await this.setGuildSettings(discord_guild_id, (s) => ({ ...s, chatbotBehavior: behavior }));
   }
 
   async resetGuildChatbotBehavior(discord_guild_id: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
-      where: { discord_guild_id },
+    await this.setGuildSettings(discord_guild_id, (s) => {
+      const { chatbotBehavior: _, ...rest } = s;
+      return rest;
     });
-
-    if (guildSettings) {
-      const { chatbotBehavior: _, ...restSettings } = guildSettings.settings;
-      await this.db
-        .update(schema.guildSettings)
-        .set({ settings: restSettings })
-        .where(eq(schema.guildSettings.id, guildSettings.id));
-    }
   }
 
   async getGuildChatbotPersonality(
     discord_guild_id: string | null | undefined,
   ): Promise<string | undefined> {
-    if (!discord_guild_id) return undefined;
-    const guildSettings = await this.db.query.guildSettings.findFirst({
-      where: { discord_guild_id },
-    });
-    return guildSettings?.settings?.chatbotPersonality;
+    const settings = await this.getGuildSettings(discord_guild_id);
+    return settings?.chatbotPersonality;
   }
 
   async setGuildChatbotPersonality(discord_guild_id: string, personality: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
-      where: { discord_guild_id },
-    });
-
-    if (guildSettings) {
-      await this.db
-        .update(schema.guildSettings)
-        .set({
-          settings: {
-            ...guildSettings.settings,
-            chatbotPersonality: personality,
-          },
-        })
-        .where(eq(schema.guildSettings.id, guildSettings.id));
-    } else {
-      await this.db.insert(schema.guildSettings).values({
-        discord_guild_id,
-        settings: { chatbotPersonality: personality },
-      });
-    }
+    await this.setGuildSettings(discord_guild_id, (s) => ({
+      ...s,
+      chatbotPersonality: personality,
+    }));
   }
 
   async resetGuildChatbotPersonality(discord_guild_id: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
-      where: { discord_guild_id },
+    await this.setGuildSettings(discord_guild_id, (s) => {
+      const { chatbotPersonality: _, ...rest } = s;
+      return rest;
     });
-
-    if (guildSettings) {
-      const { chatbotPersonality: _, ...restSettings } = guildSettings.settings;
-      await this.db
-        .update(schema.guildSettings)
-        .set({ settings: restSettings })
-        .where(eq(schema.guildSettings.id, guildSettings.id));
-    }
   }
 
   async getGuildChatbotModel(
     discord_guild_id: string | null | undefined,
   ): Promise<string | undefined> {
-    if (!discord_guild_id) return undefined;
-    const guildSettings = await this.db.query.guildSettings.findFirst({
-      where: { discord_guild_id },
-    });
-    return guildSettings?.settings?.chatbotModel;
+    const settings = await this.getGuildSettings(discord_guild_id);
+    return settings?.chatbotModel;
   }
 
   async setGuildChatbotModel(discord_guild_id: string, model: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
-      where: { discord_guild_id },
-    });
-
-    if (guildSettings) {
-      await this.db
-        .update(schema.guildSettings)
-        .set({
-          settings: {
-            ...guildSettings.settings,
-            chatbotModel: model,
-          },
-        })
-        .where(eq(schema.guildSettings.id, guildSettings.id));
-    } else {
-      await this.db.insert(schema.guildSettings).values({
-        discord_guild_id,
-        settings: { chatbotModel: model },
-      });
-    }
+    await this.setGuildSettings(discord_guild_id, (s) => ({ ...s, chatbotModel: model }));
   }
 
   async resetGuildChatbotModel(discord_guild_id: string) {
-    const guildSettings = await this.db.query.guildSettings.findFirst({
-      where: { discord_guild_id },
+    await this.setGuildSettings(discord_guild_id, (s) => {
+      const { chatbotModel: _, ...rest } = s;
+      return rest;
     });
-
-    if (guildSettings) {
-      const { chatbotModel: _, ...restSettings } = guildSettings.settings;
-      await this.db
-        .update(schema.guildSettings)
-        .set({ settings: restSettings })
-        .where(eq(schema.guildSettings.id, guildSettings.id));
-    }
   }
 }
