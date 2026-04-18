@@ -22,9 +22,20 @@ type MessagesPayload = {
 export class ChatbotHandler {
   log: Logger;
   ctx: Ctx;
+  private static imageCache = new Map<string, { base64: string; contentType: string }>();
+  private static failedImageCache = new Set<string>();
+  private static cacheClearInterval: ReturnType<typeof setInterval> | undefined;
+
   constructor(opts: { log: Logger; ctx: Ctx }) {
     this.log = opts.log;
     this.ctx = opts.ctx;
+
+    if (!ChatbotHandler.cacheClearInterval) {
+      ChatbotHandler.cacheClearInterval = setInterval(() => {
+        ChatbotHandler.imageCache.clear();
+        ChatbotHandler.failedImageCache.clear();
+      }, 60 * 60 * 1000);
+    }
   }
 
   async handle({ message }: { message: Message | PartialMessage }) {
@@ -403,6 +414,10 @@ export class ChatbotHandler {
   }
 
   private async fetchImage(url: string): Promise<{ base64: string; contentType: string } | null> {
+    if (ChatbotHandler.failedImageCache.has(url)) return null;
+    const cached = ChatbotHandler.imageCache.get(url);
+    if (cached) return cached;
+
     const MAX_SIZE = 4 * 1024 * 1024; // 4MB
     try {
       const controller = new AbortController();
@@ -414,19 +429,24 @@ export class ChatbotHandler {
 
       if (!res.ok) {
         this.log.error(`Failed to fetch image ${url}: ${res.statusText}`);
+        ChatbotHandler.failedImageCache.add(url);
         return null;
       }
 
       const arrayBuffer = await res.arrayBuffer();
       if (arrayBuffer.byteLength > MAX_SIZE) {
         this.log.warn(`Skipping image ${url} because actual size exceeds 4MB`);
+        ChatbotHandler.failedImageCache.add(url);
         return null;
       }
 
       const base64 = Buffer.from(arrayBuffer).toString("base64");
       const contentType = res.headers.get("content-type") || "image/png";
-      return { base64, contentType };
+      const result = { base64, contentType };
+      ChatbotHandler.imageCache.set(url, result);
+      return result;
     } catch (err) {
+      ChatbotHandler.failedImageCache.add(url);
       if (err instanceof Error && err.name === "AbortError") {
         this.log.error(`Fetch timeout for image ${url}`);
       } else {
