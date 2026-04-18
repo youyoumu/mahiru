@@ -16,6 +16,7 @@ import {
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
 import { generateClearToken, formatClearToken } from "../lib/chatbot";
+import { openWebuiClient } from "../lib/openapi";
 import { processSpintax } from "../lib/spintax";
 import { prompts } from "../prompts";
 
@@ -33,6 +34,7 @@ const ACTION = {
   "reset-model": "reset-model",
   clear: "clear",
   help: "help",
+  status: "status",
 } as const;
 type Action = keyof typeof ACTION;
 
@@ -93,6 +95,7 @@ function resolveAction(
   }
   if (subcommand === "clear") return "clear";
   if (subcommand === "help") return "help";
+  if (subcommand === "status") return "status";
   return undefined;
 }
 
@@ -209,6 +212,9 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       sub
         .setName("clear")
         .setDescription("Clear the chat history for the chatbot in this channel."),
+    )
+    .addSubcommand((sub) =>
+      sub.setName("status").setDescription("Check if OpenWebUI is connected and responsive."),
     );
   ctx: Ctx;
 
@@ -255,6 +261,10 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       }
       case "help": {
         this.handleHelp(params);
+        break;
+      }
+      case "status": {
+        this.handleStatus(params);
         break;
       }
       case "preview-behavior": {
@@ -640,6 +650,10 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
           value:
             "Clear the chatbot's chat history for this channel. The bot will only remember messages after this point.",
         },
+        {
+          name: `${discordEmojis.azusarelaxed} chatbot status`,
+          value: "Check if OpenWebUI is connected and responsive.",
+        },
       ],
       footer: {
         text: "Mahiru",
@@ -647,5 +661,31 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     });
 
     replyToSource(interaction, message, { embeds: [embed] });
+  }
+
+  private async handleStatus(params: ChatbotParams) {
+    const { interaction, message } = params;
+    if (interaction) {
+      await interaction.deferReply();
+    } else {
+      await message?.reply("Checking OpenWebUI status...");
+    }
+
+    try {
+      const res = await openWebuiClient.GET("/health");
+      const embed = new EmbedBuilder({
+        title: "OpenWebUI Status",
+        description: res.response?.ok ? "✅ Connected" : "❌ Unavailable",
+        color: res.response?.ok ? colors.green : colors.red,
+      });
+      replyToSource(interaction, message, { embeds: [embed] });
+    } catch {
+      const embed = new EmbedBuilder({
+        title: "OpenWebUI Status",
+        description: "❌ Connection failed",
+        color: colors.red,
+      });
+      replyToSource(interaction, message, { embeds: [embed] });
+    }
   }
 };

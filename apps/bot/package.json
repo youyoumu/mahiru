@@ -14,7 +14,7 @@
     "build:docker": "DOCKER=true tsdown",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "deploy-commands:dev": "DEV=true tsdown --on-success \"node ./dist/index.mjs\"",
+    "deploy-commands:dev": "DEV=true tsdown --on-success \"node ./dist/index.mjs --deploy-commands\"",
     "deploy-commands": "DEV=false node ./dist/index.mjs --deploy-commands"
   },
   "dependencies": {

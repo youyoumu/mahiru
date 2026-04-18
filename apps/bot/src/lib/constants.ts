@@ -10,6 +10,8 @@ export const emojis = {
 export const colors = {
   pastelYellow: 0xfef3c6,
   red: 0xff6b6b,
+  green: 0x4ade80,
+  orange: 0xfb923c,
 } as const;
 
 export const imageLinks = {
