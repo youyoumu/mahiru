@@ -8,6 +8,7 @@ import { openWebuiClient } from "#/lib/openapi";
 import { zCompletionResponse } from "#/lib/schema";
 import { processSpintax } from "#/lib/spintax";
 import { prompts } from "#/prompts";
+import { delay } from "es-toolkit";
 
 type MessagesPayload = {
   role: "system" | "user" | "assistant";
@@ -53,11 +54,130 @@ export class ChatbotHandler {
           ChatbotHandler.fixMentions(content, message),
           message,
         );
-        await message.channel.send(processedContent);
+
+        const chunks = ChatbotHandler.splitMessage(processedContent);
+        for (const chunk of chunks) {
+          await message.channel.send(chunk).catch((err) => {
+            this.log.error(err);
+          });
+          await delay(1000);
+        }
       }
     } finally {
       if (typingInterval) clearInterval(typingInterval);
     }
+  }
+
+  /**
+   * Splits a message into multiple chunks, each within the character limit.
+   * Attempts to split at natural boundaries (code blocks, paragraphs, newlines, sentences, spaces).
+   */
+  static splitMessage(text: string, limit = 1900): string[] {
+    if (text.length <= limit) return [text];
+
+    const chunks: string[] = [];
+    let currentText = text;
+    let iterations = 0;
+    const MAX_ITERATIONS = 100;
+
+    // Track if we are inside a code block globally across chunks
+    let currentlyInCodeBlock = false;
+    let codeBlockLang = "";
+
+    while (currentText.length > 0 && iterations < MAX_ITERATIONS) {
+      iterations++;
+      if (currentText.length <= limit) {
+        chunks.push(currentText);
+        break;
+      }
+
+      const subText = currentText.substring(0, limit);
+
+      if (currentlyInCodeBlock) {
+        // We are already inside a code block from a previous chunk.
+        // The currentText ALREADY STARTS WITH ```lang\n
+        const nextClosing = currentText.indexOf("```", 3); // Skip the opening one
+
+        if (nextClosing !== -1 && nextClosing + 3 <= limit) {
+          // The block ends within this chunk's limit
+          const splitIndex = nextClosing + 3;
+          chunks.push(currentText.substring(0, splitIndex));
+          currentText = currentText.substring(splitIndex).trimStart();
+          currentlyInCodeBlock = false;
+          codeBlockLang = "";
+          continue;
+        }
+
+        // Must split inside the code block
+        const lastNewline = subText.lastIndexOf("\n");
+        // Only split at newline if it's not the opening one
+        let splitIndex = lastNewline > 4 ? lastNewline : limit - 4;
+        if (splitIndex <= 4) splitIndex = limit - 4;
+
+        chunks.push(`${currentText.substring(0, splitIndex)}\n\`\`\``);
+        currentText = `\`\`\`${codeBlockLang}\n${currentText.substring(splitIndex).trimStart()}`;
+        // currentlyInCodeBlock remains true
+        continue;
+      }
+
+      // Not currently in a code block. Check if any start/end in subText.
+      const occurrences = (subText.match(/```/g) || []).length;
+
+      if (occurrences % 2 !== 0) {
+        // Odd number of backticks: a code block starts.
+        const lastBackticks = subText.lastIndexOf("```");
+
+        if (lastBackticks > 0) {
+          // Split before the code block starts.
+          const splitIndex = lastBackticks;
+          chunks.push(currentText.substring(0, splitIndex).trimEnd());
+          currentText = currentText.substring(splitIndex);
+          continue;
+        } else {
+          // Starts with ``` and it's odd, so it must stay open.
+          // Capture language extension if it exists
+          const lineEnd = subText.indexOf("\n");
+          if (lineEnd !== -1) {
+            codeBlockLang = subText.substring(3, lineEnd).trim();
+          }
+
+          const lastNewline = subText.lastIndexOf("\n");
+          let splitIndex = lastNewline > 4 ? lastNewline : limit - 4;
+          if (splitIndex <= 4) splitIndex = limit - 4;
+
+          chunks.push(`${currentText.substring(0, splitIndex)}\n\`\`\``);
+          currentText = `\`\`\`${codeBlockLang}\n${currentText.substring(splitIndex).trimStart()}`;
+          currentlyInCodeBlock = true;
+          continue;
+        }
+      }
+
+      // Even number of backticks, or none.
+      const boundaries = [
+        "\n\n", // Paragraphs
+        "\n", // Newlines
+        ". ", // Sentences
+        " ", // Spaces
+      ];
+
+      let splitIndex = -1;
+      for (const boundary of boundaries) {
+        const index = subText.lastIndexOf(boundary);
+        if (index !== -1) {
+          splitIndex = index + boundary.length;
+          break;
+        }
+      }
+
+      if (splitIndex <= 0) {
+        splitIndex = limit;
+      }
+
+      chunks.push(currentText.substring(0, splitIndex));
+      currentText = currentText.substring(splitIndex).trimStart();
+    }
+
+    return chunks;
   }
 
   async createMessages(message: Message<boolean> | PartialMessage) {

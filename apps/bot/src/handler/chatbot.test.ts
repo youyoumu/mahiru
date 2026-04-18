@@ -338,4 +338,162 @@ describe("ChatbotHandler", () => {
       expect(finalResult).toBe("Hey <@123456> <:smile:111111>");
     });
   });
+
+  describe("splitMessage", () => {
+    it("should return the message as a single chunk if it is within the limit", () => {
+      const text = "Hello world";
+      const result = ChatbotHandler.splitMessage(text, 20);
+      expect(result).toEqual(["Hello world"]);
+    });
+
+    it("should split by paragraphs if possible", () => {
+      const text = "Paragraph 1\n\nParagraph 2";
+      const result = ChatbotHandler.splitMessage(text, 15);
+      expect(result).toEqual(["Paragraph 1\n\n", "Paragraph 2"]);
+    });
+
+    it("should split by newlines if no paragraphs found", () => {
+      const text = "Line 1\nLine 2";
+      const result = ChatbotHandler.splitMessage(text, 10);
+      expect(result).toEqual(["Line 1\n", "Line 2"]);
+    });
+
+    it("should split by sentences if no newlines found", () => {
+      const text = "Sentence one. Sentence two.";
+      const result = ChatbotHandler.splitMessage(text, 20);
+      expect(result).toEqual(["Sentence one. ", "Sentence two."]);
+    });
+
+    it("should split by spaces if no sentences found", () => {
+      const text = "Word1 Word2 Word3";
+      const result = ChatbotHandler.splitMessage(text, 11);
+      expect(result).toEqual(["Word1 ", "Word2 Word3"]);
+    });
+
+    it("should hard split if no boundaries are found", () => {
+      const text = "abcdefghij";
+      const result = ChatbotHandler.splitMessage(text, 5);
+      expect(result).toEqual(["abcde", "fghij"]);
+    });
+
+    it("should handle code blocks correctly by closing and reopening them", () => {
+      const text = "```javascript\nconst x = 1;\nconst y = 2;\n```";
+      // Limit to split inside the code block
+      const result = ChatbotHandler.splitMessage(text, 30);
+      expect(result[0]).toContain("```javascript\nconst x = 1;");
+      expect(result[0]).toContain("```");
+      expect(result[1]).toContain("```javascript\nconst y = 2;");
+      expect(result[1]).toContain("```");
+    });
+
+    it("should handle very long code blocks that exceed the limit", () => {
+      const longLine = "a".repeat(100);
+      const text = `\`\`\`\n${longLine}\n\`\`\``;
+      const result = ChatbotHandler.splitMessage(text, 50);
+
+      console.log('CHUNKS:', result);
+
+      expect(result.length).toBeGreaterThan(1);
+      // Combine all chunks and count total backticks
+      const totalBackticks = result.join("").match(/```/g)?.length || 0;
+      // We expect the original 2 backticks plus 2 for each split
+      expect(totalBackticks).toBe(2 + (result.length - 1) * 2);
+
+      // Each individual chunk should have an even number of backticks
+      for (const chunk of result) {
+        const backticks = (chunk.match(/```/g) || []).length;
+        expect(backticks % 2).toBe(0);
+      }
+    });
+
+    it("should handle multiple code blocks correctly", () => {
+      const text = "Text before.\n```js\ncode1\n```\nMiddle text.\n```js\ncode2\n```\nText after.";
+      const result = ChatbotHandler.splitMessage(text, 25);
+      expect(result.length).toBeGreaterThan(2);
+      // Ensure each code block is properly closed or reopened
+      for (const chunk of result) {
+        const backticks = (chunk.match(/```/g) || []).length;
+        expect(backticks % 2).toBe(0);
+      }
+    });
+
+    it("should trim start of subsequent chunks but preserve internal spacing", () => {
+      const text = "First chunk.      Second chunk.";
+      const result = ChatbotHandler.splitMessage(text, 15);
+      expect(result).toEqual(["First chunk. ", "Second chunk."]);
+    });
+
+    it("should handle a complex real-world technical explanation", () => {
+      const text = `Here is how you can use the new splitMessage method:
+
+1. Import the class:
+\`\`\`typescript
+import { ChatbotHandler } from "./handler/chatbot";
+\`\`\`
+
+2. Call the static method with your content:
+\`\`\`typescript
+const content = "your very long content...";
+const chunks = ChatbotHandler.splitMessage(content);
+\`\`\`
+
+3. Send each chunk sequentially to Discord to avoid hitting the 2000 character limit. This ensures your bot can respond with long explanations without getting error 400.
+
+Hope this helps! Let me know if you have more questions.`;
+
+      // Split with a limit that forces it to break between points
+      const result = ChatbotHandler.splitMessage(text, 150);
+      
+      expect(result.length).toBeGreaterThan(2);
+      
+      // Check that code blocks are preserved
+      const allText = result.join("");
+      expect(allText).toContain('import { ChatbotHandler }');
+      expect(allText).toContain('const chunks = ChatbotHandler.splitMessage(content);');
+      
+      // Check that each chunk is properly balanced if it contains backticks
+      for (const chunk of result) {
+        const backticks = (chunk.match(/```/g) || []).length;
+        expect(backticks % 2).toBe(0);
+      }
+    });
+
+    it("should split correctly at bullet points", () => {
+      const text = "To-do list:\n- First item that is quite long\n- Second item that is also long\n- Third item";
+      const result = ChatbotHandler.splitMessage(text, 40);
+      
+      expect(result[0]).toBe("To-do list:\n");
+      expect(result[1]).toContain("- First item");
+      expect(result[2]).toContain("- Second item");
+    });
+
+    it("should handle a very large response with nested code and mixed text", () => {
+      const paragraph = "This is a long paragraph that provides context for the following code block. It explains the architectural decisions and the importance of splitting messages correctly in a chat application. ".repeat(3);
+      const code = "```javascript\n" + "console.log('Very long line of code that exceeds the limit...');\n".repeat(10) + "```";
+      const text = `${paragraph}\n\n${code}\n\nConclusion of the response.`;
+      
+      const limit = 300;
+      const result = ChatbotHandler.splitMessage(text, limit);
+      
+      expect(result.length).toBeGreaterThan(3);
+      
+      // Verification of integrity
+      for (const chunk of result) {
+        expect(chunk.length).toBeLessThanOrEqual(limit + 10); // slightly over for closing backticks
+        const backticks = (chunk.match(/```/g) || []).length;
+        expect(backticks % 2).toBe(0);
+      }
+    });
+
+    it("should preserve code block language extension across chunks", () => {
+      const text = "```typescript\nconst x = 1;\nconst y = 2;\nconst z = 3;\n```";
+      const result = ChatbotHandler.splitMessage(text, 35);
+
+      expect(result.length).toBeGreaterThan(1);
+      expect(result[0]).toContain("```typescript");
+      expect(result[0]).toContain("```"); // closing added by split
+      expect(result[1]).toContain("```typescript"); // reopened with extension
+      expect(result[1]).toContain("const y = 2;");
+    });
+  });
 });
