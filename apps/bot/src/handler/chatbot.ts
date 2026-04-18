@@ -355,7 +355,7 @@ export class ChatbotHandler {
     return messages;
   }
 
-  //TODO: extract link, extract embeds
+  //TODO: extract embeds
   async getMessageContent(
     message: Message | PartialMessage,
     text: string,
@@ -367,6 +367,21 @@ export class ChatbotHandler {
 
     const MAX_SIZE = 4 * 1024 * 1024; // 4MB
 
+    // Fetch first Discord CDN image link if present in text
+    const discordCdnRegex =
+      /https:\/\/cdn\.discordapp\.com\/attachments\/\d+\/\d+\/[^?\s]+\.(?:png|jpg|jpeg|webp|gif)(?:\?\S*)?/i;
+    const match = text.match(discordCdnRegex);
+    if (match) {
+      const url = match[0];
+      const imageData = await this.fetchImage(url);
+      if (imageData) {
+        contentParts.push({
+          type: "image_url",
+          image_url: { url: `data:${imageData.contentType};base64,${imageData.base64}` },
+        });
+      }
+    }
+
     for (const attachment of message.attachments.values()) {
       if (attachment.contentType?.startsWith("image/")) {
         if (attachment.size > MAX_SIZE) {
@@ -374,42 +389,51 @@ export class ChatbotHandler {
           continue;
         }
 
-        try {
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 10000);
-
-          const res = await fetch(attachment.url, { signal: controller.signal }).finally(() =>
-            clearTimeout(timeout),
-          );
-
-          if (!res.ok) {
-            this.log.error(`Failed to fetch attachment ${attachment.url}: ${res.statusText}`);
-            continue;
-          }
-
-          const arrayBuffer = await res.arrayBuffer();
-          if (arrayBuffer.byteLength > MAX_SIZE) {
-            this.log.warn(`Skipping attachment ${attachment.name} because actual size exceeds 4MB`);
-            continue;
-          }
-
-          const base64 = Buffer.from(arrayBuffer).toString("base64");
-          const contentType = attachment.contentType || "image/png";
+        const imageData = await this.fetchImage(attachment.url);
+        if (imageData) {
           contentParts.push({
             type: "image_url",
-            image_url: { url: `data:${contentType};base64,${base64}` },
+            image_url: { url: `data:${imageData.contentType};base64,${imageData.base64}` },
           });
-        } catch (err) {
-          if (err instanceof Error && err.name === "AbortError") {
-            this.log.error(`Fetch timeout for attachment ${attachment.url}`);
-          } else {
-            this.log.error(err, `Failed to fetch attachment ${attachment.url}`);
-          }
         }
       }
     }
 
     return contentParts;
+  }
+
+  private async fetchImage(url: string): Promise<{ base64: string; contentType: string } | null> {
+    const MAX_SIZE = 4 * 1024 * 1024; // 4MB
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+
+      const res = await fetch(url, { signal: controller.signal }).finally(() =>
+        clearTimeout(timeout),
+      );
+
+      if (!res.ok) {
+        this.log.error(`Failed to fetch image ${url}: ${res.statusText}`);
+        return null;
+      }
+
+      const arrayBuffer = await res.arrayBuffer();
+      if (arrayBuffer.byteLength > MAX_SIZE) {
+        this.log.warn(`Skipping image ${url} because actual size exceeds 4MB`);
+        return null;
+      }
+
+      const base64 = Buffer.from(arrayBuffer).toString("base64");
+      const contentType = res.headers.get("content-type") || "image/png";
+      return { base64, contentType };
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        this.log.error(`Fetch timeout for image ${url}`);
+      } else {
+        this.log.error(err, `Failed to fetch image ${url}`);
+      }
+      return null;
+    }
   }
 
   async completion(messages: MessagesPayload, discordGuildId?: string | null) {
