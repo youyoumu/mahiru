@@ -5,7 +5,7 @@ services:
     env_file:
       - .mahiru-backend.env
     volumes:
-      - ./storage:/home/node/mahiru/storage
+      - ./storage:/apps/mahiru/storage
     ports:
       - "8100:8100"
     healthcheck:
@@ -20,7 +20,7 @@ services:
     env_file:
       - .mahiru-bot.env
     volumes:
-      - ./storage:/home/node/mahiru/storage
+      - ./storage:/apps/mahiru/storage
     depends_on:
       backend:
         condition: service_healthy
