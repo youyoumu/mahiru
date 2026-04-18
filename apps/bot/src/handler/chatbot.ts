@@ -10,9 +10,13 @@ import { processSpintax } from "#/lib/spintax";
 import { prompts } from "#/prompts";
 import { delay } from "es-toolkit";
 
+type MessageContent =
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: { url: string } };
+
 type MessagesPayload = {
   role: "system" | "user" | "assistant";
-  content: string;
+  content: string | MessageContent[];
 }[];
 
 export class ChatbotHandler {
@@ -289,10 +293,13 @@ export class ChatbotHandler {
 
       const isBot = msg.author?.id === env.CLIENT_ID;
       const processedContent = isBot ? content : `${msg.author?.username}: ${content}`;
-      if (!processedContent.trim()) continue;
+
+      const contentParts = await this.getMessageContent(msg, processedContent);
+      if (contentParts.length === 0) continue;
+
       chatHistoryMessages.push({
         role: isBot ? "assistant" : "user",
-        content: processedContent,
+        content: contentParts,
       });
     }
 
@@ -306,36 +313,106 @@ export class ChatbotHandler {
         const processedContent = isBot
           ? repliedContent
           : `${repliedMessage.author?.username}: ${repliedContent}`;
-        if (processedContent.trim()) {
+
+        const contentParts = await this.getMessageContent(repliedMessage, processedContent);
+        if (contentParts.length > 0) {
           chatHistoryMessages.push({
             role: isBot ? "assistant" : "user",
-            content: processedContent,
+            content: contentParts,
           });
         }
       }
     }
 
+    const currentContent = this.processMentions(message);
+    const currentContentParts = await this.getMessageContent(
+      message,
+      `${message.author?.username}: ${currentContent}`,
+    );
+
     chatHistoryMessages.push({
       role: "user",
-      content: `${message.author?.username}: ${this.processMentions(message)}`,
+      content: currentContentParts,
     });
     messages.push(...chatHistoryMessages);
 
     this.log.debug(`Personality Context: \n${personalityContext}`);
     this.log.debug(`Discord Context: \n${discordContext}`);
     this.log.debug(`Behavior Context: \n${behaviorContext}`);
-    this.log.debug(chatHistoryMessages, "ChatHistory");
+
+    const sanitizedHistory = chatHistoryMessages.map((msg) => ({
+      ...msg,
+      content: Array.isArray(msg.content)
+        ? msg.content.map((c) =>
+            c.type === "image_url" && c.image_url.url.startsWith("data:")
+              ? { ...c, image_url: { url: "[BASE64_IMAGE]" } }
+              : c,
+          )
+        : msg.content,
+    }));
+    this.log.debug(sanitizedHistory, "ChatHistory");
 
     return messages;
   }
 
-  async completion(
-    messages: {
-      role: "system" | "user" | "assistant";
-      content: string;
-    }[],
-    discordGuildId?: string | null,
-  ) {
+  //TODO: extract link, extract embeds
+  async getMessageContent(
+    message: Message | PartialMessage,
+    text: string,
+  ): Promise<MessageContent[]> {
+    const contentParts: MessageContent[] = [];
+    if (text.trim()) {
+      contentParts.push({ type: "text", text });
+    }
+
+    const MAX_SIZE = 4 * 1024 * 1024; // 4MB
+
+    for (const attachment of message.attachments.values()) {
+      if (attachment.contentType?.startsWith("image/")) {
+        if (attachment.size > MAX_SIZE) {
+          this.log.warn(`Skipping attachment ${attachment.name} because it exceeds 4MB limit`);
+          continue;
+        }
+
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 10000);
+
+          const res = await fetch(attachment.url, { signal: controller.signal }).finally(() =>
+            clearTimeout(timeout),
+          );
+
+          if (!res.ok) {
+            this.log.error(`Failed to fetch attachment ${attachment.url}: ${res.statusText}`);
+            continue;
+          }
+
+          const arrayBuffer = await res.arrayBuffer();
+          if (arrayBuffer.byteLength > MAX_SIZE) {
+            this.log.warn(`Skipping attachment ${attachment.name} because actual size exceeds 4MB`);
+            continue;
+          }
+
+          const base64 = Buffer.from(arrayBuffer).toString("base64");
+          const contentType = attachment.contentType || "image/png";
+          contentParts.push({
+            type: "image_url",
+            image_url: { url: `data:${contentType};base64,${base64}` },
+          });
+        } catch (err) {
+          if (err instanceof Error && err.name === "AbortError") {
+            this.log.error(`Fetch timeout for attachment ${attachment.url}`);
+          } else {
+            this.log.error(err, `Failed to fetch attachment ${attachment.url}`);
+          }
+        }
+      }
+    }
+
+    return contentParts;
+  }
+
+  async completion(messages: MessagesPayload, discordGuildId?: string | null) {
     try {
       const guildModel = await this.ctx.dbSvc.getGuildChatbotModel(discordGuildId);
       const model = env.CHATBOT_MODELS.includes(guildModel ?? "")
