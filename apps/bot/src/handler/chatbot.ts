@@ -27,8 +27,12 @@ export class ChatbotHandler {
     const isMention = message.mentions.users.some((user) => {
       return user.id === env.CLIENT_ID;
     });
+
+    const guildReplyChance = await this.ctx.dbSvc.getGuildChatbotReplyChance(message.guildId);
+    const probability = guildReplyChance ?? 0.002;
+
     const isForce =
-      Math.random() < 0.002 && env.FORCE_CHATBOT_CHANNEL_ID.includes(message.channelId);
+      Math.random() < probability && env.FORCE_CHATBOT_CHANNEL_ID.includes(message.channelId);
     if (!isMention && !isForce) return;
 
     const channel = message.channel;

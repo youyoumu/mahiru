@@ -32,6 +32,9 @@ const ACTION = {
   "show-model": "show-model",
   "set-model": "set-model",
   "reset-model": "reset-model",
+  "set-reply-chance": "set-reply-chance",
+  "reset-reply-chance": "reset-reply-chance",
+  "show-reply-chance": "show-reply-chance",
   clear: "clear",
   help: "help",
   status: "status",
@@ -42,6 +45,7 @@ const GROUPS = {
   behavior: "behavior",
   personality: "personality",
   model: "model",
+  "reply-chance": "reply-chance",
   clear: "clear",
 } as const;
 
@@ -49,6 +53,7 @@ const PARAMS = {
   behavior: "behavior",
   personality: "personality",
   model: "model",
+  chance: "chance",
 };
 
 export interface ChatbotParams {
@@ -56,6 +61,7 @@ export interface ChatbotParams {
   behavior: string | undefined;
   personality: string | undefined;
   model: string | undefined;
+  chance: number | undefined;
   action: Action | undefined;
   interaction?: ChatInputCommandInteraction;
   message?: Message;
@@ -93,6 +99,14 @@ function resolveAction(
         return "show-model";
     }
   }
+  if (group === GROUPS["reply-chance"]) {
+    switch (subcommand) {
+      case "set":
+        return "set-reply-chance";
+      case "show":
+        return "show-reply-chance";
+    }
+  }
   if (subcommand === "clear") return "clear";
   if (subcommand === "help") return "help";
   if (subcommand === "status") return "status";
@@ -122,16 +136,20 @@ export function buildChatbotParams(opts: {
       "set-behavior": ["behavior", "set"],
       "set-personality": ["personality", "set"],
       "set-model": ["model", "set"],
+      "set-reply-chance": ["reply-chance", "set"],
     };
     const pattern = action ? actionPatterns[action] : undefined;
     return extractTrailingParam(message?.content, pattern);
   };
+
+  const probStr = interaction?.options.getNumber(PARAMS.chance)?.toString() ?? extractParam();
 
   return {
     discord_guild_id: interaction?.guildId ?? message?.guildId ?? null,
     behavior: interaction?.options.getString(PARAMS.behavior) ?? extractParam(),
     personality: interaction?.options.getString(PARAMS.personality) ?? extractParam(),
     model: interaction?.options.getString(PARAMS.model) ?? extractParam(),
+    chance: probStr !== undefined && probStr.trim() !== "" ? Number.parseFloat(probStr) : undefined,
     action,
     interaction,
     message,
@@ -205,6 +223,27 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
             .setDescription("Show the current chatbot model and available models."),
         ),
     )
+    .addSubcommandGroup((group) =>
+      group
+        .setName(GROUPS["reply-chance"])
+        .setDescription("Manage chatbot reply chance")
+        .addSubcommand((sub) =>
+          sub
+            .setName("set")
+            .setDescription("Set the reply chance (0-100%). Leave empty to reset.")
+            .addNumberOption((option) =>
+              option
+                .setName(PARAMS.chance)
+                .setDescription("Chance as a percentage (0-100).")
+                .setMinValue(0)
+                .setMaxValue(100)
+                .setRequired(false),
+            ),
+        )
+        .addSubcommand((sub) =>
+          sub.setName("show").setDescription("Show the current reply chance."),
+        ),
+    )
     .addSubcommand((sub) =>
       sub.setName("help").setDescription("Show help information for chatbot commands."),
     )
@@ -253,6 +292,18 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         } else {
           this.handleSetModel(params);
         }
+        break;
+      }
+      case "set-reply-chance": {
+        if (params.chance === undefined) {
+          this.handleResetReplyChance(params);
+        } else {
+          this.handleSetReplyChance(params);
+        }
+        break;
+      }
+      case "show-reply-chance": {
+        this.handleShowReplyChance(params);
         break;
       }
       case "clear": {
@@ -587,6 +638,69 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
+  private async handleSetReplyChance(params: ChatbotParams) {
+    const { discord_guild_id, chance, interaction, message } = params;
+    if (!discord_guild_id) {
+      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      return;
+    }
+
+    if (chance === undefined || Number.isNaN(chance) || chance < 0 || chance > 100) {
+      replyToSource(interaction, message, "⚠️ Usage: `chatbot reply-chance set <0-100>`");
+      return;
+    }
+
+    await this.ctx.dbSvc.setGuildChatbotReplyChance(discord_guild_id, chance / 100);
+
+    const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
+    const embed = new EmbedBuilder({
+      title: "Reply Chance Updated",
+      description: `The reply chance has been set to \`${chance}%\`.`,
+      footer: {
+        text: `Updated by ${username}`,
+      },
+    });
+
+    replyToSource(interaction, message, { embeds: [embed] });
+  }
+
+  private async handleResetReplyChance(params: ChatbotParams) {
+    const { discord_guild_id, interaction, message } = params;
+    if (!discord_guild_id) {
+      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      return;
+    }
+
+    await this.ctx.dbSvc.resetGuildChatbotReplyChance(discord_guild_id);
+
+    const username = interaction?.user.displayName ?? message?.author.displayName ?? "Unknown";
+    const embed = new EmbedBuilder({
+      title: "Reply Chance Reset",
+      description: "The reply chance has been reset to the default (0.2%).",
+      footer: {
+        text: `Reset by ${username}`,
+      },
+    });
+
+    replyToSource(interaction, message, { embeds: [embed] });
+  }
+
+  private async handleShowReplyChance(params: ChatbotParams) {
+    const { discord_guild_id, interaction, message } = params;
+    const chance = await this.ctx.dbSvc.getGuildChatbotReplyChance(discord_guild_id);
+    const displayProb = chance !== undefined ? chance * 100 : 0.2;
+
+    const embed = new EmbedBuilder({
+      title: "Reply Chance",
+      description: `Current chance: \`${displayProb}%\``,
+      footer: {
+        text: chance !== undefined ? "Custom setting" : "Default setting",
+      },
+    });
+
+    replyToSource(interaction, message, { embeds: [embed] });
+  }
+
   private async handleClear(params: ChatbotParams) {
     const { interaction, message } = params;
     const clearToken = generateClearToken();
@@ -644,6 +758,15 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         {
           name: `${discordEmojis.azusarelaxed} chatbot model show`,
           value: "Show the current chatbot model and all available models.",
+        },
+        {
+          name: `${discordEmojis.azusarelaxed} chatbot reply-chance set`,
+          value:
+            "Set the chance (0-100%) for the bot to reply without being mentioned in forced channels. Leave empty to reset.",
+        },
+        {
+          name: `${discordEmojis.azusarelaxed} chatbot reply-chance show`,
+          value: "Show the current reply chance.",
         },
         {
           name: `${discordEmojis.azusarelaxed} chatbot clear`,

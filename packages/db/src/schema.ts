@@ -14,6 +14,7 @@ export type GuildSettings = {
   chatbotBehavior?: string;
   chatbotPersonality?: string;
   chatbotModel?: string;
+  chatbotReplyChance?: number;
 };
 
 export const guildSettings = sqliteTable("guild_settings", {

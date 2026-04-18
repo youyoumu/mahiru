@@ -246,4 +246,25 @@ export class DbSvc {
       return rest;
     });
   }
+
+  async getGuildChatbotReplyChance(
+    discord_guild_id: string | null | undefined,
+  ): Promise<number | undefined> {
+    const settings = await this.getGuildSettings(discord_guild_id);
+    return settings?.chatbotReplyChance;
+  }
+
+  async setGuildChatbotReplyChance(discord_guild_id: string, probability: number) {
+    await this.setGuildSettings(discord_guild_id, (s) => ({
+      ...s,
+      chatbotReplyChance: probability,
+    }));
+  }
+
+  async resetGuildChatbotReplyChance(discord_guild_id: string) {
+    await this.setGuildSettings(discord_guild_id, (s) => {
+      const { chatbotReplyChance: _, ...rest } = s;
+      return rest;
+    });
+  }
 }

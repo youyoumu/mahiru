@@ -17,7 +17,9 @@
     "migrate": "pnpm -F @repo/db run migrate",
     "generate": "pnpm -F @repo/db run generate",
     "typecheck": "turbo run typecheck",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "deploy-commands": "pnpm -F @repo/bot run deploy-commands",
+    "deploy-commands:dev": "pnpm -F @repo/bot run deploy-commands:dev"
   },
   "devDependencies": {
     "oxfmt": "^0.43.0",
