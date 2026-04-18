@@ -7,7 +7,8 @@
     "typescript/no-non-null-assertion": "warn",
     "unicorn/prefer-node-protocol": "warn",
     "unicorn/no-nested-ternary": "warn",
-    "react/no-children-prop": "off"
+    "react/no-children-prop": "off",
+    "typescript/no-floating-promises": "off"
   },
   "settings": {
     "jsx-a11y": {
@@ -42,5 +43,8 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": []
+  "ignorePatterns": ["*openapi.d.ts"],
+  "options": {
+    "typeAware": true
+  }
 }

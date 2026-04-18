@@ -4,7 +4,6 @@
     "module": "es2022",
     "verbatimModuleSyntax": true,
     "moduleResolution": "bundler",
-    "outDir": "dist",
     "paths": {
       "#/*": ["./src/*"]
     }

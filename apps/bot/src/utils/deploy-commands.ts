@@ -13,7 +13,7 @@ export async function deployCommands() {
   const rest = new REST().setToken(env.DISCORD_TOKEN);
 
   try {
-    let data: unknown | undefined;
+    let data: unknown;
     if (!env.DEV) {
       log.info(`Updating for all guilds`);
       data = await rest.put(Routes.applicationCommands(env.CLIENT_ID), {

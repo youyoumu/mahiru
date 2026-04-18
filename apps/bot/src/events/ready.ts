@@ -4,7 +4,7 @@ import type { Logger } from "pino";
 
 import { env } from "#/env";
 import { Client } from "discord.js";
-import { delay, retry } from "es-toolkit";
+import { retry } from "es-toolkit";
 import { hc } from "hono/client";
 
 export class Ready {
