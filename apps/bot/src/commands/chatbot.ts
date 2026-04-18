@@ -56,6 +56,9 @@ const PARAMS = {
   chance: "chance",
 };
 
+const crop = (text: string, limit = 900) =>
+  text.length > limit ? `${text.slice(0, limit)}...` : text;
+
 export interface ChatbotParams {
   discord_guild_id: string | undefined | null;
   behavior: string | undefined;
@@ -361,7 +364,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       fields: [
         {
           name: "New Behavior",
-          value: inlineCode(behavior.length > 1000 ? `${behavior.slice(0, 1000)}...` : behavior),
+          value: inlineCode(crop(behavior)),
         },
       ],
       footer: {
@@ -414,9 +417,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       fields: [
         {
           name: "New Personality",
-          value: inlineCode(
-            personality.length > 1000 ? `${personality.slice(0, 1000)}...` : personality,
-          ),
+          value: inlineCode(crop(personality)),
         },
       ],
       footer: {
@@ -461,7 +462,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       fields: [
         {
           name: "Preview",
-          value: codeBlock(prompt.length > 2000 ? `${prompt.slice(0, 1990)}...` : prompt),
+          value: codeBlock(crop(prompt)),
         },
       ],
       footer: {
@@ -485,7 +486,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       fields: [
         {
           name: "Preview",
-          value: codeBlock(prompt.length > 2000 ? `${prompt.slice(0, 1990)}...` : prompt),
+          value: codeBlock(crop(prompt)),
         },
       ],
       footer: {
@@ -507,7 +508,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       fields: [
         {
           name: "Raw Prompt",
-          value: codeBlock(prompt.length > 4000 ? `${prompt.slice(0, 3990)}...` : prompt),
+          value: codeBlock(crop(prompt)),
         },
       ],
       footer: {
@@ -529,7 +530,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       fields: [
         {
           name: "Raw Prompt",
-          value: codeBlock(prompt.length > 4000 ? `${prompt.slice(0, 3990)}...` : prompt),
+          value: codeBlock(crop(prompt)),
         },
       ],
       footer: {
