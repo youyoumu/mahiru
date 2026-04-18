@@ -16,7 +16,7 @@ import { Unblock } from "./lib/unblock";
 import { deployCommands } from "./utils/deploy-commands";
 
 if (process.argv.includes("--deploy-commands")) {
-  deployCommands();
+  await deployCommands();
   process.exit(0);
 }
 
