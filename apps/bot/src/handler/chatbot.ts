@@ -3,7 +3,7 @@ import type { Message, PartialMessage } from "discord.js";
 import type { Logger } from "pino";
 
 import { env } from "#/env";
-import { hasClearToken } from "#/lib/chatbot";
+import { fixEmojis, fixMentions, hasClearToken, splitMessage } from "#/lib/chatbot";
 import { openWebuiClient } from "#/lib/openapi";
 import { zCompletionResponse } from "#/lib/schema";
 import { processSpintax } from "#/lib/spintax";
@@ -22,20 +22,21 @@ type MessagesPayload = {
 export class ChatbotHandler {
   log: Logger;
   ctx: Ctx;
-  private static imageCache = new Map<string, { base64: string; contentType: string }>();
-  private static failedImageCache = new Set<string>();
-  private static cacheClearInterval: ReturnType<typeof setInterval> | undefined;
+  private imageCache = new Map<string, { base64: string; contentType: string }>();
+  private failedImageCache = new Set<string>();
+  private cacheClearInterval: ReturnType<typeof setInterval> | undefined;
 
   constructor(opts: { log: Logger; ctx: Ctx }) {
     this.log = opts.log;
     this.ctx = opts.ctx;
 
-    if (!ChatbotHandler.cacheClearInterval) {
-      ChatbotHandler.cacheClearInterval = setInterval(() => {
-        ChatbotHandler.imageCache.clear();
-        ChatbotHandler.failedImageCache.clear();
-      }, 60 * 60 * 1000);
-    }
+    this.cacheClearInterval = setInterval(
+      () => {
+        this.imageCache.clear();
+        this.failedImageCache.clear();
+      },
+      60 * 60 * 1000,
+    );
   }
 
   async handle({ message }: { message: Message | PartialMessage }) {
@@ -65,12 +66,9 @@ export class ChatbotHandler {
       const content = data?.choices[0]?.message.content;
       if (typeof content === "string") {
         this.log.debug(`[Chatbot] \n${content}`);
-        const processedContent = ChatbotHandler.fixEmojis(
-          ChatbotHandler.fixMentions(content, message),
-          message,
-        );
+        const processedContent = fixEmojis(fixMentions(content, message), message);
 
-        const chunks = ChatbotHandler.splitMessage(processedContent);
+        const chunks = splitMessage(processedContent);
         for (const chunk of chunks) {
           await message.channel.send(chunk).catch((err) => {
             this.log.error(err);
@@ -81,118 +79,6 @@ export class ChatbotHandler {
     } finally {
       if (typingInterval) clearInterval(typingInterval);
     }
-  }
-
-  /**
-   * Splits a message into multiple chunks, each within the character limit.
-   * Attempts to split at natural boundaries (code blocks, paragraphs, newlines, sentences, spaces).
-   */
-  static splitMessage(text: string, limit = 1900): string[] {
-    if (text.length <= limit) return [text];
-
-    const chunks: string[] = [];
-    let currentText = text;
-    let iterations = 0;
-    const MAX_ITERATIONS = 100;
-
-    // Track if we are inside a code block globally across chunks
-    let currentlyInCodeBlock = false;
-    let codeBlockLang = "";
-
-    while (currentText.length > 0 && iterations < MAX_ITERATIONS) {
-      iterations++;
-      if (currentText.length <= limit) {
-        chunks.push(currentText);
-        break;
-      }
-
-      const subText = currentText.substring(0, limit);
-
-      if (currentlyInCodeBlock) {
-        // We are already inside a code block from a previous chunk.
-        // The currentText ALREADY STARTS WITH ```lang\n
-        const nextClosing = currentText.indexOf("```", 3); // Skip the opening one
-
-        if (nextClosing !== -1 && nextClosing + 3 <= limit) {
-          // The block ends within this chunk's limit
-          const splitIndex = nextClosing + 3;
-          chunks.push(currentText.substring(0, splitIndex));
-          currentText = currentText.substring(splitIndex).trimStart();
-          currentlyInCodeBlock = false;
-          codeBlockLang = "";
-          continue;
-        }
-
-        // Must split inside the code block
-        const lastNewline = subText.lastIndexOf("\n");
-        // Only split at newline if it's not the opening one
-        let splitIndex = lastNewline > 4 ? lastNewline : limit - 4;
-        if (splitIndex <= 4) splitIndex = limit - 4;
-
-        chunks.push(`${currentText.substring(0, splitIndex)}\n\`\`\``);
-        currentText = `\`\`\`${codeBlockLang}\n${currentText.substring(splitIndex).trimStart()}`;
-        // currentlyInCodeBlock remains true
-        continue;
-      }
-
-      // Not currently in a code block. Check if any start/end in subText.
-      const occurrences = (subText.match(/```/g) || []).length;
-
-      if (occurrences % 2 !== 0) {
-        // Odd number of backticks: a code block starts.
-        const lastBackticks = subText.lastIndexOf("```");
-
-        if (lastBackticks > 0) {
-          // Split before the code block starts.
-          const splitIndex = lastBackticks;
-          chunks.push(currentText.substring(0, splitIndex).trimEnd());
-          currentText = currentText.substring(splitIndex);
-          continue;
-        } else {
-          // Starts with ``` and it's odd, so it must stay open.
-          // Capture language extension if it exists
-          const lineEnd = subText.indexOf("\n");
-          if (lineEnd !== -1) {
-            codeBlockLang = subText.substring(3, lineEnd).trim();
-          }
-
-          const lastNewline = subText.lastIndexOf("\n");
-          let splitIndex = lastNewline > 4 ? lastNewline : limit - 4;
-          if (splitIndex <= 4) splitIndex = limit - 4;
-
-          chunks.push(`${currentText.substring(0, splitIndex)}\n\`\`\``);
-          currentText = `\`\`\`${codeBlockLang}\n${currentText.substring(splitIndex).trimStart()}`;
-          currentlyInCodeBlock = true;
-          continue;
-        }
-      }
-
-      // Even number of backticks, or none.
-      const boundaries = [
-        "\n\n", // Paragraphs
-        "\n", // Newlines
-        ". ", // Sentences
-        " ", // Spaces
-      ];
-
-      let splitIndex = -1;
-      for (const boundary of boundaries) {
-        const index = subText.lastIndexOf(boundary);
-        if (index !== -1) {
-          splitIndex = index + boundary.length;
-          break;
-        }
-      }
-
-      if (splitIndex <= 0) {
-        splitIndex = limit;
-      }
-
-      chunks.push(currentText.substring(0, splitIndex));
-      currentText = currentText.substring(splitIndex).trimStart();
-    }
-
-    return chunks;
   }
 
   async createMessages(message: Message<boolean> | PartialMessage) {
@@ -414,8 +300,8 @@ export class ChatbotHandler {
   }
 
   private async fetchImage(url: string): Promise<{ base64: string; contentType: string } | null> {
-    if (ChatbotHandler.failedImageCache.has(url)) return null;
-    const cached = ChatbotHandler.imageCache.get(url);
+    if (this.failedImageCache.has(url)) return null;
+    const cached = this.imageCache.get(url);
     if (cached) return cached;
 
     const MAX_SIZE = 4 * 1024 * 1024; // 4MB
@@ -429,24 +315,24 @@ export class ChatbotHandler {
 
       if (!res.ok) {
         this.log.error(`Failed to fetch image ${url}: ${res.statusText}`);
-        ChatbotHandler.failedImageCache.add(url);
+        this.failedImageCache.add(url);
         return null;
       }
 
       const arrayBuffer = await res.arrayBuffer();
       if (arrayBuffer.byteLength > MAX_SIZE) {
         this.log.warn(`Skipping image ${url} because actual size exceeds 4MB`);
-        ChatbotHandler.failedImageCache.add(url);
+        this.failedImageCache.add(url);
         return null;
       }
 
       const base64 = Buffer.from(arrayBuffer).toString("base64");
       const contentType = res.headers.get("content-type") || "image/png";
       const result = { base64, contentType };
-      ChatbotHandler.imageCache.set(url, result);
+      this.imageCache.set(url, result);
       return result;
     } catch (err) {
-      ChatbotHandler.failedImageCache.add(url);
+      this.failedImageCache.add(url);
       if (err instanceof Error && err.name === "AbortError") {
         this.log.error(`Fetch timeout for image ${url}`);
       } else {
@@ -480,122 +366,7 @@ export class ChatbotHandler {
     message.mentions.users.forEach((user) => {
       result = result.replaceAll(`<@${user.id}>`, `@${user.username}`);
     });
-    // Also clean up any raw <@id> patterns that weren't resolved
     result = result.replaceAll(/<@!?[0-9]+>/g, "");
-    return result;
-  }
-
-  /**
-   * Fixes mention formats in the bot's response to ensure proper Discord mention format.
-   * Detects all mention formats (@username, <@username>, <@user_id>) and normalizes to <@user_id>
-   */
-  static fixMentions(content: string, message: Message | PartialMessage): string {
-    let result = content;
-
-    // Build a map of username (lowercase) to user ID from available sources
-    const usernameToIdMap = new Map<string, string>();
-
-    // Add users from the message's guild cache if available
-    const guild = message.guild;
-    if (guild) {
-      for (const member of guild.members.cache.values()) {
-        if (member.user) {
-          usernameToIdMap.set(member.user.username.toLowerCase(), member.user.id);
-          if (
-            member.displayName &&
-            member.displayName.toLowerCase() !== member.user.username.toLowerCase()
-          ) {
-            usernameToIdMap.set(member.displayName.toLowerCase(), member.user.id);
-          }
-        }
-      }
-    }
-
-    // If we couldn't get any members from cache, try to use the client's user cache
-    if (usernameToIdMap.size === 0 && message.client) {
-      for (const user of message.client.users.cache.values()) {
-        usernameToIdMap.set(user.username.toLowerCase(), user.id);
-      }
-    }
-
-    // If still no members, we can't resolve usernames to IDs, so just return the content
-    if (usernameToIdMap.size === 0) {
-      return result;
-    }
-
-    // Pattern 1: Match <@username> format (with angle brackets but not a numeric ID)
-    result = result.replace(/<@([a-zA-Z0-9_]+)>/g, (match, username) => {
-      // If it's already a numeric ID, keep it
-      if (/^\d+$/.test(username)) {
-        return match;
-      }
-      // Otherwise, try to resolve the username
-      const userId = usernameToIdMap.get(username.toLowerCase());
-      return userId ? `<@${userId}>` : match;
-    });
-
-    // Pattern 2: Match plain @username mentions
-    // Avoid matching inside code blocks (``` or `)
-    // Split by code blocks to avoid replacing inside them
-    const parts = result.split(/(```[\s\S]*?```|`[^`]+`)/g);
-    const processedParts = parts.map((part) => {
-      // If it's a code block, return as-is
-      if (part.startsWith("```") || part.startsWith("`")) {
-        return part;
-      }
-      // Otherwise, replace @username mentions
-      return part.replace(/@([a-zA-Z0-9_]{2,32})/g, (match, username) => {
-        const userId = usernameToIdMap.get(username.toLowerCase());
-        return userId ? `<@${userId}>` : match;
-      });
-    });
-    result = processedParts.join("");
-
-    return result;
-  }
-
-  /**
-   * Fixes emoji formats in the bot's response to ensure proper Discord emoji format.
-   * Detects :emoji_name: format and converts to <:emoji_name:emoji_id> or <a:emoji_name:emoji_id>
-   */
-  static fixEmojis(content: string, message: Message | PartialMessage): string {
-    let result = content;
-
-    // Build a map of emoji name to emoji format (<:name:id> or <a:name:id>) from guild cache
-    const emojiMap = new Map<string, string>();
-    const guild = message.guild;
-    if (guild) {
-      for (const emoji of guild.emojis.cache.values()) {
-        if (emoji.id && emoji.name) {
-          const emojiFormat = emoji.animated
-            ? `<a:${emoji.name}:${emoji.id}>`
-            : `<:${emoji.name}:${emoji.id}>`;
-          emojiMap.set(emoji.name.toLowerCase(), emojiFormat);
-        }
-      }
-    }
-
-    // If no emojis in cache, return as-is
-    if (emojiMap.size === 0) {
-      return result;
-    }
-
-    // Split by code blocks to avoid replacing inside them
-    const parts = result.split(/(```[\s\S]*?```|`[^`]+`)/g);
-    const processedParts = parts.map((part) => {
-      // If it's a code block, return as-is
-      if (part.startsWith("```") || part.startsWith("`")) {
-        return part;
-      }
-      // Replace :emoji_name: with proper Discord format
-      // But skip already-formatted emojis like <:name:id> or <a:name:id>
-      return part.replace(/(?<![<a]):([a-zA-Z0-9_]+):/g, (match, emojiName) => {
-        const emojiFormat = emojiMap.get(emojiName.toLowerCase());
-        return emojiFormat || match;
-      });
-    });
-    result = processedParts.join("");
-
     return result;
   }
 }
