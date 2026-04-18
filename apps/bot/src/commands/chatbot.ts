@@ -271,74 +271,74 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     switch (params.action) {
       case "set-behavior": {
         if (!params.behavior) {
-          this.handleResetBehavior(params);
+          await this.handleResetBehavior(params);
         } else {
-          this.handleSetBehavior(params);
+          await this.handleSetBehavior(params);
         }
         break;
       }
       case "set-personality": {
         if (!params.personality) {
-          this.handleResetPersonality(params);
+          await this.handleResetPersonality(params);
         } else {
-          this.handleSetPersonality(params);
+          await this.handleSetPersonality(params);
         }
         break;
       }
       case "show-model": {
-        this.handleShowModel(params);
+        await this.handleShowModel(params);
         break;
       }
       case "set-model": {
         if (!params.model) {
-          this.handleResetModel(params);
+          await this.handleResetModel(params);
         } else {
-          this.handleSetModel(params);
+          await this.handleSetModel(params);
         }
         break;
       }
       case "set-reply-chance": {
         if (params.chance === undefined) {
-          this.handleResetReplyChance(params);
+          await this.handleResetReplyChance(params);
         } else {
-          this.handleSetReplyChance(params);
+          await this.handleSetReplyChance(params);
         }
         break;
       }
       case "show-reply-chance": {
-        this.handleShowReplyChance(params);
+        await this.handleShowReplyChance(params);
         break;
       }
       case "clear": {
-        this.handleClear(params);
+        await this.handleClear(params);
         break;
       }
       case "help": {
-        this.handleHelp(params);
+        await this.handleHelp(params);
         break;
       }
       case "status": {
-        this.handleStatus(params);
+        await this.handleStatus(params);
         break;
       }
       case "preview-behavior": {
-        this.handlePreviewBehavior(params);
+        await this.handlePreviewBehavior(params);
         break;
       }
       case "preview-personality": {
-        this.handlePreviewPersonality(params);
+        await this.handlePreviewPersonality(params);
         break;
       }
       case "show-behavior": {
-        this.handleShowBehavior(params);
+        await this.handleShowBehavior(params);
         break;
       }
       case "show-personality": {
-        this.handleShowPersonality(params);
+        await this.handleShowPersonality(params);
         break;
       }
       default: {
-        this.handleHelp(params);
+        await this.handleHelp(params);
       }
     }
   }

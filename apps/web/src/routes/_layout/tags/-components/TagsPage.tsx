@@ -71,8 +71,8 @@ const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
 
               <Copy
                 className="w-5 cursor-pointer"
-                onClick={() => {
-                  navigator.clipboard.writeText(tag.key);
+                onClick={async () => {
+                  await navigator.clipboard.writeText(tag.key);
                   toast(
                     <div>
                       <div>Copied key to clipboard:</div>
@@ -94,8 +94,8 @@ const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
                 <DiscordUsername discord_user_id={tag.discord_user_id} />
               </div>
               <Button
-                onClick={() => {
-                  navigator.clipboard.writeText(tag.value);
+                onClick={async () => {
+                  await navigator.clipboard.writeText(tag.value);
                   toast(
                     <div>
                       <div>Copied value to clipboard:</div>

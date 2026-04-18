@@ -109,31 +109,38 @@ export const Tag: CommandProto = class Tag implements Command {
 
     switch (selectedAction) {
       case "add": {
-        this.handleAdd({ discord_guild_id, discord_user_id, key, value, interaction, message });
+        await this.handleAdd({
+          discord_guild_id,
+          discord_user_id,
+          key,
+          value,
+          interaction,
+          message,
+        });
         break;
       }
       case "drop": {
-        this.handleDrop({ discord_guild_id, discord_user_id, key, interaction, message });
+        await this.handleDrop({ discord_guild_id, discord_user_id, key, interaction, message });
         break;
       }
       case "list": {
-        this.handleList({ discord_guild_id, discord_user_id, interaction, message });
+        await this.handleList({ discord_guild_id, discord_user_id, interaction, message });
         break;
       }
       case "remove": {
-        this.handleRemove({ discord_guild_id, discord_user_id, key, interaction, message });
+        await this.handleRemove({ discord_guild_id, discord_user_id, key, interaction, message });
         break;
       }
       case "help": {
-        this.handleHelp({ interaction, message });
+        await this.handleHelp({ interaction, message });
         break;
       }
       default: {
         const key = args?.[0];
         if (key) {
-          this.handleDrop({ discord_guild_id, discord_user_id, key, message });
+          await this.handleDrop({ discord_guild_id, discord_user_id, key, message });
         } else {
-          this.handleHelp({ interaction, message });
+          await this.handleHelp({ interaction, message });
         }
       }
     }

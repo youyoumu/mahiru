@@ -78,7 +78,7 @@ const messageReactionAdd = new events.MessageReactionAdd({
 });
 
 // Log in to Discord with your client's token
-client.login(env.DISCORD_TOKEN);
+await client.login(env.DISCORD_TOKEN);
 
 // events
 client.once(Events.ClientReady, (client) => ready.handler(client));

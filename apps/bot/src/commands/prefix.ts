@@ -68,11 +68,11 @@ export const Prefix: CommandProto = class Prefix implements Command {
 
     switch (selectedAction) {
       case "change": {
-        this.handleChange({ discord_guild_id, prefix: newPrefix, interaction, message });
+        await this.handleChange({ discord_guild_id, prefix: newPrefix, interaction, message });
         break;
       }
       case "current": {
-        this.handleCurrent({ discord_guild_id, interaction, message });
+        await this.handleCurrent({ discord_guild_id, interaction, message });
         break;
       }
       case "help": {
@@ -80,7 +80,7 @@ export const Prefix: CommandProto = class Prefix implements Command {
         break;
       }
       default: {
-        this.handleCurrent({ discord_guild_id, interaction, message });
+        await this.handleCurrent({ discord_guild_id, interaction, message });
       }
     }
   }

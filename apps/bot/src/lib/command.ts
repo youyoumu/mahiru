@@ -74,20 +74,24 @@ export function extractTrailingParam(
  * @param message - The message context (optional)
  * @param content - The content to send (InteractionReplyOptions)
  */
-export async function replyToSource(
+export function replyToSource(
   interaction: ChatInputCommandInteraction | undefined,
   message: Message | undefined,
   content: string | MessagePayload | InteractionReplyOptions,
-): Promise<void> {
-  interaction?.reply(content);
-  if (message?.channel.isSendable()) {
-    if (typeof content === "string") {
-      message.channel.send(content);
-    } else if (content instanceof MessagePayload) {
-      message.channel.send(content);
-    } else {
-      const { embeds, files, components, content: textContent } = content;
-      message.channel.send({ embeds, files, components, content: textContent });
+) {
+  const reply = async () => {
+    await interaction?.reply(content);
+    if (message?.channel.isSendable()) {
+      if (typeof content === "string") {
+        await message.channel.send(content);
+      } else if (content instanceof MessagePayload) {
+        await message.channel.send(content);
+      } else {
+        const { embeds, files, components, content: textContent } = content;
+        await message.channel.send({ embeds, files, components, content: textContent });
+      }
     }
-  }
+  };
+  //TODO: log
+  reply().catch(() => {});
 }

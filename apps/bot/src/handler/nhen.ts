@@ -44,10 +44,9 @@ export class NhenHandler {
     this.log = opts.log;
   }
 
-  async handleNhenLink({ code, message }: { code: number; message: Message | PartialMessage }) {
-    if (!message.channel.isSendable()) return;
-
-    try {
+  handleNhenLink({ code, message }: { code: number; message: Message | PartialMessage }) {
+    const handle = async () => {
+      if (!message.channel.isSendable()) return;
       const username = message.author?.username;
       const gallery = await this.getGallery(code);
       const sentMessage = await message.channel.send(
@@ -59,12 +58,13 @@ export class NhenHandler {
         totalPages: gallery.num_pages,
         lastUpdatedAt: Date.now(),
       });
-    } catch (err) {
+    };
+    handle().catch((err) => {
       this.log.error(
         err instanceof Error ? { message: err.message } : err,
         `Failed to embed nhen link`,
       );
-    }
+    });
   }
 
   async handleInteraction({ interaction }: { interaction: ButtonInteraction }) {
@@ -114,7 +114,8 @@ export class NhenHandler {
 
     try {
       const gallery = await this.getGallery(code);
-      interaction.update(await this.createMessagePayload({ gallery, code, pageNumber, username }));
+      const message = await this.createMessagePayload({ gallery, code, pageNumber, username });
+      await interaction.update(message);
     } catch (err) {
       this.log.error(
         err instanceof Error ? { message: err.message } : err,

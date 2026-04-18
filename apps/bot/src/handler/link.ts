@@ -106,21 +106,27 @@ export class LinkHandler {
     }
   }
 
-  async addReaction({ message, emoji }: { message: Message | PartialMessage; emoji?: string }) {
-    const reactionEmoji = emoji ?? emojis.link;
-    try {
+  addReaction({ message, emoji }: { message: Message | PartialMessage; emoji?: string }) {
+    const react = async () => {
+      const reactionEmoji = emoji ?? emojis.link;
       const reaction = await message.react(reactionEmoji);
       await delay(6000);
       await reaction.users.remove(env.CLIENT_ID);
-    } catch (err) {
+    };
+    react().catch((err) => {
       this.log.error(err, "Could not complete reaction cycle:");
-    }
+    });
   }
 
   sendEmbed({ message, url }: { message: Message | PartialMessage; url: string }) {
-    if (!message.channel.isSendable()) return;
-    message.channel.send(url);
-    this.sentEmbedMessages.add(message.id);
+    const send = async () => {
+      if (!message.channel.isSendable()) return;
+      await message.channel.send(url);
+      this.sentEmbedMessages.add(message.id);
+    };
+    send().catch((err) => {
+      this.log.error(err, "Could not send embed:");
+    });
   }
 
   static getUrl(content: string) {

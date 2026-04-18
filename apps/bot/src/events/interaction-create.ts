@@ -48,9 +48,13 @@ export class InteractionCreate {
           flags: MessageFlags.Ephemeral,
         } as const;
         if (interaction.replied || interaction.deferred) {
-          interaction.followUp(interactionRes);
+          interaction.followUp(interactionRes).catch((err) => {
+            this.log.error(err);
+          });
         } else {
-          interaction.reply(interactionRes);
+          interaction.reply(interactionRes).catch((err) => {
+            this.log.error(err);
+          });
         }
       });
     } else if (isButton) {
