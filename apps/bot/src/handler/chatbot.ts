@@ -1,4 +1,5 @@
 import type { Ctx } from "#/lib/ctx";
+import type { Guild } from "discord.js";
 import type { Message, PartialMessage } from "discord.js";
 import type { Logger } from "pino";
 
@@ -49,8 +50,8 @@ export class ChatbotHandler {
   async handle({ message }: { message: Message | PartialMessage }) {
     if (!message.channel.isSendable()) return;
 
-    if (message.guildId && message.content) {
-      this.trackEmojis(message.guildId, message.content);
+    if (message.guild && message.content) {
+      this.trackEmojis(message.guild, message.content).catch(() => {});
     }
     const isMention = message.mentions.users.some((user) => {
       return user.id === env.CLIENT_ID;
@@ -376,14 +377,17 @@ export class ChatbotHandler {
     return result;
   }
 
-  private trackEmojis(guildId: string, content: string) {
+  private async trackEmojis(guild: Guild, content: string) {
+    const validEmojiIds = new Set(guild.emojis.cache.keys());
     const emojiRegex = /<a?:(\w+):(\d+)>/g;
     let match;
     const newEmojis: string[] = [];
+    const guildId = guild.id;
 
     while ((match = emojiRegex.exec(content)) !== null) {
       const name = match[1];
       const id = match[2];
+      if (!id || !validEmojiIds.has(id)) continue;
       const isAnimated = content.substring(match.index, match.index + 2) === "<a";
       newEmojis.push(isAnimated ? `<a:${name}:${id}>` : `<:${name}:${id}>`);
     }
