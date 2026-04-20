@@ -12,6 +12,7 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
+import { delay } from "es-toolkit";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
@@ -789,11 +790,8 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
 
   private async handleStatus(params: ChatbotParams) {
     const { interaction, message } = params;
-    if (interaction) {
-      await interaction.deferReply();
-    } else {
-      await message?.reply("Checking OpenWebUI status...");
-    }
+    await interaction?.deferReply();
+    const replyMessage = await message?.reply("Checking OpenWebUI status...");
 
     try {
       const res = await openWebuiClient.GET("/health");
@@ -802,14 +800,24 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         description: res.response?.ok ? "✅ Connected" : "❌ Unavailable",
         color: res.response?.ok ? colors.green : colors.red,
       });
-      replyToSource(interaction, message, { embeds: [embed] });
+      await delay(1000);
+      if (interaction) {
+        await interaction.editReply({ embeds: [embed] });
+      } else {
+        await replyMessage?.edit({ embeds: [embed] });
+      }
     } catch {
       const embed = new EmbedBuilder({
         title: "OpenWebUI Status",
         description: "❌ Connection failed",
         color: colors.red,
       });
-      replyToSource(interaction, message, { embeds: [embed] });
+      await delay(1000);
+      if (interaction) {
+        await interaction.editReply({ embeds: [embed] });
+      } else {
+        await replyMessage?.edit({ embeds: [embed] });
+      }
     }
   }
 };
