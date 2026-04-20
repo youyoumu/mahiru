@@ -366,7 +366,11 @@ export class ChatbotHandler {
   processMentions(message: Message<boolean> | PartialMessage): string {
     let result = message.content ?? "";
     message.mentions.users.forEach((user) => {
-      result = result.replaceAll(`<@${user.id}>`, `@${user.username}`);
+      if (user.id === env.CLIENT_ID) {
+        result = result.replaceAll(`<@${user.id}>`, "");
+      } else {
+        result = result.replaceAll(`<@${user.id}>`, `@${user.username}`);
+      }
     });
     result = result.replaceAll(/<@!?[0-9]+>/g, "");
     return result;
