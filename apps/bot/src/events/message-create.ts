@@ -40,10 +40,10 @@ export class MessageCreate {
     if (message.author.bot) return;
 
     this.linkHandler.handle(Events.MessageCreate, message).catch((err) => {
-      this.log.error(err);
+      this.log.error(err, "Error while handling link");
     });
     this.chatbotHandler.handle({ message }).catch((err) => {
-      this.log.error(err);
+      this.log.error(err, "Error while handling chatbot");
     });
 
     const prefix = await this.ctx.dbSvc.getGuildPrefix(message.guildId);

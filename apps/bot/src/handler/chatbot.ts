@@ -64,7 +64,7 @@ export class ChatbotHandler {
       channel.sendTyping().catch(() => {});
       typingInterval = setInterval(() => {
         channel.sendTyping().catch(() => {});
-      }, 5000);
+      }, 10000);
     }
     try {
       const messages = await this.createMessages(message);
@@ -80,11 +80,13 @@ export class ChatbotHandler {
         const chunks = splitMessage(processedContent);
         for (const chunk of chunks) {
           await message.channel.send(chunk).catch((err) => {
-            this.log.error(err);
+            this.log.error(err, "Error while sending message");
           });
           await delay(1000);
         }
       }
+    } catch (err) {
+      this.log.error(err, "Error while handling message");
     } finally {
       if (typingInterval) clearInterval(typingInterval);
     }
@@ -357,9 +359,10 @@ export class ChatbotHandler {
           messages: messages,
         },
       });
+      if (!res.response.ok && res.error) throw res.error;
       return zCompletionResponse.parse(res.data);
     } catch (err) {
-      this.log.error(err instanceof Error ? err.message : err);
+      this.log.error(err, "Error while generating response");
     }
   }
 
