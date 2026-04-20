@@ -133,6 +133,7 @@ export class ChatbotHandler {
     const discordContext = prompts.discordContext
       .replace(/\{\{MEMBERS\}\}/g, membersList)
       .replace(/\{\{EMOJIS\}\}/g, emojisList)
+      .replace(/\{\{BOT_NAME\}\}/g, env.BOT_NAME)
       .replace(
         /\{\{CURRENT_USER\}\}/g,
         `${message.author?.displayName} -- @${message.author?.username} -- ${message.author?.id}`,

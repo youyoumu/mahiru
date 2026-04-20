@@ -12,6 +12,7 @@ export const env = createEnv({
     DEV: z.stringbool().optional(),
     DISCORD_TOKEN: z.string(),
     CLIENT_ID: z.string(),
+    BOT_NAME: z.string(),
     DEV_GUILD_ID: z.string().optional(),
     DATABASE_URL: z.url(),
     DRIZZLE_DIR: z.string().optional(),
