@@ -3,7 +3,13 @@ import type { Message, PartialMessage } from "discord.js";
 import type { Logger } from "pino";
 
 import { env } from "#/env";
-import { fixEmojis, fixMentions, hasClearToken, splitMessage } from "#/lib/chatbot";
+import {
+  fixEmojis,
+  fixMentions,
+  hasClearToken,
+  splitMessage,
+  stripThinkingBlock,
+} from "#/lib/chatbot";
 import { openWebuiClient } from "#/lib/openapi";
 import { zCompletionResponse } from "#/lib/schema";
 import { processSpintax } from "#/lib/spintax";
@@ -66,7 +72,10 @@ export class ChatbotHandler {
       const content = data?.choices[0]?.message.content;
       if (typeof content === "string") {
         this.log.debug(`[Chatbot] \n${content}`);
-        const processedContent = fixEmojis(fixMentions(content, message), message);
+        const processedContent = fixEmojis(
+          fixMentions(stripThinkingBlock(content), message),
+          message,
+        );
 
         const chunks = splitMessage(processedContent);
         for (const chunk of chunks) {

@@ -14,6 +14,11 @@ export function formatClearToken(token: string): string {
 export function hasClearToken(content: string): boolean {
   return CLEAR_TOKEN_PATTERN.test(content);
 }
+const THINKING_BLOCK_PATTERN = /<thinking>[\s\S]*?<\/thinking>|<thinking>[\s\S]*?<channel\|>/gi;
+
+export function stripThinkingBlock(content: string): string {
+  return content.replace(THINKING_BLOCK_PATTERN, "").trim();
+}
 
 export function splitMessage(text: string, limit = 1900): string[] {
   if (text.length <= limit) return [text];

@@ -10,7 +10,7 @@ import type {
 
 import { describe, it, expect } from "vitest";
 
-import { fixEmojis, fixMentions, splitMessage } from "./chatbot";
+import { fixEmojis, fixMentions, splitMessage, stripThinkingBlock } from "./chatbot";
 
 describe("chatbot utils", () => {
   const createMockMember = (
@@ -490,6 +490,81 @@ Hope this helps! Let me know if you have more questions.`;
       expect(result[0]).toContain("```");
       expect(result[1]).toContain("```typescript");
       expect(result[1]).toContain("const y = 2;");
+    });
+  });
+
+  describe("stripThinkingBlock", () => {
+    it("should remove thinking block from content", () => {
+      const content =
+        "<thinking>Thinking Process: Analyze the request...</thinking>Hello, how can I help you?";
+      const result = stripThinkingBlock(content);
+      expect(result).toBe("Hello, how can I help you?");
+    });
+
+    it("should handle thinking block with newlines", () => {
+      const content =
+        "<thinking>Thinking Process:\nAnalyze the request...\nOutput Generation...</thinking>Hello!";
+      const result = stripThinkingBlock(content);
+      expect(result).toBe("Hello!");
+    });
+
+    it("should return original content if no thinking block", () => {
+      const content = "Hello, how can I help you?";
+      const result = stripThinkingBlock(content);
+      expect(result).toBe("Hello, how can I help you?");
+    });
+
+    it("should handle multiple thinking blocks", () => {
+      const content = "<thinking>First</thinking>Hello<thinking>Second</thinking>World";
+      const result = stripThinkingBlock(content);
+      expect(result).toBe("HelloWorld");
+    });
+
+    it("should handle case-insensitive thinking tags", () => {
+      const content = "<THINKING>Thinking</THINKING>Hello<thinking>More</thinking>World";
+      const result = stripThinkingBlock(content);
+      expect(result).toBe("HelloWorld");
+    });
+
+    it("should trim whitespace after removing thinking block", () => {
+      const content = "<thinking>Thinking content</thinking>   Hello there!   ";
+      const result = stripThinkingBlock(content);
+      expect(result).toBe("Hello there!");
+    });
+
+    it("should handle empty thinking block", () => {
+      const content = "<thinking></thinking>Hello";
+      const result = stripThinkingBlock(content);
+      expect(result).toBe("Hello");
+    });
+
+    it("should handle thinking block that spans the entire content", () => {
+      const content = "<thinking>Thinking content</thinking>";
+      const result = stripThinkingBlock(content);
+      expect(result).toBe("");
+    });
+
+    it("should preserve content outside thinking blocks with whitespace", () => {
+      const content = "Hello <thinking>thinking</thinking> World";
+      const result = stripThinkingBlock(content);
+      expect(result).toBe("Hello  World");
+    });
+
+    it("should handle the real-world API thinking block leak example", () => {
+      const content = `<thinking>Thinking Process:
+
+1.  **Analyze the Request:** The user has provided an image and a context (a conversation/prompt). The core task is to generate a response based on the image and the preceding text.
+2.  **Analyze the Image:** The image shows a character (presumably the persona the AI is supposed to be interacting with, or a character reacting to the prompt) that looks somewhat cute/anime-like.
+3.  **Analyze the Text Context:** The input text is: "you are [followed by a large block of names/IDs, likely irrelevant noise or context from a previous session], [followed by the actual request implied by the context which is missing, but based on the interaction flow, the AI needs to respond to the presented information or the implied social interaction]." *Self-Correction/Re-evaluation:* Looking closely at the prompt provided in the image context, it seems the user is asking for a continuation or reaction to the image, often in a roleplaying or conversational style.
+4.  **Determine the Appropriate Response Tone:** Since this is an image-based prompt, a friendly, conversational, and contextually relevant response is best.
+5.  **Formulate the Response:** Since the actual prompt structure is slightly ambiguous (it looks like an image prompt rather than a direct question), I will respond as if I am reacting to the visual information provided, maintaining a pleasant tone. (Since the preceding text seems like an artifact, I will focus purely on the visual interaction.)
+
+*(Self-Correction based on standard instruction flow: If the input is just an image, and no explicit question is asked, the model should describe the image or acknowledge the prompt.)* 
+*Output Generation based on the visual information.* (Since I cannot *see* the full preceding conversational text that led to this image, I will generate a standard, engaging response related to the visual presented.)<channel|>Oh! Hello there! You look very cute in this picture! 😊 What can I help you with today?`;
+      const result = stripThinkingBlock(content);
+      expect(result).toBe(
+        "Oh! Hello there! You look very cute in this picture! 😊 What can I help you with today?",
+      );
     });
   });
 });
