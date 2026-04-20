@@ -1,81 +1,47 @@
-# Turborepo starter
+# Mahiru
 
-This Turborepo starter is maintained by the Turborepo core team.
+Mahiru is a comprehensive Discord bot ecosystem designed with a focus on modularity, performance, and advanced AI interactions. The project is structured as a monorepo containing a Discord client, a high-performance backend API, and a modern web dashboard.
 
-## Using this example
+## Core Components
 
-Run the following command:
+The architecture is divided into three primary applications supported by shared internal packages.
 
-```sh
-npx create-turbo@latest
-```
+### Discord Bot
+The bot serves as the primary interface, built on Discord.js and optimized for low-latency interactions. It features a sophisticated AI chatbot system that utilizes a custom Spintax engine for prompt generation. This allows for weighted behavioral variance and dynamic personality management. Beyond AI, it includes specialized handlers for content tagging and integration with external media services.
 
-## What's inside?
+### Backend API
+A centralized API server built with Hono and Node.js. It provides an OpenAPI-compliant interface that facilitates communication between the bot and the web dashboard. The backend manages authentication, user data, and system-wide configurations while providing real-time health monitoring and proxy services.
 
-This Turborepo includes the following packages/apps:
+### Web Dashboard
+A modern administrative interface developed with React 19 and Tailwind CSS 4. It enables users and administrators to manage bot settings, configure tags, and monitor system status through a responsive and intuitive UI. The dashboard leverages TanStack Router and Query for efficient state management and navigation.
 
-### Apps and Packages
+## Key Features
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+The ecosystem provides several advanced functionalities that differentiate it from standard Discord integrations.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Spintax Prompt Engine
+A custom-built syntax engine that supports weighted variations and probability-based content generation. This system is used to define bot personas and automated responses, ensuring that interactions remain diverse and natural rather than repetitive.
 
-### Utilities
+### Enhanced Networking
+Integration of a DNS-over-HTTPS resolution layer allows the bot to handle requests and media fetching with improved reliability. This sub-system is designed to bypass common network restrictions and ensure consistent service availability.
 
-This Turborepo has some additional tools already setup for you:
+### Full-Stack Type Safety
+The project maintains strict type definitions across the entire stack. Database schemas defined with Drizzle ORM are automatically propagated to the backend API and frontend clients, reducing runtime errors and improving developer productivity.
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [Prettier](https://prettier.io) for code formatting
+## Development Setup
 
-### Build
+The project uses pnpm and Turborepo for workspace management.
 
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
+### Build and Execution
+To prepare the entire workspace, execute the build command from the root directory.
+```bash
 pnpm build
 ```
 
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
+For local development with hot-reloading across all applications, use the dev command.
+```bash
 pnpm dev
 ```
 
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turborepo.com/docs/core-concepts/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+### Environment Configuration
+Each application requires specific environment variables. Reference the .env.example files within the respective apps directories to set up local configurations for the bot, backend, and web dashboard.
