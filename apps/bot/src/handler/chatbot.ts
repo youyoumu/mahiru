@@ -150,18 +150,11 @@ export class ChatbotHandler {
       ? processSpintax(customBehavior)
       : processSpintax(prompts.behavior);
 
+    const systemPrompt = `${personalityContext}\n\n${discordContext}\n\n${behaviorContext}`;
     const messages: MessagesPayload = [
       {
         role: "system",
-        content: personalityContext,
-      },
-      {
-        role: "system",
-        content: discordContext,
-      },
-      {
-        role: "system",
-        content: behaviorContext,
+        content: systemPrompt,
       },
     ];
 
