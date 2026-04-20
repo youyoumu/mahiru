@@ -31,6 +31,7 @@ export class ChatbotHandler {
   private imageCache = new Map<string, { base64: string; contentType: string }>();
   private failedImageCache = new Set<string>();
   private cacheClearInterval: ReturnType<typeof setInterval> | undefined;
+  private guildEmojis = new Map<string, string[]>();
 
   constructor(opts: { log: Logger; ctx: Ctx }) {
     this.log = opts.log;
@@ -47,6 +48,10 @@ export class ChatbotHandler {
 
   async handle({ message }: { message: Message | PartialMessage }) {
     if (!message.channel.isSendable()) return;
+
+    if (message.guildId && message.content) {
+      this.trackEmojis(message.guildId, message.content);
+    }
     const isMention = message.mentions.users.some((user) => {
       return user.id === env.CLIENT_ID;
     });
@@ -114,16 +119,7 @@ export class ChatbotHandler {
 
     // Collect server emojis
     const guild = message.guild;
-    const emojis: string[] = [];
-    if (guild) {
-      for (const emoji of guild.emojis.cache.values()) {
-        if (emoji.id) {
-          emojis.push(
-            emoji.animated ? `<a:${emoji.name}:${emoji.id}>` : `<:${emoji.name}:${emoji.id}>`,
-          );
-        }
-      }
-    }
+    const emojis = guild ? this.guildEmojis.get(guild.id) || [] : [];
 
     const membersList =
       usersInChat.size > 0
@@ -377,5 +373,27 @@ export class ChatbotHandler {
     });
     result = result.replaceAll(/<@!?[0-9]+>/g, "");
     return result;
+  }
+
+  private trackEmojis(guildId: string, content: string) {
+    const emojiRegex = /<a?:(\w+):(\d+)>/g;
+    let match;
+    const newEmojis: string[] = [];
+
+    while ((match = emojiRegex.exec(content)) !== null) {
+      const name = match[1];
+      const id = match[2];
+      const isAnimated = content.substring(match.index, match.index + 2) === "<a";
+      newEmojis.push(isAnimated ? `<a:${name}:${id}>` : `<:${name}:${id}>`);
+    }
+
+    if (newEmojis.length === 0) return;
+
+    const existing = this.guildEmojis.get(guildId) || [];
+    const combined = [...existing, ...newEmojis];
+    const uniqueEmojis = [...new Set(combined)];
+    const last10 = uniqueEmojis.slice(-10);
+
+    this.guildEmojis.set(guildId, last10);
   }
 }
