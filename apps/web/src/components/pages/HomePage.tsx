@@ -46,7 +46,9 @@ const HomePicture = () => {
   const parentRef = useRef<HTMLDivElement>(null);
   const [src] = useState(sample(imgSources));
   const [quote] = useState(sample(quotes));
-  const [emojis, setEmojis] = useState<{ id: string; x: number; y: number }[]>([]);
+  const [emojis, setEmojis] = useState<
+    { id: string; x: number; y: number; size: number; rotation: number }[]
+  >([]);
 
   function handleMove(
     e: MouseEvent<HTMLDivElement, globalThis.MouseEvent> | TouchEvent<HTMLDivElement>,
@@ -64,16 +66,22 @@ const HomePicture = () => {
     const x = clientX - bounds.left;
     const y = clientY - bounds.top;
 
-    if (y > 90) return;
-    if (x < 50) return;
+    // Detect "patting" on the head (top 30% of the image)
+    const relativeY = y / bounds.height;
+    if (relativeY > 0.4) return;
+
+    // Only spawn occasionally to avoid clutter, but enough to feel responsive
+    if (Math.random() > 0.1) return;
 
     const newEmoji = {
       id: crypto.randomUUID(),
-      x: 0 + Math.random() * 200,
-      y: 0 + Math.random() * 50,
+      // Spawn slightly offset from cursor for a "burst" feel
+      x: x + (Math.random() - 0.5) * 40,
+      y: y + (Math.random() - 0.5) * 40,
+      size: 0.8 + Math.random() * 0.7, // Random sizes
+      rotation: (Math.random() - 0.5) * 45, // Random tilt
     };
-    const randomNumber = Math.random();
-    if (randomNumber > 0.05) return;
+
     setEmojis((prev) => [...prev, newEmoji]);
     setTimeout(() => {
       setEmojis((prev) => prev.filter((emoji) => emoji.id !== newEmoji.id));
@@ -83,31 +91,48 @@ const HomePicture = () => {
   return (
     <div
       ref={parentRef}
-      className="relative group cursor-grab flex flex-col items-center gap-2"
+      className="relative group cursor-grab flex flex-col items-center gap-2 select-none"
       onMouseMove={handleMove}
       onTouchMove={handleMove}
     >
-      <div className="text-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      <div className="text-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 h-6">
         <span className="text-sm italic text-muted-foreground font-medium">"{quote}"</span>
       </div>
-      <img src={src} className="border" />
+      <img src={src} className="border-4 border-white shadow-sm" />
       {emojis.map((emoji) => (
-        <FloatingHeart key={emoji.id} x={emoji.x} y={emoji.y} />
+        <FloatingHeart key={emoji.id} {...emoji} />
       ))}
     </div>
   );
 };
 
-function FloatingHeart({ x, y }: { x: number; y: number }) {
-  const [visible, setVisible] = useState(true);
-
+function FloatingHeart({
+  x,
+  y,
+  size,
+  rotation,
+}: {
+  x: number;
+  y: number;
+  size: number;
+  rotation: number;
+}) {
   return (
     <div
-      className="absolute text-3xl pointer-events-none"
-      style={{ top: y, left: x }}
-      onAnimationEnd={() => setVisible(false)}
+      className="absolute pointer-events-none animate-float-heart"
+      style={{
+        top: y,
+        left: x,
+      }}
     >
-      {visible && <div className="animate-float-heart">❤️</div>}
+      <div
+        style={{
+          transform: `scale(${size}) rotate(${rotation}deg)`,
+        }}
+        className="text-3xl filter drop-shadow-md"
+      >
+        ❤️
+      </div>
     </div>
   );
 }
