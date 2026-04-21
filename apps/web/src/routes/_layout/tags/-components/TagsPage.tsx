@@ -23,9 +23,9 @@ export default function TagsPage() {
   return (
     <div className="w-full max-w-7xl mx-auto p-4 flex flex-col gap-4">
       <Field>
-        <FieldLabel htmlFor="input-demo-api-key">Search</FieldLabel>
+        <FieldLabel htmlFor="tag-search">Search</FieldLabel>
         <Input
-          id="input-demo-api-key"
+          id="tag-search"
           placeholder="..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
@@ -37,7 +37,6 @@ export default function TagsPage() {
 }
 
 const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
-  console.log("DEBUG[1971]: searchText=", searchText);
   const routeApi = getRouteApi("/_layout/tags/");
   const { t } = routeApi.useSearch();
   const { data: tags = [] } = useTags({ t });
@@ -199,10 +198,10 @@ function EmbedImgur({ url }: { url: URL }) {
     return (
       <div>
         <ReactPlayer
-          url={urlCopy.href}
+          src={urlCopy.href}
           playing
           loop
-          playsinline
+          playsInline
           muted
           controls
           onError={() => {
@@ -229,10 +228,10 @@ function TenorEmbed({ post_id }: { post_id: string }) {
 
   return (
     <ReactPlayer
-      url={post?.media_formats.webm.url}
+      src={post?.media_formats.webm.url}
       playing
       loop
-      playsinline
+      playsInline
       muted
       controls
       width="100%"

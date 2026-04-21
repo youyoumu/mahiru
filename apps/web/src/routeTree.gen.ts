@@ -8,75 +8,95 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as LayoutRouteImport } from './routes/_layout'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as Sign_inIndexRouteImport } from './routes/sign_in/index'
+import { Route as LayoutTagsIndexRouteImport } from './routes/_layout/tags/index'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as LayoutImport } from './routes/_layout'
-import { Route as IndexImport } from './routes/index'
-import { Route as SigninIndexImport } from './routes/sign_in/index'
-import { Route as LayoutTagsIndexImport } from './routes/_layout/tags/index'
-
-// Create/Update Routes
-
-const LayoutRoute = LayoutImport.update({
+const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const IndexRoute = IndexImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const SigninIndexRoute = SigninIndexImport.update({
+const Sign_inIndexRoute = Sign_inIndexRouteImport.update({
   id: '/sign_in/',
   path: '/sign_in/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const LayoutTagsIndexRoute = LayoutTagsIndexImport.update({
+const LayoutTagsIndexRoute = LayoutTagsIndexRouteImport.update({
   id: '/tags/',
   path: '/tags/',
   getParentRoute: () => LayoutRoute,
 } as any)
 
-// Populate the FileRoutesByPath interface
+export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/sign_in/': typeof Sign_inIndexRoute
+  '/tags/': typeof LayoutTagsIndexRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/sign_in': typeof Sign_inIndexRoute
+  '/tags': typeof LayoutTagsIndexRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/_layout': typeof LayoutRouteWithChildren
+  '/sign_in/': typeof Sign_inIndexRoute
+  '/_layout/tags/': typeof LayoutTagsIndexRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/sign_in/' | '/tags/'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/sign_in' | '/tags'
+  id: '__root__' | '/' | '/_layout' | '/sign_in/' | '/_layout/tags/'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  LayoutRoute: typeof LayoutRouteWithChildren
+  Sign_inIndexRoute: typeof Sign_inIndexRoute
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_layout': {
+      id: '/_layout'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof LayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/_layout': {
-      id: '/_layout'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof LayoutImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/sign_in/': {
       id: '/sign_in/'
       path: '/sign_in'
-      fullPath: '/sign_in'
-      preLoaderRoute: typeof SigninIndexImport
-      parentRoute: typeof rootRoute
+      fullPath: '/sign_in/'
+      preLoaderRoute: typeof Sign_inIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_layout/tags/': {
       id: '/_layout/tags/'
       path: '/tags'
-      fullPath: '/tags'
-      preLoaderRoute: typeof LayoutTagsIndexImport
-      parentRoute: typeof LayoutImport
+      fullPath: '/tags/'
+      preLoaderRoute: typeof LayoutTagsIndexRouteImport
+      parentRoute: typeof LayoutRoute
     }
   }
 }
-
-// Create and export the route tree
 
 interface LayoutRouteChildren {
   LayoutTagsIndexRoute: typeof LayoutTagsIndexRoute
@@ -89,80 +109,11 @@ const LayoutRouteChildren: LayoutRouteChildren = {
 const LayoutRouteWithChildren =
   LayoutRoute._addFileChildren(LayoutRouteChildren)
 
-export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '': typeof LayoutRouteWithChildren
-  '/sign_in': typeof SigninIndexRoute
-  '/tags': typeof LayoutTagsIndexRoute
-}
-
-export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '': typeof LayoutRouteWithChildren
-  '/sign_in': typeof SigninIndexRoute
-  '/tags': typeof LayoutTagsIndexRoute
-}
-
-export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/_layout': typeof LayoutRouteWithChildren
-  '/sign_in/': typeof SigninIndexRoute
-  '/_layout/tags/': typeof LayoutTagsIndexRoute
-}
-
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/sign_in' | '/tags'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/sign_in' | '/tags'
-  id: '__root__' | '/' | '/_layout' | '/sign_in/' | '/_layout/tags/'
-  fileRoutesById: FileRoutesById
-}
-
-export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  LayoutRoute: typeof LayoutRouteWithChildren
-  SigninIndexRoute: typeof SigninIndexRoute
-}
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LayoutRoute: LayoutRouteWithChildren,
-  SigninIndexRoute: SigninIndexRoute,
+  Sign_inIndexRoute: Sign_inIndexRoute,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/",
-        "/_layout",
-        "/sign_in/"
-      ]
-    },
-    "/": {
-      "filePath": "index.tsx"
-    },
-    "/_layout": {
-      "filePath": "_layout.tsx",
-      "children": [
-        "/_layout/tags/"
-      ]
-    },
-    "/sign_in/": {
-      "filePath": "sign_in/index.tsx"
-    },
-    "/_layout/tags/": {
-      "filePath": "_layout/tags/index.tsx",
-      "parent": "/_layout"
-    }
-  }
-}
-ROUTE_MANIFEST_END */
