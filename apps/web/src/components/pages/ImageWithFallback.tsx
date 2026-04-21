@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function ImageWithFallback({ url }: { url: string | undefined }) {
   const [preview, setPreview] = useState(true);

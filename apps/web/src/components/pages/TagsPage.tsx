@@ -1,3 +1,4 @@
+import ImageWithFallback from "#/components/pages/ImageWithFallback";
 import { Button } from "#/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "#/components/ui/card";
 import { Field, FieldLabel } from "#/components/ui/field";
@@ -7,7 +8,6 @@ import { useDiscordCdn } from "#/hooks/use-proxy";
 import { useTags } from "#/hooks/use-tags";
 import { useTenorPost } from "#/hooks/use-tenor";
 import { useUser } from "#/hooks/use-users";
-import ImageWithFallback from "#/routes/-components/ImageWithFallback";
 import { getRouteApi } from "@tanstack/react-router";
 import fuzzysort from "fuzzysort";
 import { Copy } from "lucide-react";
@@ -37,7 +37,7 @@ export default function TagsPage() {
 }
 
 const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
-  const routeApi = getRouteApi("/_layout/tags/");
+  const routeApi = getRouteApi("/_layout/tags");
   const { t } = routeApi.useSearch();
   const { data: tags = [] } = useTags({ t });
 
@@ -252,3 +252,4 @@ function DiscordUsername({ discord_user_id }: { discord_user_id: string }) {
   const { data: user } = useUser({ discord_user_id });
   return user?.username;
 }
+

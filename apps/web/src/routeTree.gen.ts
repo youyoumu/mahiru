@@ -10,9 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LayoutRouteImport } from './routes/_layout'
-import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
-import { Route as LayoutTagsIndexRouteImport } from './routes/_layout/tags/index'
-import { Route as LayoutSign_inIndexRouteImport } from './routes/_layout/sign_in/index'
+import { Route as LayoutIndexRouteImport } from './routes/_layout.index'
+import { Route as LayoutTagsRouteImport } from './routes/_layout.tags'
+import { Route as LayoutSign_inRouteImport } from './routes/_layout.sign_in'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
@@ -23,45 +23,45 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutTagsIndexRoute = LayoutTagsIndexRouteImport.update({
-  id: '/tags/',
-  path: '/tags/',
+const LayoutTagsRoute = LayoutTagsRouteImport.update({
+  id: '/tags',
+  path: '/tags',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutSign_inIndexRoute = LayoutSign_inIndexRouteImport.update({
-  id: '/sign_in/',
-  path: '/sign_in/',
+const LayoutSign_inRoute = LayoutSign_inRouteImport.update({
+  id: '/sign_in',
+  path: '/sign_in',
   getParentRoute: () => LayoutRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
-  '/sign_in/': typeof LayoutSign_inIndexRoute
-  '/tags/': typeof LayoutTagsIndexRoute
+  '/sign_in': typeof LayoutSign_inRoute
+  '/tags': typeof LayoutTagsRoute
 }
 export interface FileRoutesByTo {
+  '/sign_in': typeof LayoutSign_inRoute
+  '/tags': typeof LayoutTagsRoute
   '/': typeof LayoutIndexRoute
-  '/sign_in': typeof LayoutSign_inIndexRoute
-  '/tags': typeof LayoutTagsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
+  '/_layout/sign_in': typeof LayoutSign_inRoute
+  '/_layout/tags': typeof LayoutTagsRoute
   '/_layout/': typeof LayoutIndexRoute
-  '/_layout/sign_in/': typeof LayoutSign_inIndexRoute
-  '/_layout/tags/': typeof LayoutTagsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sign_in/' | '/tags/'
+  fullPaths: '/' | '/sign_in' | '/tags'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sign_in' | '/tags'
+  to: '/sign_in' | '/tags' | '/'
   id:
     | '__root__'
     | '/_layout'
+    | '/_layout/sign_in'
+    | '/_layout/tags'
     | '/_layout/'
-    | '/_layout/sign_in/'
-    | '/_layout/tags/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -84,33 +84,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/tags/': {
-      id: '/_layout/tags/'
+    '/_layout/tags': {
+      id: '/_layout/tags'
       path: '/tags'
-      fullPath: '/tags/'
-      preLoaderRoute: typeof LayoutTagsIndexRouteImport
+      fullPath: '/tags'
+      preLoaderRoute: typeof LayoutTagsRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/sign_in/': {
-      id: '/_layout/sign_in/'
+    '/_layout/sign_in': {
+      id: '/_layout/sign_in'
       path: '/sign_in'
-      fullPath: '/sign_in/'
-      preLoaderRoute: typeof LayoutSign_inIndexRouteImport
+      fullPath: '/sign_in'
+      preLoaderRoute: typeof LayoutSign_inRouteImport
       parentRoute: typeof LayoutRoute
     }
   }
 }
 
 interface LayoutRouteChildren {
+  LayoutSign_inRoute: typeof LayoutSign_inRoute
+  LayoutTagsRoute: typeof LayoutTagsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
-  LayoutSign_inIndexRoute: typeof LayoutSign_inIndexRoute
-  LayoutTagsIndexRoute: typeof LayoutTagsIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
+  LayoutSign_inRoute: LayoutSign_inRoute,
+  LayoutTagsRoute: LayoutTagsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
-  LayoutSign_inIndexRoute: LayoutSign_inIndexRoute,
-  LayoutTagsIndexRoute: LayoutTagsIndexRoute,
 }
 
 const LayoutRouteWithChildren =
