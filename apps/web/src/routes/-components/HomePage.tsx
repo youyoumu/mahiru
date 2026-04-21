@@ -1,7 +1,6 @@
 import { useCurrentUser } from "#/hooks/use-current-user";
 import { Link } from "@tanstack/react-router";
 import { sample } from "es-toolkit";
-import { motion, AnimatePresence } from "framer-motion";
 import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
 
 export default function HomePage() {
@@ -22,7 +21,7 @@ export default function HomePage() {
         </div>
       </div>
       <div className="w-full max-w-7xl mx-auto p-4 flex flex-col items-center justify-center grow">
-        <LoveEmojiBubbles />
+        <HomePicture />
         {isNotLogin && (
           <div className="w-64 text-muted-foreground">
             You're not logged in. To get started, use the{" "}
@@ -42,7 +41,7 @@ const imgSources = [
   "https://i.pinimg.com/236x/ce/bf/97/cebf97b030c7b2ad08191317f949ee41.jpg",
 ];
 
-const LoveEmojiBubbles = () => {
+const HomePicture = () => {
   const parentRef = useRef<HTMLDivElement>(null);
   const [src] = useState(sample(imgSources));
   const [emojis, setEmojis] = useState<{ id: string; x: number; y: number }[]>([]);
@@ -87,21 +86,23 @@ const LoveEmojiBubbles = () => {
       onTouchMove={handleMove}
     >
       <img src={src} />
-      <AnimatePresence>
-        {emojis.map((emoji) => (
-          <motion.div
-            key={emoji.id}
-            initial={{ opacity: 1, y: 0 }}
-            animate={{ opacity: 0, y: -50 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1 }}
-            className="absolute text-3xl"
-            style={{ top: emoji.y, left: emoji.x }}
-          >
-            ❤️
-          </motion.div>
-        ))}
-      </AnimatePresence>
+      {emojis.map((emoji) => (
+        <FloatingHeart key={emoji.id} x={emoji.x} y={emoji.y} />
+      ))}
     </div>
   );
 };
+
+function FloatingHeart({ x, y }: { x: number; y: number }) {
+  const [visible, setVisible] = useState(true);
+
+  return (
+    <div
+      className="absolute text-3xl pointer-events-none"
+      style={{ top: y, left: x }}
+      onAnimationEnd={() => setVisible(false)}
+    >
+      {visible && <div className="animate-float-heart">❤️</div>}
+    </div>
+  );
+}

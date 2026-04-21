@@ -129,3 +129,18 @@
   }
 }
 
+@keyframes float-heart {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+}
+
+.animate-float-heart {
+  animation: float-heart 1s ease-out forwards;
+}
+
