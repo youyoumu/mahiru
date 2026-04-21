@@ -8,13 +8,13 @@ export default function HomePage() {
   const isNotLogin = !currentUser && !L1;
 
   return (
-    <div className="h-svh flex flex-col ">
-      <div className="w-full max-w-7xl mx-auto p-4 flex flex-col items-center justify-center grow">
+    <div className="flex flex-col pt-16 min-h-screen">
+      <div className="w-full max-w-7xl mx-auto p-4 flex flex-col items-center justify-center grow gap-4">
         <HomePicture />
         {isNotLogin && (
-          <div className="w-64 text-muted-foreground">
+          <div className="w-72 text-muted-foreground">
             You're not logged in. To get started, use the{" "}
-            <span className="bg-muted border rounded-sm px-0.5">login</span> command from the Mahiru
+            <span className="bg-muted border rounded-xs px-0.5">login</span> command from the Mahiru
             bot.
           </div>
         )}
@@ -74,7 +74,7 @@ const HomePicture = () => {
       onMouseMove={handleMove}
       onTouchMove={handleMove}
     >
-      <img src={src} />
+      <img src={src} className="border" />
       {emojis.map((emoji) => (
         <FloatingHeart key={emoji.id} x={emoji.x} y={emoji.y} />
       ))}

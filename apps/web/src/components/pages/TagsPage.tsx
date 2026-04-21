@@ -21,17 +21,21 @@ export default function TagsPage() {
   const [searchText, setSearchText] = useState("");
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-4 flex flex-col gap-4">
-      <Field>
-        <FieldLabel htmlFor="tag-search">Search</FieldLabel>
-        <Input
-          id="tag-search"
-          placeholder="..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-        />
-      </Field>
-      <TagsGrid searchText={searchText} />
+    <div className="pt-16 min-h-screen">
+      <div className="w-full max-w-7xl mx-auto p-4 flex flex-col gap-4">
+        <Field>
+          <FieldLabel htmlFor="tag-search" className="text-primary-foreground">
+            Search
+          </FieldLabel>
+          <Input
+            id="tag-search"
+            placeholder="..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </Field>
+        <TagsGrid searchText={searchText} />
+      </div>
     </div>
   );
 }
@@ -49,15 +53,14 @@ const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
     .map((result) => result.obj);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,320px))]">
       {filteredTags.map((tag) => (
-        <Card key={tag.id} className="max-h-[420px]">
+        <Card key={tag.id} size="sm">
           <CardHeader>
             <div className="flex items-center justify-between gap-1">
-              <CardTitle>{tag.key}</CardTitle>
-
+              <CardTitle className="normal-case">{tag.key}</CardTitle>
               <Copy
-                className="w-5 cursor-pointer"
+                className="w-4 cursor-pointer text-muted-foreground"
                 onClick={async () => {
                   await navigator.clipboard.writeText(tag.key);
                   toast(
@@ -71,7 +74,7 @@ const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="max-h-64 overflow-auto">
+            <div>
               <Embed value={tag.value} />
             </div>
           </CardContent>
