@@ -8,7 +8,7 @@ import { XEmbed, YouTubeEmbed } from "react-social-media-embed";
 import { z } from "zod";
 
 export function Embed({ value }: { value: string }) {
-  let url;
+  let url: URL;
   try {
     url = new URL(value);
   } catch {
@@ -27,12 +27,9 @@ export function Embed({ value }: { value: string }) {
       url.hostname === "media.discordapp.net" || url.hostname === "cdn.discordapp.com";
     if (isDiscordCdn) return <ProxyCdnImage url={url.href} />;
     return (
-      <div>
+      <EmbedWithLink url={value}>
         <ImageWithFallback url={url.href} />
-        <a href={value} className="line-clamp-1" target="_blank">
-          {value}
-        </a>
-      </div>
+      </EmbedWithLink>
     );
   }
 
@@ -45,10 +42,9 @@ export function Embed({ value }: { value: string }) {
     url.hostname === "www.youtube.com" && pathnameSplit.length === 2 && lastPathname === "watch";
   if (isYoutube) {
     return (
-      <div>
+      <EmbedWithLink url={value}>
         <YouTubeEmbed url={url.href} width="100%" height="210px" />
-        <ALink url={value} />
-      </div>
+      </EmbedWithLink>
     );
   }
 
@@ -56,10 +52,9 @@ export function Embed({ value }: { value: string }) {
     (url.hostname === "x.com" || url.hostname === "twitter.com") && pathnameSplit[2] === "status";
   if (isTwitter) {
     return (
-      <div>
+      <EmbedWithLink url={value}>
         <XEmbed url={url.href} width="100%" height="230px" />
-        <ALink url={value} />
-      </div>
+      </EmbedWithLink>
     );
   }
 
@@ -73,24 +68,22 @@ export function Embed({ value }: { value: string }) {
 
   if (isTenor && parsedTenorId.success) {
     return (
-      <div>
+      <EmbedWithLink url={value}>
         <TenorEmbed post_id={parsedTenorId.data} />
-        <ALink url={value} />
-      </div>
+      </EmbedWithLink>
     );
   }
 
-  return <ALink url={value} />;
+  return <MarqueeLink url={value} />;
 }
 
 function ProxyCdnImage({ url }: { url: string }) {
   const { data } = useDiscordCdn({ url });
   const newUrl = data?.refreshed_url;
   return (
-    <div>
+    <EmbedWithLink url={url}>
       <ImageWithFallback url={newUrl} />
-      <ALink url={url} />
-    </div>
+    </EmbedWithLink>
   );
 }
 
@@ -102,7 +95,7 @@ function EmbedImgur({ url }: { url: URL }) {
 
   if (suffix === ".mp4")
     return (
-      <div>
+      <EmbedWithLink url={url.href}>
         <ReactPlayer
           src={urlCopy.href}
           playing
@@ -116,16 +109,13 @@ function EmbedImgur({ url }: { url: URL }) {
           width="100%"
           height="100%"
         />
-
-        <ALink url={url.href} />
-      </div>
+      </EmbedWithLink>
     );
 
   return (
-    <div>
+    <EmbedWithLink url={url.href}>
       <ImageWithFallback url={urlCopy.href} />
-      <ALink url={url.href} />
-    </div>
+    </EmbedWithLink>
   );
 }
 
@@ -146,10 +136,26 @@ function TenorEmbed({ post_id }: { post_id: string }) {
   );
 }
 
-function ALink({ url }: { url: string }) {
+function MarqueeLink({ url }: { url: string }) {
   return (
-    <a href={url} className="line-clamp-1 break-words" target="_blank">
-      {url}
+    <a
+      href={url}
+      className="block overflow-hidden whitespace-nowrap text-sm text-primary-foreground"
+      target="_blank"
+    >
+      <div className="animate-marquee inline-block">
+        <span className="pr-4">{url}</span>
+        <span className="pr-4">{url}</span>
+      </div>
     </a>
+  );
+}
+
+function EmbedWithLink({ children, url }: { children: React.ReactNode; url: string }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div>{children}</div>
+      <MarqueeLink url={url} />
+    </div>
   );
 }

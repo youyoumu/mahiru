@@ -48,7 +48,7 @@ const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
     .map((result) => result.obj);
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,320px))]">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
       {filteredTags.map((tag) => (
         <Card key={tag.id} size="sm">
           <CardHeader>
