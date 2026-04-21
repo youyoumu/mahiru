@@ -4,6 +4,7 @@ import { Field, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { useTags } from "#/hooks/use-tags";
 import { useUser } from "#/hooks/use-users";
+import { cn } from "#/lib/utils";
 import { getRouteApi } from "@tanstack/react-router";
 import fuzzysort from "fuzzysort";
 import { Copy } from "lucide-react";
@@ -48,9 +49,14 @@ const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
     .map((result) => result.obj);
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
+    <div
+      className={cn("grid gap-4", {
+        "grid-cols-[repeat(auto-fit,minmax(240px,1fr))]": filteredTags.length >= 4,
+        "grid-cols-[repeat(auto-fit,minmax(240px,320px))]": filteredTags.length < 4,
+      })}
+    >
       {filteredTags.map((tag) => (
-        <Card key={tag.id} size="sm">
+        <Card key={tag.id} size="sm" className="max-w-sm">
           <CardHeader>
             <div className="flex items-center justify-between gap-1">
               <CardTitle className="normal-case">{tag.key}</CardTitle>
@@ -75,7 +81,7 @@ const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
           </CardContent>
           <CardFooter className="grow items-end">
             <div className="flex gap-2 justify-between grow items-end">
-              <div className="text-muted-foreground">
+              <div className="text-muted-foreground text-xs">
                 <DiscordUsername discord_user_id={tag.discord_user_id} />
               </div>
               <Button
