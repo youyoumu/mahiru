@@ -252,4 +252,3 @@ function DiscordUsername({ discord_user_id }: { discord_user_id: string }) {
   const { data: user } = useUser({ discord_user_id });
   return user?.username;
 }
-

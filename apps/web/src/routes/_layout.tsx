@@ -1,7 +1,6 @@
+import Layout from "#/components/pages/Layout";
 import { currentUserQueryOptions } from "#/hooks/use-current-user";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-
-import Layout from "#/components/pages/Layout";
 
 export const Route = createFileRoute("/_layout")({
   component: RouteComponent,
