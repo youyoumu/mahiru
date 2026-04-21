@@ -2,30 +2,21 @@ import ImageWithFallback from "#/components/pages/ImageWithFallback";
 import { Textarea } from "#/components/ui/textarea";
 import { useDiscordCdn } from "#/hooks/use-proxy";
 import { useTenorPost } from "#/hooks/use-tenor";
+import { parseEmbedUrl } from "#/lib/url";
 import { useState } from "react";
 import ReactPlayer from "react-player";
 import { XEmbed, YouTubeEmbed } from "react-social-media-embed";
-import { z } from "zod";
 
 export function Embed({ value }: { value: string }) {
-  let url: URL;
-  try {
-    url = new URL(value);
-  } catch {
+  const info = parseEmbedUrl(value);
+  if (!info) {
     return <Textarea value={value} className="max-h-64 resize-none bg-secondary" readOnly />;
   }
 
-  const pathnameSplit = url.pathname.split("/");
-  const lastPathname = pathnameSplit[pathnameSplit.length - 1];
+  const { type, url } = info;
 
-  const isImage = lastPathname
-    ? /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(lastPathname)
-    : false;
-
-  if (isImage) {
-    const isDiscordCdn =
-      url.hostname === "media.discordapp.net" || url.hostname === "cdn.discordapp.com";
-    if (isDiscordCdn) return <ProxyCdnImage url={url.href} />;
+  if (type === "image") {
+    if (info.isDiscordCdn) return <ProxyCdnImage url={url.href} />;
     return (
       <EmbedWithLink url={value}>
         <ImageWithFallback url={url.href} />
@@ -33,14 +24,11 @@ export function Embed({ value }: { value: string }) {
     );
   }
 
-  const isImgur = url.hostname === "imgur.com" && pathnameSplit.length === 2;
-  if (isImgur) {
+  if (type === "imgur") {
     return <EmbedImgur url={url} />;
   }
 
-  const isYoutube =
-    url.hostname === "www.youtube.com" && pathnameSplit.length === 2 && lastPathname === "watch";
-  if (isYoutube) {
+  if (type === "youtube") {
     return (
       <EmbedWithLink url={value}>
         <YouTubeEmbed url={url.href} width="100%" height="210px" />
@@ -48,9 +36,7 @@ export function Embed({ value }: { value: string }) {
     );
   }
 
-  const isTwitter =
-    (url.hostname === "x.com" || url.hostname === "twitter.com") && pathnameSplit[2] === "status";
-  if (isTwitter) {
+  if (type === "twitter") {
     return (
       <EmbedWithLink url={value}>
         <XEmbed url={url.href} width="100%" height="230px" />
@@ -58,18 +44,10 @@ export function Embed({ value }: { value: string }) {
     );
   }
 
-  const pathname2Split = pathnameSplit[2]?.split("-");
-  const tenorId = pathname2Split?.[pathname2Split.length - 1];
-  const tenorIdSchema = z.string().regex(/^\d+$/);
-  const parsedTenorId = tenorIdSchema.safeParse(tenorId);
-
-  const isTenor =
-    url.hostname === "tenor.com" && pathnameSplit.length === 3 && parsedTenorId.success;
-
-  if (isTenor && parsedTenorId.success) {
+  if (type === "tenor") {
     return (
       <EmbedWithLink url={value}>
-        <TenorEmbed post_id={parsedTenorId.data} />
+        <TenorEmbed post_id={info.tenorId} />
       </EmbedWithLink>
     );
   }
