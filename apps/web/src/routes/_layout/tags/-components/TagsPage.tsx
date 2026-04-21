@@ -1,6 +1,6 @@
 import { Button } from "#/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "#/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "#/components/ui/form";
+import { Field, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { Textarea } from "#/components/ui/textarea";
 import { useDiscordCdn } from "#/hooks/use-proxy";
@@ -11,45 +11,33 @@ import ImageWithFallback from "#/routes/-components/ImageWithFallback";
 import { getRouteApi } from "@tanstack/react-router";
 import fuzzysort from "fuzzysort";
 import { Copy } from "lucide-react";
-import { memo, useDeferredValue, useState } from "react";
-import { useForm } from "react-hook-form";
+import { memo, useState } from "react";
 import ReactPlayer from "react-player";
 import { XEmbed, YouTubeEmbed } from "react-social-media-embed";
 import { toast } from "sonner";
 import { z } from "zod";
 
 export default function TagsPage() {
-  const form = useForm({
-    defaultValues: {
-      searchText: "",
-    },
-  });
-
-  const searchText = form.watch("searchText");
-  const defferedSearchText = useDeferredValue(searchText);
+  const [searchText, setSearchText] = useState("");
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 flex flex-col gap-4">
-      <Form {...form}>
-        <FormField
-          control={form.control}
-          name="searchText"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input placeholder="search" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      <Field>
+        <FieldLabel htmlFor="input-demo-api-key">Search</FieldLabel>
+        <Input
+          id="input-demo-api-key"
+          placeholder="..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
         />
-      </Form>
-      <TagsGrid searchText={defferedSearchText} />
+      </Field>
+      <TagsGrid searchText={searchText} />
     </div>
   );
 }
 
 const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
+  console.log("DEBUG[1971]: searchText=", searchText);
   const routeApi = getRouteApi("/_layout/tags/");
   const { t } = routeApi.useSearch();
   const { data: tags = [] } = useTags({ t });
