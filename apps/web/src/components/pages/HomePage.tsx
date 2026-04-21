@@ -30,9 +30,22 @@ const imgSources = [
   "https://i.pinimg.com/236x/ce/bf/97/cebf97b030c7b2ad08191317f949ee41.jpg",
 ];
 
+const quotes = [
+  "You're hopeless without me.",
+  "I'll take care of you, just for today.",
+  "The angel next door is spoiling you.",
+  "I'm not an angel, you know.",
+  "If you're okay with me being the one...",
+  "You really are a good person, Amane-kun.",
+  "I want to stay by your side.",
+  "Don't catch a cold, okay?",
+  "I'll be the one to see you at your worst.",
+];
+
 const HomePicture = () => {
   const parentRef = useRef<HTMLDivElement>(null);
   const [src] = useState(sample(imgSources));
+  const [quote] = useState(sample(quotes));
   const [emojis, setEmojis] = useState<{ id: string; x: number; y: number }[]>([]);
 
   function handleMove(
@@ -70,10 +83,13 @@ const HomePicture = () => {
   return (
     <div
       ref={parentRef}
-      className="relative group cursor-grab"
+      className="relative group cursor-grab flex flex-col items-center gap-2"
       onMouseMove={handleMove}
       onTouchMove={handleMove}
     >
+      <div className="text-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <span className="text-sm italic text-muted-foreground font-medium">"{quote}"</span>
+      </div>
       <img src={src} className="border" />
       {emojis.map((emoji) => (
         <FloatingHeart key={emoji.id} x={emoji.x} y={emoji.y} />
