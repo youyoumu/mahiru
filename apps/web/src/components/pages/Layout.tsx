@@ -9,7 +9,6 @@ import { cva } from "class-variance-authority";
 export default function Layout({ children }: { children: ReactNode }) {
   const { data: currentUser, isLoading: L1 } = useCurrentUser();
   const isNotLogin = !currentUser && !L1;
-  console.log("DEBUG[1978]: isNotLogin=", isNotLogin);
 
   const link = cva(
     [
