@@ -1,5 +1,4 @@
 import { useCurrentUser } from "#/hooks/use-current-user";
-import { Link } from "@tanstack/react-router";
 import { sample } from "es-toolkit";
 import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
 
@@ -10,16 +9,6 @@ export default function HomePage() {
 
   return (
     <div className="h-svh flex flex-col ">
-      <div className="h-16 flex justify-center bg-slate-700">
-        <div className="max-w-7xl grow justify-between flex items-center px-4">
-          <div></div>
-          {!isNotLogin && (
-            <Link className="text-secondary" to="/tags">
-              Tags
-            </Link>
-          )}
-        </div>
-      </div>
       <div className="w-full max-w-7xl mx-auto p-4 flex flex-col items-center justify-center grow">
         <HomePicture />
         {isNotLogin && (

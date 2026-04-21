@@ -2,18 +2,17 @@ import { writeTokenToCookie } from "#/hooks/use-auth";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 
-import SignInPage from "./-components/SignInPage";
-
-export const Route = createFileRoute("/sign_in/")({
+export const Route = createFileRoute("/_layout/sign_in/")({
   validateSearch: z.object({
     t: z.string(),
   }),
-  component: SignInPage,
+  component: () => null,
   loaderDeps({ search: { t } }) {
     return { t };
   },
-  async loader({ deps: { t } }) {
-    await writeTokenToCookie({ t });
-    throw redirect({ to: "/tags" });
+  async beforeLoad({ search: { t } }) {
+    const success = await writeTokenToCookie({ t });
+    if (success) throw redirect({ to: "/tags" });
+    throw redirect({ to: "/" });
   },
 });

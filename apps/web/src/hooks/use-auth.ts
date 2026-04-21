@@ -4,12 +4,10 @@ import Cookies from "js-cookie";
 
 export async function writeTokenToCookie({ t }: { t: string }) {
   const res = await api.auth.sign_in.$post({ json: { t } });
-
-  if (!res.ok) throw new Error("failed to sign in");
-
+  if (!res.ok) return false;
   const { token } = await res.json();
   Cookies.set("token", token);
-  return { token };
+  return true;
 }
 
 export function useWriteTokenToCookie() {

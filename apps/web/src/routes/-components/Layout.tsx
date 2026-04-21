@@ -6,14 +6,21 @@ import { useCurrentUser } from "#/hooks/use-current-user";
 import { Link } from "@tanstack/react-router";
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const { data: currentUser } = useCurrentUser();
+  const { data: currentUser, isLoading: L1 } = useCurrentUser();
+  const isNotLogin = !currentUser && !L1;
+
   return (
     <div className="h-svh">
       <div className="h-16 bg-orange-200 flex justify-center border-b">
         <div className="max-w-7xl grow justify-between flex items-center px-4">
           <Link className="text-2xl font-medium" to="/">
-            Pat Azusa
+            Home
           </Link>
+          {!isNotLogin && (
+            <Link className="text-2xl font-medium" to="/tags">
+              Tags
+            </Link>
+          )}
           {currentUser && (
             <div className="flex items-center gap-4">
               <div className="text-primary-foreground">{currentUser?.username}</div>

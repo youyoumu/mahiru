@@ -10,45 +10,45 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LayoutRouteImport } from './routes/_layout'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as Sign_inIndexRouteImport } from './routes/sign_in/index'
+import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutTagsIndexRouteImport } from './routes/_layout/tags/index'
+import { Route as LayoutSign_inIndexRouteImport } from './routes/_layout/sign_in/index'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const LayoutIndexRoute = LayoutIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Sign_inIndexRoute = Sign_inIndexRouteImport.update({
-  id: '/sign_in/',
-  path: '/sign_in/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutTagsIndexRoute = LayoutTagsIndexRouteImport.update({
   id: '/tags/',
   path: '/tags/',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutSign_inIndexRoute = LayoutSign_inIndexRouteImport.update({
+  id: '/sign_in/',
+  path: '/sign_in/',
+  getParentRoute: () => LayoutRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/sign_in/': typeof Sign_inIndexRoute
+  '/': typeof LayoutIndexRoute
+  '/sign_in/': typeof LayoutSign_inIndexRoute
   '/tags/': typeof LayoutTagsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/sign_in': typeof Sign_inIndexRoute
+  '/': typeof LayoutIndexRoute
+  '/sign_in': typeof LayoutSign_inIndexRoute
   '/tags': typeof LayoutTagsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_layout': typeof LayoutRouteWithChildren
-  '/sign_in/': typeof Sign_inIndexRoute
+  '/_layout/': typeof LayoutIndexRoute
+  '/_layout/sign_in/': typeof LayoutSign_inIndexRoute
   '/_layout/tags/': typeof LayoutTagsIndexRoute
 }
 export interface FileRouteTypes {
@@ -56,13 +56,16 @@ export interface FileRouteTypes {
   fullPaths: '/' | '/sign_in/' | '/tags/'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/sign_in' | '/tags'
-  id: '__root__' | '/' | '/_layout' | '/sign_in/' | '/_layout/tags/'
+  id:
+    | '__root__'
+    | '/_layout'
+    | '/_layout/'
+    | '/_layout/sign_in/'
+    | '/_layout/tags/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   LayoutRoute: typeof LayoutRouteWithChildren
-  Sign_inIndexRoute: typeof Sign_inIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -74,19 +77,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_layout/': {
+      id: '/_layout/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sign_in/': {
-      id: '/sign_in/'
-      path: '/sign_in'
-      fullPath: '/sign_in/'
-      preLoaderRoute: typeof Sign_inIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof LayoutIndexRouteImport
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/tags/': {
       id: '/_layout/tags/'
@@ -95,14 +91,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutTagsIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/sign_in/': {
+      id: '/_layout/sign_in/'
+      path: '/sign_in'
+      fullPath: '/sign_in/'
+      preLoaderRoute: typeof LayoutSign_inIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
   }
 }
 
 interface LayoutRouteChildren {
+  LayoutIndexRoute: typeof LayoutIndexRoute
+  LayoutSign_inIndexRoute: typeof LayoutSign_inIndexRoute
   LayoutTagsIndexRoute: typeof LayoutTagsIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
+  LayoutIndexRoute: LayoutIndexRoute,
+  LayoutSign_inIndexRoute: LayoutSign_inIndexRoute,
   LayoutTagsIndexRoute: LayoutTagsIndexRoute,
 }
 
@@ -110,9 +117,7 @@ const LayoutRouteWithChildren =
   LayoutRoute._addFileChildren(LayoutRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   LayoutRoute: LayoutRouteWithChildren,
-  Sign_inIndexRoute: Sign_inIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -5,17 +5,18 @@ import Layout from "./-components/Layout";
 
 export const Route = createFileRoute("/_layout")({
   component: RouteComponent,
-  async beforeLoad({ context: { queryClient } }) {
-    let currentUser;
-    try {
-      currentUser = await queryClient.fetchQuery({
-        ...currentUserQueryOptions,
-      });
-    } catch {
-      throw redirect({ to: "/" });
+  async beforeLoad({ context: { queryClient }, location }) {
+    if (location.pathname === "/tags") {
+      let currentUser;
+      try {
+        currentUser = await queryClient.fetchQuery({
+          ...currentUserQueryOptions,
+        });
+      } catch {
+        throw redirect({ to: "/" });
+      }
+      if (!currentUser) throw redirect({ to: "/" });
     }
-
-    if (!currentUser) throw redirect({ to: "/" });
   },
 });
 
