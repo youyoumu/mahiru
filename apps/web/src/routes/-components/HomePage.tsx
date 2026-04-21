@@ -1,5 +1,6 @@
 import { useCurrentUser } from "#/hooks/use-current-user";
 import { Link } from "@tanstack/react-router";
+import { sample } from "es-toolkit";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
 
@@ -34,15 +35,17 @@ export default function HomePage() {
   );
 }
 
+const imgSources = [
+  "https://i.pinimg.com/236x/70/e4/26/70e426177f4323a7f6c2eeef570d6e8f.jpg",
+  "https://i.pinimg.com/236x/ef/70/2d/ef702de6cb091cef76b5524f1b7485cd.jpg",
+  "https://i.pinimg.com/236x/2e/96/4e/2e964eba4ac6261d5159227058c996a0.jpg",
+  "https://i.pinimg.com/236x/ce/bf/97/cebf97b030c7b2ad08191317f949ee41.jpg",
+];
+
 const LoveEmojiBubbles = () => {
   const parentRef = useRef<HTMLDivElement>(null);
-  const [emojis, setEmojis] = useState<
-    {
-      id: string;
-      x: number;
-      y: number;
-    }[]
-  >([]);
+  const [src] = useState(sample(imgSources));
+  const [emojis, setEmojis] = useState<{ id: string; x: number; y: number }[]>([]);
 
   function handleMove(
     e: MouseEvent<HTMLDivElement, globalThis.MouseEvent> | TouchEvent<HTMLDivElement>,
@@ -83,7 +86,7 @@ const LoveEmojiBubbles = () => {
       onMouseMove={handleMove}
       onTouchMove={handleMove}
     >
-      <img src="/azusa.webp" className="size-64" />
+      <img src={src} />
       <AnimatePresence>
         {emojis.map((emoji) => (
           <motion.div
