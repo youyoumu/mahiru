@@ -1,4 +1,5 @@
 import { useCurrentUser } from "#/hooks/use-current-user";
+import { useHealth } from "#/hooks/use-health";
 import { sample } from "es-toolkit";
 import {
   BirdhouseIcon,
@@ -10,8 +11,11 @@ import {
 } from "lucide-react";
 import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
 
+declare const __VERSION__: string;
+
 export default function HomePage() {
   const { data: currentUser, isLoading: L1 } = useCurrentUser();
+  const { data: health } = useHealth();
 
   const isNotLogin = !currentUser && !L1;
 
@@ -38,10 +42,10 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 text-sm font-medium text-foreground/70">
               <div className="flex items-center gap-2">
-                <StatusDot />
-                <span>Server Status: Online</span>
+                <StatusBot isOnline={!!health} />
+                <span>Server Status: {health ? "Online" : "Offline"}</span>
               </div>
-              <div className="text-muted-foreground">v0.0.0</div>
+              <div className="text-muted-foreground">v{__VERSION__}</div>
             </div>
             <p className="font-medium tracking-wide text-foreground/80">
               A small corner under the Angel’s wing
@@ -60,11 +64,17 @@ export default function HomePage() {
   );
 }
 
-function StatusDot() {
+function StatusBot({ isOnline }: { isOnline: boolean }) {
   return (
     <div className="relative flex h-2 w-2">
-      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+      {isOnline && (
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+      )}
+      <span
+        className={`relative inline-flex rounded-full h-2 w-2 ${
+          isOnline ? "bg-green-500" : "bg-red-500"
+        }`}
+      ></span>
     </div>
   );
 }
