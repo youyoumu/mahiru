@@ -6,11 +6,11 @@ import { Field, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { useTags } from "#/hooks/use-tags";
 import { useUser } from "#/hooks/use-users";
-import { cn } from "#/lib/utils";
 import { getRouteApi } from "@tanstack/react-router";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import fuzzysort from "fuzzysort";
 import { Copy } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Embed } from "./Embed";
@@ -43,10 +43,9 @@ const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
   const { t } = routeApi.useSearch();
   const { data: tags = [] } = useTags({ t });
 
-  const repeatArray = (arr: typeof tags, n: number) => Array.from({ length: n }, () => arr).flat();
   // TODO: reset to 1 for prod
+  const repeatArray = (arr: typeof tags, n: number) => Array.from({ length: n }, () => arr).flat();
   const repeatCount = 5;
-
   const filteredTags = fuzzysort
     .go(searchText, repeatArray(tags, repeatCount), {
       keys: ["value", "key"],
@@ -54,63 +53,130 @@ const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
     })
     .map((result) => result.obj);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [lanes, setLanes] = useState(1);
+  useLayoutEffect(() => {
+    const updateLanes = () => {
+      if (containerRef.current) {
+        const width = containerRef.current.offsetWidth;
+        if (width >= 1280) setLanes(5);
+        else if (width >= 1024) setLanes(4);
+        else if (width >= 768) setLanes(3);
+        else if (width >= 640) setLanes(2);
+        else if (width >= 320) setLanes(2);
+        else setLanes(1);
+      }
+    };
+
+    updateLanes();
+    window.addEventListener("resize", updateLanes);
+    return () => window.removeEventListener("resize", updateLanes);
+  }, []);
+
+  const [offsetTop, setOffsetTop] = useState(0);
+  useLayoutEffect(() => {
+    if (containerRef.current) {
+      setOffsetTop(containerRef.current.offsetTop);
+    }
+  }, []);
+
+  const virtualizer = useWindowVirtualizer({
+    count: filteredTags.length,
+    estimateSize: () => 400,
+    useAnimationFrameWithResizeObserver: true,
+    lanes,
+    laneAssignmentMode: "measured",
+    scrollMargin: offsetTop,
+    overscan: 10,
+    gap: 12,
+    //NOTE: https://github.com/TanStack/virtual/issues/659
+    measureElement: (element, _entry, instance) => {
+      const direction = instance.scrollDirection;
+      if (direction === "forward" || direction === null) {
+        // Allow remeasuring when scrolling down or direction is null
+        return element.getBoundingClientRect().height;
+      } else {
+        // When scrolling up, use cached measurement to prevent stuttering
+        const indexKey = Number(element.getAttribute("data-index"));
+        const cachedMeasurement = instance.measurementsCache[indexKey]?.size;
+        return cachedMeasurement || element.getBoundingClientRect().height;
+      }
+    },
+  });
+
   return (
     <div
-      className={cn("grid gap-4", {
-        "grid-cols-[repeat(auto-fit,minmax(240px,1fr))]": filteredTags.length >= 4,
-        "grid-cols-[repeat(auto-fit,minmax(240px,320px))]": filteredTags.length < 4,
-      })}
+      ref={containerRef}
+      className="relative w-full"
+      style={{
+        height: `${virtualizer.getTotalSize()}px`,
+      }}
     >
-      {filteredTags.map((tag, i) => (
-        <TagCard key={`${tag.id}-${i}`} tag={tag} i={i} />
-      ))}
+      {virtualizer.getVirtualItems().map((virtualItem) => {
+        const tag = filteredTags[virtualItem.index];
+        if (!tag) return null;
+        return (
+          <div
+            key={virtualItem.key}
+            data-index={virtualItem.index}
+            ref={virtualizer.measureElement}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: `calc(${(virtualItem.lane * 100) / lanes}% + 6px)`,
+              width: `calc(${100 / lanes}% - 12px)`,
+              willChange: "transform",
+              transform: `translateY(${virtualItem.start - virtualizer.options.scrollMargin}px)`,
+            }}
+          >
+            <TagCard tag={tag} />
+          </div>
+        );
+      })}
     </div>
   );
 });
 
-function TagCard({ tag, i }: { tag: Tag; i: number }) {
+async function copyToClipboard(text: string) {
+  await navigator.clipboard.writeText(text);
+  toast(
+    <div>
+      <div>Copied to clipboard:</div>
+      <div className="text-muted-foreground truncate max-w-xs">{text}</div>
+    </div>,
+  );
+}
+
+function TagCard({ tag }: { tag: Tag }) {
   return (
-    <Card key={`${tag.id}-${i}`} size="sm" className="max-w-sm">
+    <Card size="sm" className="w-full">
       <CardHeader>
         <div className="flex items-center justify-between gap-1">
-          <CardTitle className="normal-case">{tag.key}</CardTitle>
+          <CardTitle className="normal-case break-all">{tag.key}</CardTitle>
           <Copy
-            className="w-4 cursor-pointer text-muted-foreground"
-            onClick={async () => {
-              await navigator.clipboard.writeText(tag.key);
-              toast(
-                <div>
-                  <div>Copied key to clipboard:</div>
-                  <div className="text-muted-foreground">{tag.key}</div>
-                </div>,
-              );
-            }}
+            className="w-4 shrink-0 cursor-pointer text-muted-foreground"
+            onClick={() => copyToClipboard(tag.key)}
           />
         </div>
       </CardHeader>
       <CardContent>
-        <div>
-          <Embed value={tag.value} />
-        </div>
+        <Embed value={tag.value} />
       </CardContent>
-      <CardFooter className="grow items-end">
-        <div className="flex gap-2 justify-between grow items-end">
-          <div className="text-muted-foreground text-xs">
-            <DiscordUsername discord_user_id={tag.discord_user_id} />
+      <CardFooter>
+        <div className="flex flex-col gap-4 w-full">
+          <div className="flex gap-2 justify-between items-center w-full">
+            <div className="text-muted-foreground text-xs truncate">
+              <DiscordUsername discord_user_id={tag.discord_user_id} />
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="shrink-0"
+              onClick={() => copyToClipboard(tag.value)}
+            >
+              Copy value
+            </Button>
           </div>
-          <Button
-            onClick={async () => {
-              await navigator.clipboard.writeText(tag.value);
-              toast(
-                <div>
-                  <div>Copied value to clipboard:</div>
-                  <div className="text-muted-foreground">{tag.value}</div>
-                </div>,
-              );
-            }}
-          >
-            Copy value
-          </Button>
         </div>
       </CardFooter>
     </Card>
