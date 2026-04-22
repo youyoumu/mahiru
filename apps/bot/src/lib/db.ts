@@ -177,7 +177,7 @@ export class DbSvc {
       await this.db.delete(schema.tags).where(eq(schema.tags.id, userTag.id));
     }
 
-    return !!(guildTag || userTag);
+    return { userTag, guildTag };
   }
 
   async getGuildPrefixEntry(discord_guild_id: string): Promise<GuildPrefixEntry | undefined> {

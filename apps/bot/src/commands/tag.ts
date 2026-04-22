@@ -214,7 +214,13 @@ export const Tag: CommandProto = class Tag implements Command {
 
     await this.ctx.dbSvc.addTag(key, value, discord_user_id, discord_guild_id);
 
-    replyToSource(interaction, message, bold(key) + "\n\n" + value);
+    const embed = new EmbedBuilder({
+      title: `Tag Added: ${key}`,
+      description: value,
+      color: colors.green,
+    });
+
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleList({
@@ -275,13 +281,27 @@ export const Tag: CommandProto = class Tag implements Command {
       return;
     }
 
-    const removed = await this.ctx.dbSvc.removeTag(key, discord_user_id, discord_guild_id);
-    if (removed) {
-      replyToSource(interaction, message, `${inlineCode(key)} has been deleted`);
+    const { userTag, guildTag } = await this.ctx.dbSvc.removeTag(
+      key,
+      discord_user_id,
+      discord_guild_id,
+    );
+    if (userTag || guildTag) {
+      const embed = new EmbedBuilder({
+        title: `Tag Removed: ${key}`,
+        description: userTag?.value ?? guildTag?.value ?? undefined,
+        color: colors.red,
+      });
+      replyToSource(interaction, message, { embeds: [embed] });
       return;
     }
 
-    replyToSource(interaction, message, "⚠️ Unknown Key");
+    const embed = new EmbedBuilder({
+      title: "⚠️ Unknown Key",
+      description: "The key you provided does not exist.",
+      color: colors.red,
+    });
+    replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleHelp({
