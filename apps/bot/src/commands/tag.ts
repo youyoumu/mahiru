@@ -107,9 +107,15 @@ export const Tag: CommandProto = class Tag implements Command {
       | Action
       | undefined;
     const key = interaction?.options.getString(PARAMS.key) ?? args?.[1];
-    const value =
-      interaction?.options.getString(PARAMS.value) ??
-      message?.content.split(`${key} `).slice(1).join(`${key} `).trim();
+    const getValue = () => {
+      let value =
+        interaction?.options.getString(PARAMS.value) ??
+        message?.content.split(`${key} `).slice(1).join(`${key} `).trim();
+      if (!value) {
+        return message?.attachments?.first()?.url;
+      }
+    };
+    const value = getValue();
     const discord_user_id = interaction?.user.id ?? message?.author.id;
     const discord_guild_id = interaction?.guildId ?? message?.guildId ?? null;
     if (!discord_user_id) return;
