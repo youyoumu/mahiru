@@ -1,11 +1,9 @@
 import type { Ctx } from "#/lib/ctx";
 
 import { getLoginUrl } from "#/lib/url";
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags, SlashCommandBuilder } from "discord.js";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
-
-import { replyToSource } from "../lib/command";
 
 export const Login: CommandProto = class Login implements Command {
   static data = new SlashCommandBuilder()
@@ -27,13 +25,12 @@ export const Login: CommandProto = class Login implements Command {
       const { one_time_token } = await res.json();
       const loginUrl = getLoginUrl(one_time_token);
       const messageContent = `Open the following link in your browser to login to the Mahiru web app:\n${loginUrl}`;
-      replyToSource(interaction, undefined, messageContent);
-      if (message) {
-        await message?.author.send({ content: messageContent });
-        await message?.reply("Please check your DMs");
-      }
-    } else {
-      replyToSource(interaction, message, "Something went wrong");
+      await interaction?.reply({
+        content: messageContent,
+        flags: MessageFlags.Ephemeral,
+      });
+      await message?.author.send({ content: messageContent });
+      await message?.reply("Please check your DMs");
     }
   }
 };
