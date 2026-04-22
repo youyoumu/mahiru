@@ -1,5 +1,6 @@
 import { useCurrentUser } from "#/hooks/use-current-user";
 import { useHealth } from "#/hooks/use-health";
+import { cn } from "#/lib/utils";
 import { sample } from "es-toolkit";
 import {
   BirdhouseIcon,
@@ -14,22 +15,33 @@ import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
 declare const __VERSION__: string;
 
 export default function HomePage() {
-  const { data: currentUser, isLoading: L1 } = useCurrentUser();
-  const { data: health } = useHealth();
+  const { data: currentUser, isLoading: isUserLoading } = useCurrentUser();
+  const { data: health, isLoading: isHealthLoading } = useHealth();
 
-  const isNotLogin = !currentUser && !L1;
+  const isNotLogin = !currentUser && !isUserLoading;
+  const status = () => {
+    if (isHealthLoading) return "Checking...";
+    if (!health) return "Offline";
+    return "Online";
+  };
 
   return (
     <>
       <div className="flex flex-col pt-16 min-h-screen">
         <div className="w-full max-w-7xl mx-auto p-4 flex flex-col items-center justify-center grow gap-4">
           <HomePicture />
-          {isNotLogin && (
-            <div className="w-72 text-muted-foreground">
-              You're not logged in. To get started, use the{" "}
-              <span className="bg-muted border rounded-xs px-0.5 font-bold">login</span> command
-              from the Mahiru bot.
+          {isUserLoading ? (
+            <div className="w-72 text-muted-foreground animate-pulse text-center">
+              Checking session...
             </div>
+          ) : (
+            isNotLogin && (
+              <div className="w-72 text-muted-foreground">
+                You're not logged in. To get started, use the{" "}
+                <span className="bg-muted border rounded-xs px-0.5 font-bold">login</span> command
+                from the Mahiru bot.
+              </div>
+            )
           )}
         </div>
       </div>
@@ -42,8 +54,8 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 text-sm font-medium text-foreground/70">
               <div className="flex items-center gap-2">
-                <StatusBot isOnline={!!health} />
-                <span>Server Status: {health ? "Online" : "Offline"}</span>
+                <StatusBot isOnline={!!health} isLoading={isHealthLoading} />
+                <span>Server Status: {status()}</span>
               </div>
               <div className="text-muted-foreground">v{__VERSION__}</div>
             </div>
@@ -64,16 +76,18 @@ export default function HomePage() {
   );
 }
 
-function StatusBot({ isOnline }: { isOnline: boolean }) {
+function StatusBot({ isOnline, isLoading }: { isOnline: boolean; isLoading?: boolean }) {
   return (
     <div className="relative flex h-2 w-2">
-      {isOnline && (
+      {isOnline && !isLoading && (
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
       )}
       <span
-        className={`relative inline-flex rounded-full h-2 w-2 ${
-          isOnline ? "bg-green-500" : "bg-red-500"
-        }`}
+        className={cn("relative inline-flex rounded-full h-2 w-2", {
+          "bg-neutral-300": isLoading,
+          "bg-green-500": isOnline,
+          "bg-red-500": !isOnline,
+        })}
       ></span>
     </div>
   );
