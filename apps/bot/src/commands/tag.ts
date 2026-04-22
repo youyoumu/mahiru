@@ -11,6 +11,7 @@ import {
   Message,
   SlashCommandBuilder,
 } from "discord.js";
+import z from "zod";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
@@ -29,6 +30,12 @@ const PARAMS = {
   key: "key",
   value: "value",
 };
+
+const zTagKey = z
+  .string()
+  .min(1)
+  .max(32)
+  .regex(/^[a-zA-Z0-9_\-.]+$/);
 
 export const Tag: CommandProto = class Tag implements Command {
   static data = new SlashCommandBuilder()
@@ -195,8 +202,13 @@ export const Tag: CommandProto = class Tag implements Command {
       return;
     }
 
-    if (key.length > 32) {
-      replyToSource(interaction, message, "The maximum key length is 32 characters.");
+    const result = zTagKey.safeParse(key);
+    if (!result.success) {
+      replyToSource(
+        interaction,
+        message,
+        "⚠️ Invalid key. Keys must be 1-32 characters long and only contain letters, numbers, underscores, hyphens, and dots.",
+      );
       return;
     }
 
