@@ -58,6 +58,13 @@ export class InteractionCreate {
         }
       });
     } else if (isButton) {
+      const handler = this.commandsPair[interaction.customId];
+      if (handler?.handleButtonInteraction) {
+        handler.handleButtonInteraction(interaction).catch((err) => {
+          this.log.error(err);
+        });
+      }
+
       this.nhenHandler.handleInteraction({ interaction }).catch((err) => {
         this.log.error(err);
       });

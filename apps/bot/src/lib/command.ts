@@ -1,5 +1,6 @@
 import type { Ctx } from "#/lib/ctx";
 import type {
+  ButtonInteraction,
   ChatInputCommandInteraction,
   InteractionReplyOptions,
   Message,
@@ -20,6 +21,7 @@ export interface Command {
     interaction?: ChatInputCommandInteraction,
     messageCtx?: PrefixExecuteOpts,
   ): Promise<unknown>;
+  handleButtonInteraction?(interaction: ButtonInteraction): Promise<unknown>;
 }
 
 export interface CommandProto {
