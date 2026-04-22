@@ -5,6 +5,7 @@ import { cors } from "hono/cors";
 import { jwt } from "hono/jwt";
 import { logger } from "hono/logger";
 
+import type { Ctx } from "./lib/ctx";
 import type { JwtPayload } from "./lib/jwt";
 
 import { env } from "./env";
@@ -15,9 +16,11 @@ if (process.argv.includes("--healthcheck")) {
   await healthcheck();
 }
 
-const ctx = {
-  oneTimeTokens: new Map<string, string>(),
+const ctx: Ctx = {
+  oneTimeTokens: new Map(),
   db: createDb(),
+  discordCdnCache: new Map(),
+  discordCdnCacheTimeout: new Map(),
 };
 
 const port = env.PORT;

@@ -1,3 +1,5 @@
+import type { Variables } from "#/lib/ctx";
+
 import { env } from "#/env";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 
@@ -30,7 +32,9 @@ async function refreshDiscordUrl(url: string): Promise<string | null> {
   return refreshedUrl || null;
 }
 
-export const proxy = new OpenAPIHono().openapi(
+const SIX_HOURS = 1000 * 60 * 60 * 6;
+
+export const proxy = new OpenAPIHono<{ Variables: Variables }>().openapi(
   createRoute({
     method: "get",
     path: "/discord-cdn",
@@ -46,12 +50,22 @@ export const proxy = new OpenAPIHono().openapi(
   }),
   async (c) => {
     const { url } = c.req.valid("query");
+    const discordCdnCache = c.get("ctx").discordCdnCache;
+    const discordCdnCacheTimeout = c.get("ctx").discordCdnCacheTimeout;
     const parsedUrl = parseValidURL(decodeURIComponent(url));
     if (!parsedUrl) return c.json({ error: "Invalid URL" }, 400);
 
     try {
+      const cached = discordCdnCache.get(parsedUrl.href);
+      if (cached) return c.json({ refreshed_url: cached }, 200);
+
       const refreshedUrl = await refreshDiscordUrl(parsedUrl.href);
       if (refreshedUrl) {
+        let timeout = discordCdnCacheTimeout.get(parsedUrl.href);
+        if (timeout) clearTimeout(timeout);
+        discordCdnCache.set(parsedUrl.href, refreshedUrl);
+        timeout = setTimeout(() => discordCdnCache.delete(parsedUrl.href), SIX_HOURS);
+        discordCdnCacheTimeout.set(parsedUrl.href, timeout);
         return c.json({ refreshed_url: refreshedUrl }, 200);
       } else {
         return c.json({ error: "Failed to refresh URL" }, 500);
