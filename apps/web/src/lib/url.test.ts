@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { parseEmbedUrl } from "./url";
 
 describe("parseEmbedUrl", () => {
@@ -30,14 +31,18 @@ describe("parseEmbedUrl", () => {
   });
 
   it("should detect Discord CDN images", () => {
-    const mediaDiscordResult = parseEmbedUrl("https://media.discordapp.net/attachments/123/456/image.png");
+    const mediaDiscordResult = parseEmbedUrl(
+      "https://media.discordapp.net/attachments/123/456/image.png",
+    );
     expect(mediaDiscordResult).toEqual({
       type: "image",
       url: new URL("https://media.discordapp.net/attachments/123/456/image.png"),
       isDiscordCdn: true,
     });
 
-    const cdnDiscordResult = parseEmbedUrl("https://cdn.discordapp.com/attachments/123/456/image.png");
+    const cdnDiscordResult = parseEmbedUrl(
+      "https://cdn.discordapp.com/attachments/123/456/image.png",
+    );
     expect(cdnDiscordResult).toEqual({
       type: "image",
       url: new URL("https://cdn.discordapp.com/attachments/123/456/image.png"),

@@ -35,7 +35,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             <a
               href="https://github.com/youyoumu/mahiru"
               target="_blank"
-              className="text-2xl font-medium text-primary-foreground cursor-pointer absolute left-4"
+              className="text-3xl font-bold text-primary-foreground cursor-pointer absolute left-4"
             >
               Mahiru
             </a>

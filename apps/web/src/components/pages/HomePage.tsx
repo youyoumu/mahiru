@@ -1,5 +1,13 @@
 import { useCurrentUser } from "#/hooks/use-current-user";
 import { sample } from "es-toolkit";
+import {
+  BirdhouseIcon,
+  BirdIcon,
+  FishIcon,
+  PawPrintIcon,
+  ShrubIcon,
+  TurtleIcon,
+} from "lucide-react";
 import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
 
 export default function HomePage() {
@@ -8,17 +16,55 @@ export default function HomePage() {
   const isNotLogin = !currentUser && !L1;
 
   return (
-    <div className="flex flex-col pt-16 min-h-screen">
-      <div className="w-full max-w-7xl mx-auto p-4 flex flex-col items-center justify-center grow gap-4">
-        <HomePicture />
-        {isNotLogin && (
-          <div className="w-72 text-muted-foreground">
-            You're not logged in. To get started, use the{" "}
-            <span className="bg-muted border rounded-xs px-0.5">login</span> command from the Mahiru
-            bot.
-          </div>
-        )}
+    <>
+      <div className="flex flex-col pt-16 min-h-screen">
+        <div className="w-full max-w-7xl mx-auto p-4 flex flex-col items-center justify-center grow gap-4">
+          <HomePicture />
+          {isNotLogin && (
+            <div className="w-72 text-muted-foreground">
+              You're not logged in. To get started, use the{" "}
+              <span className="bg-muted border rounded-xs px-0.5 font-bold">login</span> command
+              from the Mahiru bot.
+            </div>
+          )}
+        </div>
       </div>
+      <footer className="bg-neutral-50 border-t py-12 px-8 mb-20 md:mb-0">
+        <div className="max-w-7xl mx-auto flex flex-col gap-8 text-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center gap-1 text-primary-foreground font-bold tracking-tight">
+              <ShrubIcon></ShrubIcon>
+              <span className="font-headline text-lg">Mahiru</span>
+            </div>
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 text-sm font-medium text-foreground/70">
+              <div className="flex items-center gap-2">
+                <StatusDot />
+                <span>Server Status: Online</span>
+              </div>
+              <div className="text-muted-foreground">v0.0.0</div>
+            </div>
+            <p className="font-medium tracking-wide text-foreground/80">
+              A small corner under the Angel’s wing
+            </p>
+          </div>
+          <div className="pt-6 border-t flex justify-center gap-2">
+            <BirdIcon className="size-8 text-muted-foreground" />
+            <BirdhouseIcon className="size-8 text-muted-foreground" />
+            <TurtleIcon className="size-8 text-muted-foreground" />
+            <FishIcon className="size-8 text-muted-foreground" />
+            <PawPrintIcon className="size-8 text-muted-foreground" />
+          </div>
+        </div>
+      </footer>
+    </>
+  );
+}
+
+function StatusDot() {
+  return (
+    <div className="relative flex h-2 w-2">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
     </div>
   );
 }
