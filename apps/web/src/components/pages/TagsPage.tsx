@@ -1,3 +1,5 @@
+import type { Tag } from "@repo/db";
+
 import { Button } from "#/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "#/components/ui/card";
 import { Field, FieldLabel } from "#/components/ui/field";
@@ -41,8 +43,12 @@ const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
   const { t } = routeApi.useSearch();
   const { data: tags = [] } = useTags({ t });
 
+  const repeatArray = (arr: typeof tags, n: number) => Array.from({ length: n }, () => arr).flat();
+  // TODO: reset to 1 for prod
+  const repeatCount = 5;
+
   const filteredTags = fuzzysort
-    .go(searchText, tags, {
+    .go(searchText, repeatArray(tags, repeatCount), {
       keys: ["value", "key"],
       all: !searchText,
     })
@@ -55,55 +61,61 @@ const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
         "grid-cols-[repeat(auto-fit,minmax(240px,320px))]": filteredTags.length < 4,
       })}
     >
-      {filteredTags.map((tag) => (
-        <Card key={tag.id} size="sm" className="max-w-sm">
-          <CardHeader>
-            <div className="flex items-center justify-between gap-1">
-              <CardTitle className="normal-case">{tag.key}</CardTitle>
-              <Copy
-                className="w-4 cursor-pointer text-muted-foreground"
-                onClick={async () => {
-                  await navigator.clipboard.writeText(tag.key);
-                  toast(
-                    <div>
-                      <div>Copied key to clipboard:</div>
-                      <div className="text-muted-foreground">{tag.key}</div>
-                    </div>,
-                  );
-                }}
-              />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div>
-              <Embed value={tag.value} />
-            </div>
-          </CardContent>
-          <CardFooter className="grow items-end">
-            <div className="flex gap-2 justify-between grow items-end">
-              <div className="text-muted-foreground text-xs">
-                <DiscordUsername discord_user_id={tag.discord_user_id} />
-              </div>
-              <Button
-                onClick={async () => {
-                  await navigator.clipboard.writeText(tag.value);
-                  toast(
-                    <div>
-                      <div>Copied value to clipboard:</div>
-                      <div className="text-muted-foreground">{tag.value}</div>
-                    </div>,
-                  );
-                }}
-              >
-                Copy value
-              </Button>
-            </div>
-          </CardFooter>
-        </Card>
+      {filteredTags.map((tag, i) => (
+        <TagCard key={`${tag.id}-${i}`} tag={tag} i={i} />
       ))}
     </div>
   );
 });
+
+function TagCard({ tag, i }: { tag: Tag; i: number }) {
+  return (
+    <Card key={`${tag.id}-${i}`} size="sm" className="max-w-sm">
+      <CardHeader>
+        <div className="flex items-center justify-between gap-1">
+          <CardTitle className="normal-case">{tag.key}</CardTitle>
+          <Copy
+            className="w-4 cursor-pointer text-muted-foreground"
+            onClick={async () => {
+              await navigator.clipboard.writeText(tag.key);
+              toast(
+                <div>
+                  <div>Copied key to clipboard:</div>
+                  <div className="text-muted-foreground">{tag.key}</div>
+                </div>,
+              );
+            }}
+          />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div>
+          <Embed value={tag.value} />
+        </div>
+      </CardContent>
+      <CardFooter className="grow items-end">
+        <div className="flex gap-2 justify-between grow items-end">
+          <div className="text-muted-foreground text-xs">
+            <DiscordUsername discord_user_id={tag.discord_user_id} />
+          </div>
+          <Button
+            onClick={async () => {
+              await navigator.clipboard.writeText(tag.value);
+              toast(
+                <div>
+                  <div>Copied value to clipboard:</div>
+                  <div className="text-muted-foreground">{tag.value}</div>
+                </div>,
+              );
+            }}
+          >
+            Copy value
+          </Button>
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}
 
 function DiscordUsername({ discord_user_id }: { discord_user_id: string }) {
   const { data: user } = useUser({ discord_user_id });

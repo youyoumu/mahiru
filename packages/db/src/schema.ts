@@ -1,3 +1,5 @@
+import type { InferSelectModel } from "drizzle-orm";
+
 import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const tags = sqliteTable("tags", {
@@ -7,6 +9,8 @@ export const tags = sqliteTable("tags", {
   key: text().notNull(),
   value: text().notNull(),
 });
+
+export type Tag = InferSelectModel<typeof tags>;
 
 export type GuildSettings = {
   prefix?: string;

@@ -6,6 +6,7 @@ export type { Logger } from "drizzle-orm/logger";
 
 import { relations } from "./relations";
 import * as schema from "./schema";
+export type * from "./schema";
 
 export const zSelectTags = createSelectSchema(schema.tags);
 
