@@ -122,41 +122,47 @@ export class DbSvc {
     return uniqBy([...userTags, ...guildTags], (item) => item.id);
   }
 
-  //TODO: use transaction
   async addTag(
     key: string,
     value: string,
     discord_user_id: string,
     discord_guild_id: string | undefined | null,
   ) {
-    const userTag = await this.getUserTag(key, discord_user_id);
-    const guildTag = await this.getGuildTag(key, discord_guild_id);
+    this.db.transaction((tx) => {
+      // If this guild already has a tag with this key, remove it from the guild.
+      if (discord_guild_id) {
+        tx.update(schema.tags)
+          .set({ discord_guild_id: "" })
+          .where(and(eq(schema.tags.discord_guild_id, discord_guild_id), eq(schema.tags.key, key)))
+          .run();
+      }
 
-    // If this guild already has a tag with this key, remove it from the guild.
-    if (guildTag) {
-      await this.db
-        .update(schema.tags)
-        .set({ discord_guild_id: "" })
-        .where(eq(schema.tags.id, guildTag.id));
-    }
+      // Check if the user already has a tag with this key.
+      const userTag = tx
+        .select()
+        .from(schema.tags)
+        .where(and(eq(schema.tags.discord_user_id, discord_user_id), eq(schema.tags.key, key)))
+        .get();
 
-    // If the user already has a tag with this key, update it.
-    if (userTag) {
-      await this.db
-        .update(schema.tags)
-        .set({ value, discord_guild_id: discord_guild_id ?? "" })
-        .where(eq(schema.tags.id, userTag.id));
-    }
-
-    // Otherwise create a new tag.
-    else {
-      await this.db.insert(schema.tags).values({
-        key,
-        value,
-        discord_user_id,
-        discord_guild_id: discord_guild_id ?? "",
-      });
-    }
+      // If the user already has a tag with this key, update it.
+      if (userTag) {
+        tx.update(schema.tags)
+          .set({ value, discord_guild_id: discord_guild_id ?? "" })
+          .where(eq(schema.tags.id, userTag.id))
+          .run();
+      }
+      // Otherwise create a new tag.
+      else {
+        tx.insert(schema.tags)
+          .values({
+            key,
+            value,
+            discord_user_id,
+            discord_guild_id: discord_guild_id ?? "",
+          })
+          .run();
+      }
+    });
   }
 
   async addTags(
