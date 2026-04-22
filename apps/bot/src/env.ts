@@ -7,6 +7,10 @@ try {
   loadEnvFile(path.join(import.meta.dirname, "../.env"));
 } catch {}
 
+const zCommaSeparatedString = z
+  .string()
+  .transform((input) => input.split(",").map((s) => s.trim()));
+
 export const env = createEnv({
   server: {
     DEV: z.stringbool().optional(),
@@ -22,13 +26,12 @@ export const env = createEnv({
     OPEN_WEBUI_URL: z.url(),
     OPEN_WEBUI_TOKEN: z.string(),
     DISABLE_EMBEDS: z.stringbool(),
-    CHATBOT_LISTEN_CHANNEL_WHITELIST: z
-      .string()
-      .transform((input) => input.split(",").map((s) => s.trim())),
-    CHATBOT_MODELS: z
-      .string()
-      .transform((input) => input.split(",").map((s) => s.trim()))
-      .refine((models) => models.length > 0, "CHATBOT_MODELS must have at least 1 model"),
+    GUILD_WHITELIST: zCommaSeparatedString,
+    CHATBOT_LISTEN_CHANNEL_WHITELIST: zCommaSeparatedString,
+    CHATBOT_MODELS: zCommaSeparatedString.refine(
+      (models) => models.length > 0,
+      "CHATBOT_MODELS must have at least 1 model",
+    ),
   },
 
   clientPrefix: "PUBLIC_",

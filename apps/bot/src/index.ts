@@ -82,8 +82,16 @@ await client.login(env.DISCORD_TOKEN);
 
 // events
 client.once(Events.ClientReady, (client) => ready.handler(client));
-client.on(Events.InteractionCreate, (interaction) => interactionCreate.handler(interaction));
-client.on(Events.MessageCreate, (message) => messageCreate.handler(message));
-client.on(Events.MessageReactionAdd, (reaction, user) =>
-  messageReactionAdd.handler(reaction, user),
-);
+
+const isWhiteListed = (guildId: string | null | undefined) =>
+  guildId && env.GUILD_WHITELIST.includes(guildId);
+
+client.on(Events.InteractionCreate, (interaction) => {
+  if (isWhiteListed(interaction.guildId)) return interactionCreate.handler(interaction);
+});
+client.on(Events.MessageCreate, (message) => {
+  if (isWhiteListed(message.guildId)) return messageCreate.handler(message);
+});
+client.on(Events.MessageReactionAdd, (reaction, user) => {
+  if (isWhiteListed(reaction.message.guildId)) return messageReactionAdd.handler(reaction, user);
+});
