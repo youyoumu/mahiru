@@ -1,6 +1,7 @@
 import type { Ctx } from "#/lib/ctx";
 
 import { colors, discordEmojis, imageLinks } from "#/lib/constants";
+import { zTagImport, zTagKey } from "#/lib/schema";
 import { getTagsUrl } from "#/lib/url";
 import {
   bold,
@@ -11,7 +12,6 @@ import {
   Message,
   SlashCommandBuilder,
 } from "discord.js";
-import z from "zod";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
@@ -23,6 +23,7 @@ const ACTION = {
   list: "list",
   remove: "remove",
   help: "help",
+  import: "import",
 } as const;
 type Action = keyof typeof ACTION;
 
@@ -30,12 +31,6 @@ const PARAMS = {
   key: "key",
   value: "value",
 };
-
-const zTagKey = z
-  .string()
-  .min(1)
-  .max(32)
-  .regex(/^[a-zA-Z0-9_\-.]+$/);
 
 export const Tag: CommandProto = class Tag implements Command {
   static data = new SlashCommandBuilder()
@@ -94,6 +89,15 @@ export const Tag: CommandProto = class Tag implements Command {
 
     .addSubcommand((subCommand) =>
       subCommand.setName(ACTION.help).setDescription("Explain tag command"),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand
+        .setName(ACTION.import)
+        .setDescription("Import tags from a JSON file.")
+        .addAttachmentOption((option) =>
+          option.setName("file").setDescription("JSON file containing tags").setRequired(true),
+        ),
     );
   ctx: Ctx;
 
@@ -117,7 +121,7 @@ export const Tag: CommandProto = class Tag implements Command {
     };
     const value = getValue();
     const discord_user_id = interaction?.user.id ?? message?.author.id;
-    const discord_guild_id = interaction?.guildId ?? message?.guildId ?? null;
+    const discord_guild_id = interaction?.guildId ?? message?.guildId ?? "";
     if (!discord_user_id) return;
 
     switch (selectedAction) {
@@ -146,6 +150,10 @@ export const Tag: CommandProto = class Tag implements Command {
       }
       case "help": {
         await this.handleHelp({ interaction, message });
+        break;
+      }
+      case "import": {
+        await this.handleImport({ discord_guild_id, discord_user_id, interaction, message });
         break;
       }
       default: {
@@ -310,6 +318,61 @@ export const Tag: CommandProto = class Tag implements Command {
     replyToSource(interaction, message, { embeds: [embed] });
   }
 
+  private async handleImport({
+    discord_guild_id,
+    discord_user_id,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string | undefined | null;
+    discord_user_id: string;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    const attachment = interaction?.options.getAttachment("file") ?? message?.attachments.first();
+    if (!attachment) {
+      replyToSource(interaction, message, "⚠️ Please provide a JSON file.");
+      return;
+    }
+
+    if (attachment.size > 4 * 1024 * 1024) {
+      replyToSource(interaction, message, "⚠️ The file is too large. Max size is 4MB.");
+      return;
+    }
+
+    try {
+      const response = await fetch(attachment.url);
+      if (!response.ok) throw new Error("Failed to download file.");
+
+      const data = await response.json();
+      const parsed = zTagImport.safeParse(data);
+      if (!parsed.success) {
+        replyToSource(
+          interaction,
+          message,
+          "⚠️ Invalid JSON format. Please ensure it is an array of objects with 'key' and 'value'.",
+        );
+        return;
+      }
+
+      if (parsed.data.length > 1000) {
+        replyToSource(interaction, message, "⚠️ Too many tags. Max is 1000.");
+        return;
+      }
+
+      await this.ctx.dbSvc.addTags(parsed.data, discord_user_id, discord_guild_id);
+
+      const embed = new EmbedBuilder({
+        title: `Imported ${parsed.data.length} Tags`,
+        color: colors.green,
+      });
+
+      replyToSource(interaction, message, { embeds: [embed] });
+    } catch {
+      replyToSource(interaction, message, "⚠️ An error occurred while importing tags.");
+    }
+  }
+
   private async handleHelp({
     interaction,
     message,
@@ -342,6 +405,10 @@ export const Tag: CommandProto = class Tag implements Command {
         {
           name: `${discordEmojis.azusarelaxed} tag remove`,
           value: "Remove a tag from your collection and/or the server's collection.",
+        },
+        {
+          name: `${discordEmojis.azusarelaxed} tag import`,
+          value: "Import tags from a JSON file.",
         },
       ],
       footer: {

@@ -1,4 +1,4 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, or, inArray, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-sqlite";
 import { migrate } from "drizzle-orm/node-sqlite/migrator";
 import { createSelectSchema } from "drizzle-zod";
@@ -10,4 +10,4 @@ export type * from "./schema";
 
 export const zSelectTags = createSelectSchema(schema.tags);
 
-export { schema, drizzle, eq, and, relations, migrate };
+export { schema, drizzle, eq, and, or, inArray, sql, relations, migrate };

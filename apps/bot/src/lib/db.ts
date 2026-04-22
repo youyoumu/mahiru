@@ -2,7 +2,7 @@ import type { Logger } from "@repo/db";
 import type { Logger as PinoLogger } from "pino";
 
 import { env } from "#/env";
-import { schema, drizzle, eq, relations, migrate } from "@repo/db";
+import { schema, drizzle, eq, and, inArray, sql, relations, migrate } from "@repo/db";
 import { uniqBy } from "es-toolkit";
 import { DatabaseSync } from "node:sqlite";
 
@@ -25,10 +25,11 @@ export class DbSvc {
   db: DB;
   private guildSettingsCache = new Map<string, schema.GuildSettings>();
 
-  constructor(log: PinoLogger) {
-    const client = new DatabaseSync(env.DATABASE_URL);
+  constructor(log: PinoLogger, databaseUrl?: string, drizzleDir?: string) {
+    const client = new DatabaseSync(databaseUrl ?? env.DATABASE_URL);
     this.db = drizzle({ client, schema, relations, logger: new MyLogger(log) });
-    if (env.DRIZZLE_DIR) migrate(this.db, { migrationsFolder: env.DRIZZLE_DIR });
+    const migrationsFolder = drizzleDir ?? env.DRIZZLE_DIR;
+    if (migrationsFolder) migrate(this.db, { migrationsFolder });
   }
 
   private async getGuildSettings(
@@ -121,6 +122,7 @@ export class DbSvc {
     return uniqBy([...userTags, ...guildTags], (item) => item.id);
   }
 
+  //TODO: use transaction
   async addTag(
     key: string,
     value: string,
@@ -155,6 +157,75 @@ export class DbSvc {
         discord_guild_id: discord_guild_id ?? "",
       });
     }
+  }
+
+  async addTags(
+    tags: { key: string; value: string }[],
+    discord_user_id: string,
+    discord_guild_id: string | undefined | null,
+  ) {
+    const keys = tags.map((t) => t.key);
+    this.db.transaction((tx) => {
+      // 1. Clear discord_guild_id for these keys in this guild (if someone else owns them).
+      if (discord_guild_id) {
+        tx.update(schema.tags)
+          .set({ discord_guild_id: "" })
+          .where(
+            and(eq(schema.tags.discord_guild_id, discord_guild_id), inArray(schema.tags.key, keys)),
+          )
+          .run();
+      }
+
+      // 2. Identify which tags already exist for this user.
+      const existingUserTags = tx
+        .select({ key: schema.tags.key })
+        .from(schema.tags)
+        .where(
+          and(eq(schema.tags.discord_user_id, discord_user_id), inArray(schema.tags.key, keys)),
+        )
+        .all();
+
+      const existingKeys = new Set(existingUserTags.map((t) => t.key));
+      const toUpdate = tags.filter((t) => existingKeys.has(t.key));
+      const toInsert = tags.filter((t) => !existingKeys.has(t.key));
+
+      // 3. Update existing tags using a CASE statement (batch update with different values).
+      if (toUpdate.length > 0) {
+        const valueCase = sql.join(
+          toUpdate.map((t) => sql`WHEN ${schema.tags.key} = ${t.key} THEN ${t.value}`),
+          sql` `,
+        );
+        tx.update(schema.tags)
+          .set({
+            value: sql`CASE ${valueCase} END`,
+            discord_guild_id: discord_guild_id ?? "",
+          })
+          .where(
+            and(
+              eq(schema.tags.discord_user_id, discord_user_id),
+              inArray(
+                schema.tags.key,
+                toUpdate.map((t) => t.key),
+              ),
+            ),
+          )
+          .run();
+      }
+
+      // 4. Batch Insert new tags.
+      if (toInsert.length > 0) {
+        tx.insert(schema.tags)
+          .values(
+            toInsert.map((t) => ({
+              key: t.key,
+              value: t.value,
+              discord_user_id,
+              discord_guild_id: discord_guild_id ?? "",
+            })),
+          )
+          .run();
+      }
+    });
   }
 
   async removeTag(

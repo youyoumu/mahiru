@@ -41,3 +41,11 @@ export const zCompletionResponse = z.object({
     }),
   }),
 });
+
+export const zTagKey = z
+  .string()
+  .min(1)
+  .max(32)
+  .regex(/^[a-zA-Z0-9_\-.]+$/);
+
+export const zTagImport = z.array(z.object({ key: zTagKey, value: z.string() }));
