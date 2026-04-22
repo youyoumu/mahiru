@@ -61,7 +61,8 @@ export class ChatbotHandler {
     const probability = guildReplyChance ?? 0.002;
 
     const isForce =
-      Math.random() < probability && env.FORCE_CHATBOT_CHANNEL_ID.includes(message.channelId);
+      Math.random() < probability &&
+      env.CHATBOT_LISTEN_CHANNEL_WHITELIST.includes(message.channelId);
     if (!isMention && !isForce) return;
 
     const channel = message.channel;

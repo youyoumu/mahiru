@@ -10,10 +10,10 @@ try {
 export const env = createEnv({
   server: {
     DEV: z.stringbool().optional(),
+    DEV_GUILD_ID: z.string().optional(),
     DISCORD_TOKEN: z.string(),
     CLIENT_ID: z.string(),
     BOT_NAME: z.string(),
-    DEV_GUILD_ID: z.string().optional(),
     DATABASE_URL: z.url(),
     DRIZZLE_DIR: z.string().optional(),
     ADMIN_KEY: z.string(),
@@ -21,10 +21,10 @@ export const env = createEnv({
     WEB_URL: z.url(),
     OPEN_WEBUI_URL: z.url(),
     OPEN_WEBUI_TOKEN: z.string(),
-    FORCE_CHATBOT_CHANNEL_ID: z
+    DISABLE_EMBEDS: z.stringbool(),
+    CHATBOT_LISTEN_CHANNEL_WHITELIST: z
       .string()
       .transform((input) => input.split(",").map((s) => s.trim())),
-    DISABLE_EMBEDS: z.stringbool(),
     CHATBOT_MODELS: z
       .string()
       .transform((input) => input.split(",").map((s) => s.trim()))
