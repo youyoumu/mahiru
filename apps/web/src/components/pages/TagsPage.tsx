@@ -10,13 +10,14 @@ import { getRouteApi } from "@tanstack/react-router";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import fuzzysort from "fuzzysort";
 import { Copy } from "lucide-react";
-import { memo, useLayoutEffect, useRef, useState } from "react";
+import { memo, useDeferredValue, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Embed } from "./Embed";
 
 export default function TagsPage() {
   const [searchText, setSearchText] = useState("");
+  const deferredSearchText = useDeferredValue(searchText);
 
   return (
     <div className="pt-16 min-h-screen">
@@ -32,7 +33,7 @@ export default function TagsPage() {
             onChange={(e) => setSearchText(e.target.value)}
           />
         </Field>
-        <TagsGrid searchText={searchText} />
+        <TagsGrid searchText={deferredSearchText} />
       </div>
     </div>
   );
