@@ -2,7 +2,7 @@ import type { AppType } from "@repo/backend";
 
 import { Events, Client, GatewayIntentBits } from "discord.js";
 import { hc } from "hono/client";
-// import { fetch } from "undici";
+import { fetch } from "undici";
 
 import type { Command } from "./lib/command";
 

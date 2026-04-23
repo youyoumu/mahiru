@@ -340,6 +340,7 @@ export const Tag: CommandProto = class Tag implements Command {
     interaction?: ChatInputCommandInteraction;
     message?: Message;
   }) {
+    await interaction?.deferReply();
     const attachment = interaction?.options.getAttachment("file") ?? message?.attachments.first();
     if (!attachment) {
       replyToSource(interaction, message, "⚠️ Please provide a JSON file.");

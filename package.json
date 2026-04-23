@@ -34,7 +34,7 @@
   "packageManager": "pnpm@10.33.0",
   "pnpm": {
     "overrides": {
-      "undici": "^8.0.2"
+      "undici": "^6.25.0"
     },
     "patchedDependencies": {
       "discord.js": "patches/discord.js.patch"
