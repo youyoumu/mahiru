@@ -5,31 +5,65 @@ import type {
   InteractionEditReplyOptions,
   InteractionReplyOptions,
   Message,
-  SlashCommandBuilder,
-  SlashCommandSubcommandsOnlyBuilder,
 } from "discord.js";
+import type { Logger } from "pino";
 
 import { MessagePayload } from "discord.js";
-
-import { createLogger } from "./logger";
 
 export interface PrefixExecuteOpts {
   message: Message;
   args: string[];
 }
 
-export interface Command {
+export abstract class Command {
   ctx: Ctx;
-  execute(
+  log: Logger;
+
+  constructor(opts: { ctx: Ctx; log: Logger }) {
+    this.ctx = opts.ctx;
+    this.log = opts.log;
+  }
+
+  abstract execute(
     interaction?: ChatInputCommandInteraction,
     messageCtx?: PrefixExecuteOpts,
   ): Promise<unknown>;
-  handleButtonInteraction?(interaction: ButtonInteraction): Promise<unknown>;
-}
 
-export interface CommandProto {
-  new (opts: { ctx: Ctx }): Command;
-  data: SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder;
+  abstract handleButtonInteraction(interaction: ButtonInteraction): Promise<unknown>;
+
+  /**
+   * Sends a reply to both slash command interaction and message context.
+   * Useful for commands that support both interaction and prefix invocation.
+   * @param interaction - The slash command interaction (optional)
+   * @param message - The message context (optional)
+   * @param content - The content to send (InteractionReplyOptions)
+   */
+  replyToSource(
+    interaction: ChatInputCommandInteraction | undefined,
+    message: Message | undefined,
+    content: string | MessagePayload | InteractionReplyOptions,
+  ) {
+    const reply = async () => {
+      if (interaction?.deferred || interaction?.replied) {
+        await interaction.editReply(content as InteractionEditReplyOptions);
+      } else {
+        await interaction?.reply(content);
+      }
+      if (message?.channel.isSendable()) {
+        if (typeof content === "string") {
+          await message.channel.send(content);
+        } else if (content instanceof MessagePayload) {
+          await message.channel.send(content);
+        } else {
+          const { embeds, files, components, content: textContent } = content;
+          await message.channel.send({ embeds, files, components, content: textContent });
+        }
+      }
+    };
+    reply().catch((e) => {
+      this.log.error(e);
+    });
+  }
 }
 
 /**
@@ -70,41 +104,4 @@ export function extractTrailingParam(
   const regex = new RegExp(`^.*?${escaped.map((w) => `${w}\\s+`).join("")}(.*)$`, "s");
   const match = content.match(regex);
   return match?.[1];
-}
-
-//TODO: use from param or instance
-const log = createLogger().child({ name: "reply-to-source" });
-
-/**
- * Sends a reply to both slash command interaction and message context.
- * Useful for commands that support both interaction and prefix invocation.
- * @param interaction - The slash command interaction (optional)
- * @param message - The message context (optional)
- * @param content - The content to send (InteractionReplyOptions)
- */
-export function replyToSource(
-  interaction: ChatInputCommandInteraction | undefined,
-  message: Message | undefined,
-  content: string | MessagePayload | InteractionReplyOptions,
-) {
-  const reply = async () => {
-    if (interaction?.deferred || interaction?.replied) {
-      await interaction.editReply(content as InteractionEditReplyOptions);
-    } else {
-      await interaction?.reply(content);
-    }
-    if (message?.channel.isSendable()) {
-      if (typeof content === "string") {
-        await message.channel.send(content);
-      } else if (content instanceof MessagePayload) {
-        await message.channel.send(content);
-      } else {
-        const { embeds, files, components, content: textContent } = content;
-        await message.channel.send({ embeds, files, components, content: textContent });
-      }
-    }
-  };
-  reply().catch((e) => {
-    log.error(e);
-  });
 }

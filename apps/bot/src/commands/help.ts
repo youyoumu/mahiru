@@ -1,4 +1,5 @@
 import type { Ctx } from "#/lib/ctx";
+import type { Logger } from "pino";
 
 import { colors, discordEmojis, imageLinks } from "#/lib/constants";
 import {
@@ -8,16 +9,15 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 
-import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
+import type { PrefixExecuteOpts } from "../lib/command";
 
-import { replyToSource } from "../lib/command";
+import { Command } from "../lib/command";
 
-export const Help: CommandProto = class Help implements Command {
+export class Help extends Command {
   static data = new SlashCommandBuilder().setName("help").setDescription("Explain all commands");
-  ctx: Ctx;
 
-  constructor(opts: { ctx: Ctx }) {
-    this.ctx = opts.ctx;
+  constructor(opts: { ctx: Ctx; log: Logger }) {
+    super(opts);
   }
 
   async execute(interaction?: ChatInputCommandInteraction, commandCtx?: PrefixExecuteOpts) {
@@ -60,6 +60,8 @@ export const Help: CommandProto = class Help implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
-};
+
+  async handleButtonInteraction() {}
+}

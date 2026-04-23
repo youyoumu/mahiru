@@ -43,12 +43,12 @@ const ctx = new Ctx({
 });
 
 const commandsPair: Record<string, Command> = {
-  [commands.Ping.data.name]: new commands.Ping({ ctx }),
-  [commands.Tag.data.name]: new commands.Tag({ ctx }),
-  [commands.Login.data.name]: new commands.Login({ ctx }),
-  [commands.Prefix.data.name]: new commands.Prefix({ ctx }),
-  [commands.Help.data.name]: new commands.Help({ ctx }),
-  [commands.Chatbot.data.name]: new commands.Chatbot({ ctx }),
+  [commands.Ping.data.name]: new commands.Ping({ ctx, log: log.child({ name: "ping" }) }),
+  [commands.Tag.data.name]: new commands.Tag({ ctx, log: log.child({ name: "tag" }) }),
+  [commands.Login.data.name]: new commands.Login({ ctx, log: log.child({ name: "login" }) }),
+  [commands.Prefix.data.name]: new commands.Prefix({ ctx, log: log.child({ name: "prefix" }) }),
+  [commands.Help.data.name]: new commands.Help({ ctx, log: log.child({ name: "help" }) }),
+  [commands.Chatbot.data.name]: new commands.Chatbot({ ctx, log: log.child({ name: "chatbot" }) }),
 };
 
 const chatbotHandler = new handler.ChatbotHandler({

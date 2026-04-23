@@ -1,7 +1,8 @@
 import type { Ctx } from "#/lib/ctx";
+import type { Logger } from "pino";
 
 import { env } from "#/env";
-import { extractTrailingParam, replyToSource } from "#/lib/command";
+import { extractTrailingParam } from "#/lib/command";
 import { colors, discordEmojis, imageLinks } from "#/lib/constants";
 import {
   ChatInputCommandInteraction,
@@ -14,9 +15,10 @@ import {
 } from "discord.js";
 import { delay } from "es-toolkit";
 
-import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
+import type { PrefixExecuteOpts } from "../lib/command";
 
 import { generateClearToken, formatClearToken } from "../lib/chatbot";
+import { Command } from "../lib/command";
 import { openWebuiClient } from "../lib/openapi";
 import { processSpintax } from "../lib/spintax";
 import { prompts } from "../prompts";
@@ -160,7 +162,7 @@ export function buildChatbotParams(opts: {
   };
 }
 
-export const Chatbot: CommandProto = class Chatbot implements Command {
+export class Chatbot extends Command {
   static data = new SlashCommandBuilder()
     .setName("chatbot")
     .setDescription("Configure chatbot settings for this server")
@@ -259,10 +261,9 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     .addSubcommand((sub) =>
       sub.setName("status").setDescription("Check if OpenWebUI is connected and responsive."),
     );
-  ctx: Ctx;
 
-  constructor(opts: { ctx: Ctx }) {
-    this.ctx = opts.ctx;
+  constructor(opts: { ctx: Ctx; log: Logger }) {
+    super(opts);
   }
 
   async execute(interaction?: ChatInputCommandInteraction, commandCtx?: PrefixExecuteOpts) {
@@ -344,15 +345,17 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
     }
   }
 
+  async handleButtonInteraction() {}
+
   private async handleSetBehavior(params: ChatbotParams) {
     const { discord_guild_id, behavior, interaction, message } = params;
     if (!discord_guild_id) {
-      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
     if (!behavior) {
-      replyToSource(interaction, message, "⚠️ Usage: `chatbot behavior set <prompt>`");
+      this.replyToSource(interaction, message, "⚠️ Usage: `chatbot behavior set <prompt>`");
       return;
     }
 
@@ -373,13 +376,13 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleResetBehavior(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
-      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
@@ -394,18 +397,18 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleSetPersonality(params: ChatbotParams) {
     const { discord_guild_id, personality, interaction, message } = params;
     if (!discord_guild_id) {
-      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
     if (!personality) {
-      replyToSource(interaction, message, "⚠️ Usage: `chatbot personality set <prompt>`");
+      this.replyToSource(interaction, message, "⚠️ Usage: `chatbot personality set <prompt>`");
       return;
     }
 
@@ -426,13 +429,13 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleResetPersonality(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
-      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
@@ -447,7 +450,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handlePreviewBehavior(params: ChatbotParams) {
@@ -471,7 +474,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handlePreviewPersonality(params: ChatbotParams) {
@@ -495,7 +498,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleShowBehavior(params: ChatbotParams) {
@@ -517,7 +520,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleShowPersonality(params: ChatbotParams) {
@@ -539,7 +542,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleShowModel(params: ChatbotParams) {
@@ -566,18 +569,18 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       ],
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleSetModel(params: ChatbotParams) {
     const { discord_guild_id, model, interaction, message } = params;
     if (!discord_guild_id) {
-      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
     if (!model) {
-      replyToSource(interaction, message, "⚠️ Usage: `chatbot model set <model>`");
+      this.replyToSource(interaction, message, "⚠️ Usage: `chatbot model set <model>`");
       return;
     }
 
@@ -595,7 +598,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
         color: colors.red,
       });
 
-      replyToSource(interaction, message, { embeds: [embed] });
+      this.replyToSource(interaction, message, { embeds: [embed] });
       return;
     }
 
@@ -616,13 +619,13 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleResetModel(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
-      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
@@ -637,18 +640,18 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleSetReplyChance(params: ChatbotParams) {
     const { discord_guild_id, chance, interaction, message } = params;
     if (!discord_guild_id) {
-      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
     if (chance === undefined || Number.isNaN(chance) || chance < 0 || chance > 100) {
-      replyToSource(interaction, message, "⚠️ Usage: `chatbot reply-chance set <0-100>`");
+      this.replyToSource(interaction, message, "⚠️ Usage: `chatbot reply-chance set <0-100>`");
       return;
     }
 
@@ -663,13 +666,13 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleResetReplyChance(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
-      replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
@@ -684,7 +687,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleShowReplyChance(params: ChatbotParams) {
@@ -700,7 +703,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleClear(params: ChatbotParams) {
@@ -785,7 +788,7 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
 
   private async handleStatus(params: ChatbotParams) {
@@ -820,4 +823,4 @@ export const Chatbot: CommandProto = class Chatbot implements Command {
       }
     }
   }
-};
+}

@@ -1,4 +1,5 @@
 import type { Ctx } from "#/lib/ctx";
+import type { Logger } from "pino";
 
 import { colors, discordEmojis, imageLinks } from "#/lib/constants";
 import { DbSvc } from "#/lib/db";
@@ -11,9 +12,9 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 
-import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
+import type { PrefixExecuteOpts } from "../lib/command";
 
-import { replyToSource } from "../lib/command";
+import { Command } from "../lib/command";
 
 const action = {
   current: "current",
@@ -27,7 +28,7 @@ const param = {
   ["new-prefix"]: "new-prefix",
 };
 
-export const Prefix: CommandProto = class Prefix implements Command {
+export class Prefix extends Command {
   static data = new SlashCommandBuilder()
     .setName("prefix")
     .setDescription("Manage discord prefix for this server")
@@ -52,10 +53,9 @@ export const Prefix: CommandProto = class Prefix implements Command {
     .addSubcommand((subCommand) =>
       subCommand.setName(action.help).setDescription("Explain prefix command"),
     );
-  ctx: Ctx;
 
-  constructor(opts: { ctx: Ctx }) {
-    this.ctx = opts.ctx;
+  constructor(opts: { ctx: Ctx; log: Logger }) {
+    super(opts);
   }
 
   async execute(interaction?: ChatInputCommandInteraction, messageCtx?: PrefixExecuteOpts) {
@@ -85,6 +85,8 @@ export const Prefix: CommandProto = class Prefix implements Command {
     }
   }
 
+  async handleButtonInteraction() {}
+
   private async handleChange({
     discord_guild_id,
     prefix,
@@ -97,19 +99,19 @@ export const Prefix: CommandProto = class Prefix implements Command {
     message?: Message;
   }) {
     if (!prefix) {
-      replyToSource(interaction, message, "⚠️ Invalid arguments");
-      replyToSource(interaction, message, codeBlock("change <new-prefix>"));
+      this.replyToSource(interaction, message, "⚠️ Invalid arguments");
+      this.replyToSource(interaction, message, codeBlock("change <new-prefix>"));
       return;
     }
 
     if (prefix.length > 2) {
-      replyToSource(interaction, message, "The maximum prefix length is 2 characters.");
+      this.replyToSource(interaction, message, "The maximum prefix length is 2 characters.");
       return;
     }
 
     await this.ctx.dbSvc.changeGuildPrefix(discord_guild_id, prefix);
 
-    replyToSource(interaction, message, inlineCode(prefix));
+    this.replyToSource(interaction, message, inlineCode(prefix));
   }
 
   private async handleCurrent({
@@ -124,7 +126,7 @@ export const Prefix: CommandProto = class Prefix implements Command {
     const prefix =
       (await this.ctx.dbSvc.getGuildPrefixEntry(discord_guild_id))?.prefix ?? DbSvc.globalPrefix;
 
-    replyToSource(interaction, message, inlineCode(prefix));
+    this.replyToSource(interaction, message, inlineCode(prefix));
   }
 
   private handleHelp({
@@ -154,6 +156,6 @@ export const Prefix: CommandProto = class Prefix implements Command {
       },
     });
 
-    replyToSource(interaction, message, { embeds: [embed] });
+    this.replyToSource(interaction, message, { embeds: [embed] });
   }
-};
+}

@@ -1,4 +1,5 @@
 import type { Ctx } from "#/lib/ctx";
+import type { Logger } from "pino";
 
 import { colors } from "#/lib/constants";
 import { getLoginUrl } from "#/lib/url";
@@ -13,17 +14,18 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 
-import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
+import type { PrefixExecuteOpts } from "../lib/command";
 
-export const Login: CommandProto = class Login implements Command {
+import { Command } from "../lib/command";
+
+export class Login extends Command {
   static data = new SlashCommandBuilder()
     .setName("login")
     .setDescription("Get a link to log in to the Mahiru web app.");
-  ctx: Ctx;
   loginMessages = new Set<string>();
 
-  constructor(opts: { ctx: Ctx }) {
-    this.ctx = opts.ctx;
+  constructor(opts: { ctx: Ctx; log: Logger }) {
+    super(opts);
   }
 
   async execute(interaction?: ChatInputCommandInteraction, commandCtx?: PrefixExecuteOpts) {
@@ -71,4 +73,4 @@ export const Login: CommandProto = class Login implements Command {
       flags: MessageFlags.Ephemeral,
     });
   }
-};
+}
