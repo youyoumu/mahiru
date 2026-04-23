@@ -2,6 +2,7 @@ import type { Ctx } from "#/lib/ctx";
 import type {
   ButtonInteraction,
   ChatInputCommandInteraction,
+  InteractionEditReplyOptions,
   InteractionReplyOptions,
   Message,
   SlashCommandBuilder,
@@ -9,6 +10,8 @@ import type {
 } from "discord.js";
 
 import { MessagePayload } from "discord.js";
+
+import { createLogger } from "./logger";
 
 export interface PrefixExecuteOpts {
   message: Message;
@@ -69,6 +72,9 @@ export function extractTrailingParam(
   return match?.[1];
 }
 
+//TODO: use from param or instance
+const log = createLogger().child({ name: "reply-to-source" });
+
 /**
  * Sends a reply to both slash command interaction and message context.
  * Useful for commands that support both interaction and prefix invocation.
@@ -82,7 +88,11 @@ export function replyToSource(
   content: string | MessagePayload | InteractionReplyOptions,
 ) {
   const reply = async () => {
-    await interaction?.reply(content);
+    if (interaction?.deferred || interaction?.replied) {
+      await interaction.editReply(content as InteractionEditReplyOptions);
+    } else {
+      await interaction?.reply(content);
+    }
     if (message?.channel.isSendable()) {
       if (typeof content === "string") {
         await message.channel.send(content);
@@ -94,6 +104,7 @@ export function replyToSource(
       }
     }
   };
-  //TODO: log
-  reply().catch(() => {});
+  reply().catch((e) => {
+    log.error(e);
+  });
 }
