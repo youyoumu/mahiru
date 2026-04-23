@@ -18,6 +18,7 @@ if (process.argv.includes("--healthcheck")) {
 
 const ctx: Ctx = {
   oneTimeTokens: new Map(),
+  tagListTokens: new Map(),
   db: createDb(),
   discordCdnCache: new Map(),
   discordCdnCacheTimeout: new Map(),
@@ -27,7 +28,10 @@ const port = env.PORT;
 console.log(`Server is running on port http://localhost:${port}`);
 
 const app = new OpenAPIHono<{
-  Variables: { jwtPayload: JwtPayload; ctx: { oneTimeTokens: Map<string, string>; db: DB } };
+  Variables: {
+    jwtPayload: JwtPayload;
+    ctx: { oneTimeTokens: Map<string, string>; tagListTokens: Map<string, number[]>; db: DB };
+  };
 }>()
   .doc("/openapi", {
     openapi: "3.0.0",

@@ -1,8 +1,6 @@
-import type { JwtPayload } from "#/lib/jwt";
+import type { Variables } from "#/lib/ctx";
 
-import { env } from "#/env";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { sign } from "hono/jwt";
 
 const zAuthTokenReq = z.object({
   discord_user_id: z.string(),
@@ -21,9 +19,7 @@ const zTagTokenRes = z.object({
   token: z.string(),
 });
 
-export const admin = new OpenAPIHono<{
-  Variables: { jwtPayload: JwtPayload; ctx: { oneTimeTokens: Map<string, string> } };
-}>()
+export const admin = new OpenAPIHono<{ Variables: Variables }>()
   .openapi(
     createRoute({
       method: "post",
@@ -65,12 +61,10 @@ export const admin = new OpenAPIHono<{
     }),
     async (c) => {
       const { tag_ids } = c.req.valid("json");
+      const { tagListTokens } = c.get("ctx");
 
-      const payload = {
-        tag_ids,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60,
-      };
-      const token = await sign(payload, env.SECRET_KEY);
+      const token = crypto.randomUUID();
+      tagListTokens.set(token, tag_ids);
 
       return c.json({ token }, 200);
     },

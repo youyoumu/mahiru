@@ -48,8 +48,15 @@ const PARAMS = {
   value: "value",
 };
 
+type ListMessageState = {
+  page: number;
+  totalPages: number;
+  tags: TagItem[];
+  token: string;
+};
+
 export class Tag extends Command {
-  listMessages = new Map<string, { page: number; totalPages: number; tags: TagItem[] }>();
+  listMessages = new Map<string, ListMessageState>();
 
   static data = new SlashCommandBuilder()
     .setName("tag")
@@ -207,17 +214,12 @@ export class Tag extends Command {
     if (newPage === data.page) return;
 
     data.page = newPage;
-
-    const tokenRes = await this.ctx.api.admin.tags.token.$post({
-      json: { tag_ids: data.tags.map((t) => t.id) },
-    });
-    if (!tokenRes.ok) return;
-    const token = (await tokenRes.json()).token;
     await interaction.update(
       this.createListMessagePayload({
         page: newPage,
         totalPages: data.totalPages,
         tags: data.tags,
+        token: data.token,
       }),
     );
   }
@@ -315,6 +317,7 @@ export class Tag extends Command {
       page,
       totalPages,
       tags: allTags,
+      token,
     });
 
     let messageResult;
@@ -326,7 +329,7 @@ export class Tag extends Command {
     }
 
     if (messageResult) {
-      this.listMessages.set(messageResult.id, { page, totalPages, tags: allTags });
+      this.listMessages.set(messageResult.id, { page, totalPages, tags: allTags, token });
     }
   }
 
@@ -334,10 +337,12 @@ export class Tag extends Command {
     page,
     totalPages,
     tags,
+    token,
   }: {
     page: number;
     totalPages: number;
     tags: TagItem[];
+    token: string;
   }) {
     const start = (page - 1) * PAGE_SIZE;
     const end = start + PAGE_SIZE;
@@ -356,10 +361,10 @@ export class Tag extends Command {
               )
               .join("\n") || "No tags",
         },
-        // {
-        //   name: "\u200B",
-        //   value: `[Open in Browser](${getTagsUrl(token)})`,
-        // },
+        {
+          name: "\u200B",
+          value: `[Open in Browser](${getTagsUrl(token)})`,
+        },
       ],
       footer: {
         text: `Page ${page}/${totalPages} (${tags.length} Total)`,
