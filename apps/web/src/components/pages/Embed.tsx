@@ -2,6 +2,7 @@ import ImageWithFallback from "#/components/pages/ImageWithFallback";
 import { useDiscordCdn } from "#/hooks/use-proxy";
 import { useTenorPost } from "#/hooks/use-tenor";
 import { parseEmbedUrl } from "#/lib/url";
+import { cn } from "#/lib/utils";
 import { useState } from "react";
 import ReactPlayer from "react-player";
 import { XEmbed, YouTubeEmbed } from "react-social-media-embed";
@@ -10,11 +11,7 @@ export function Embed(props: { value: string }) {
   const value = processTagSpintax(props.value);
   const info = parseEmbedUrl(value);
   if (!info) {
-    return (
-      <pre className="max-h-64 overflow-auto border border-border bg-secondary p-2 font-mono text-sm text-foreground whitespace-pre-wrap break-all">
-        {value}
-      </pre>
-    );
+    return <CodeBlock value={value} />;
   }
 
   const { type, url } = info;
@@ -56,7 +53,7 @@ export function Embed(props: { value: string }) {
     );
   }
 
-  return <MarqueeLink url={value} />;
+  return <CodeBlock value={value} isUrl />;
 }
 
 function ProxyCdnImage({ url }: { url: string }) {
@@ -66,6 +63,21 @@ function ProxyCdnImage({ url }: { url: string }) {
     <EmbedWithLink url={url}>
       <ImageWithFallback url={newUrl} />
     </EmbedWithLink>
+  );
+}
+
+function CodeBlock({ value, isUrl }: { value: string; isUrl?: boolean }) {
+  return (
+    <pre
+      className={cn(
+        "max-h-64 overflow-auto border border-border bg-secondary p-2 font-mono text-sm whitespace-pre-wrap break-all text-foreground",
+        {
+          "text-primary-foreground": isUrl,
+        },
+      )}
+    >
+      {value}
+    </pre>
   );
 }
 
