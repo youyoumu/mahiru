@@ -7,7 +7,8 @@ import { useState } from "react";
 import ReactPlayer from "react-player";
 import { XEmbed, YouTubeEmbed } from "react-social-media-embed";
 
-export function Embed({ value }: { value: string }) {
+export function Embed(props: { value: string }) {
+  const value = processTagSpintax(props.value);
   const info = parseEmbedUrl(value);
   if (!info) {
     return <Textarea value={value} className="max-h-64 resize-none bg-secondary" readOnly />;
@@ -136,4 +137,12 @@ function EmbedWithLink({ children, url }: { children: React.ReactNode; url: stri
       <MarqueeLink url={url} />
     </div>
   );
+}
+
+function processTagSpintax(value: string) {
+  if (!value.startsWith("{attach:")) return value;
+  if (!value.endsWith("}")) return value;
+
+  const inner = value.slice("{attach:".length, -1).trim();
+  return inner;
 }
