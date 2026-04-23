@@ -1,5 +1,4 @@
 import ImageWithFallback from "#/components/pages/ImageWithFallback";
-import { Textarea } from "#/components/ui/textarea";
 import { useDiscordCdn } from "#/hooks/use-proxy";
 import { useTenorPost } from "#/hooks/use-tenor";
 import { parseEmbedUrl } from "#/lib/url";
@@ -11,7 +10,11 @@ export function Embed(props: { value: string }) {
   const value = processTagSpintax(props.value);
   const info = parseEmbedUrl(value);
   if (!info) {
-    return <Textarea value={value} className="max-h-64 resize-none bg-secondary" readOnly />;
+    return (
+      <pre className="max-h-64 overflow-auto border border-border bg-secondary p-2 font-mono text-sm text-foreground whitespace-pre-wrap break-all">
+        {value}
+      </pre>
+    );
   }
 
   const { type, url } = info;
