@@ -350,12 +350,12 @@ export class Chatbot extends Command {
   private async handleSetBehavior(params: ChatbotParams) {
     const { discord_guild_id, behavior, interaction, message } = params;
     if (!discord_guild_id) {
-      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.reply(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
     if (!behavior) {
-      this.replyToSource(interaction, message, "⚠️ Usage: `chatbot behavior set <prompt>`");
+      this.reply(interaction, message, "⚠️ Usage: `chatbot behavior set <prompt>`");
       return;
     }
 
@@ -376,13 +376,13 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleResetBehavior(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
-      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.reply(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
@@ -397,18 +397,18 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleSetPersonality(params: ChatbotParams) {
     const { discord_guild_id, personality, interaction, message } = params;
     if (!discord_guild_id) {
-      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.reply(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
     if (!personality) {
-      this.replyToSource(interaction, message, "⚠️ Usage: `chatbot personality set <prompt>`");
+      this.reply(interaction, message, "⚠️ Usage: `chatbot personality set <prompt>`");
       return;
     }
 
@@ -429,13 +429,13 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleResetPersonality(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
-      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.reply(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
@@ -450,7 +450,7 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handlePreviewBehavior(params: ChatbotParams) {
@@ -474,7 +474,7 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handlePreviewPersonality(params: ChatbotParams) {
@@ -498,7 +498,7 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleShowBehavior(params: ChatbotParams) {
@@ -520,7 +520,7 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleShowPersonality(params: ChatbotParams) {
@@ -542,7 +542,7 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleShowModel(params: ChatbotParams) {
@@ -569,18 +569,18 @@ export class Chatbot extends Command {
       ],
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleSetModel(params: ChatbotParams) {
     const { discord_guild_id, model, interaction, message } = params;
     if (!discord_guild_id) {
-      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.reply(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
     if (!model) {
-      this.replyToSource(interaction, message, "⚠️ Usage: `chatbot model set <model>`");
+      this.reply(interaction, message, "⚠️ Usage: `chatbot model set <model>`");
       return;
     }
 
@@ -598,7 +598,7 @@ export class Chatbot extends Command {
         color: colors.red,
       });
 
-      this.replyToSource(interaction, message, { embeds: [embed] });
+      this.reply(interaction, message, { embeds: [embed] });
       return;
     }
 
@@ -619,13 +619,13 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleResetModel(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
-      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.reply(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
@@ -640,18 +640,18 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleSetReplyChance(params: ChatbotParams) {
     const { discord_guild_id, chance, interaction, message } = params;
     if (!discord_guild_id) {
-      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.reply(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
     if (chance === undefined || Number.isNaN(chance) || chance < 0 || chance > 100) {
-      this.replyToSource(interaction, message, "⚠️ Usage: `chatbot reply-chance set <0-100>`");
+      this.reply(interaction, message, "⚠️ Usage: `chatbot reply-chance set <0-100>`");
       return;
     }
 
@@ -666,13 +666,13 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleResetReplyChance(params: ChatbotParams) {
     const { discord_guild_id, interaction, message } = params;
     if (!discord_guild_id) {
-      this.replyToSource(interaction, message, "⚠️ This command can only be used in a server.");
+      this.reply(interaction, message, "⚠️ This command can only be used in a server.");
       return;
     }
 
@@ -687,7 +687,7 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleShowReplyChance(params: ChatbotParams) {
@@ -703,7 +703,7 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleClear(params: ChatbotParams) {
@@ -788,7 +788,7 @@ export class Chatbot extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleStatus(params: ChatbotParams) {

@@ -194,18 +194,18 @@ export class Tag extends Command {
     message?: Message;
   }) {
     if (!key) {
-      this.replyToSource(interaction, message, "⚠️ Invalid arguments");
-      this.replyToSource(interaction, message, codeBlock("drop <key>"));
+      this.reply(interaction, message, "⚠️ Invalid arguments");
+      this.reply(interaction, message, codeBlock("drop <key>"));
       return;
     }
 
     const tag = await this.ctx.dbSvc.getTag(key, discord_user_id, discord_guild_id);
     if (tag) {
-      this.replyToSource(interaction, message, tag.value);
+      this.reply(interaction, message, tag.value);
       return;
     }
 
-    this.replyToSource(interaction, message, "⚠️ Unknown Key");
+    this.reply(interaction, message, "⚠️ Unknown Key");
   }
 
   private async handleAdd({
@@ -224,14 +224,14 @@ export class Tag extends Command {
     message?: Message;
   }) {
     if (!key || !value) {
-      this.replyToSource(interaction, message, "⚠️ Invalid arguments");
-      this.replyToSource(interaction, message, codeBlock("add <key> <value>"));
+      this.reply(interaction, message, "⚠️ Invalid arguments");
+      this.reply(interaction, message, codeBlock("add <key> <value>"));
       return;
     }
 
     const result = zTagKey.safeParse(key);
     if (!result.success) {
-      this.replyToSource(
+      this.reply(
         interaction,
         message,
         "⚠️ Invalid key. Keys must be 1-32 characters long and only contain letters, numbers, underscores, hyphens, and dots.",
@@ -247,7 +247,7 @@ export class Tag extends Command {
       color: colors.green,
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleList({
@@ -286,7 +286,7 @@ export class Tag extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleRemove({
@@ -303,8 +303,8 @@ export class Tag extends Command {
     message?: Message;
   }) {
     if (!key) {
-      this.replyToSource(interaction, message, "⚠️ Invalid arguments");
-      this.replyToSource(interaction, message, codeBlock("remove <key>"));
+      this.reply(interaction, message, "⚠️ Invalid arguments");
+      this.reply(interaction, message, codeBlock("remove <key>"));
       return;
     }
 
@@ -319,7 +319,7 @@ export class Tag extends Command {
         description: userTag?.value ?? guildTag?.value ?? undefined,
         color: colors.red,
       });
-      this.replyToSource(interaction, message, { embeds: [embed] });
+      this.reply(interaction, message, { embeds: [embed] });
       return;
     }
 
@@ -328,7 +328,7 @@ export class Tag extends Command {
       description: "The key you provided does not exist.",
       color: colors.red,
     });
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   private async handleImport({
@@ -345,12 +345,12 @@ export class Tag extends Command {
     await interaction?.deferReply();
     const attachment = interaction?.options.getAttachment("file") ?? message?.attachments.first();
     if (!attachment) {
-      this.replyToSource(interaction, message, "⚠️ Please provide a JSON file.");
+      this.reply(interaction, message, "⚠️ Please provide a JSON file.");
       return;
     }
 
     if (attachment.size > 4 * 1024 * 1024) {
-      this.replyToSource(interaction, message, "⚠️ The file is too large. Max size is 4MB.");
+      this.reply(interaction, message, "⚠️ The file is too large. Max size is 4MB.");
       return;
     }
 
@@ -361,7 +361,7 @@ export class Tag extends Command {
       const data = await response.json();
       const parsed = zTagImport.safeParse(data);
       if (!parsed.success) {
-        this.replyToSource(
+        this.reply(
           interaction,
           message,
           "⚠️ Invalid JSON format. Please ensure it is an array of objects with 'key' and 'value'.",
@@ -370,7 +370,7 @@ export class Tag extends Command {
       }
 
       if (parsed.data.length > 1000) {
-        this.replyToSource(interaction, message, "⚠️ Too many tags. Max is 1000.");
+        this.reply(interaction, message, "⚠️ Too many tags. Max is 1000.");
         return;
       }
 
@@ -381,9 +381,9 @@ export class Tag extends Command {
         color: colors.green,
       });
 
-      this.replyToSource(interaction, message, { embeds: [embed] });
+      this.reply(interaction, message, { embeds: [embed] });
     } catch {
-      this.replyToSource(interaction, message, "⚠️ An error occurred while importing tags.");
+      this.reply(interaction, message, "⚠️ An error occurred while importing tags.");
     }
   }
 
@@ -407,7 +407,7 @@ export class Tag extends Command {
     const effectiveTags = uniqBy([...userTags, ...guildTags], (tag) => tag.key);
 
     if (effectiveTags.length === 0) {
-      this.replyToSource(interaction, message, "⚠️ You don't have any tags to export.");
+      this.reply(interaction, message, "⚠️ You don't have any tags to export.");
       return;
     }
 
@@ -422,7 +422,7 @@ export class Tag extends Command {
       name: fileName,
     });
 
-    this.replyToSource(interaction, message, {
+    this.reply(interaction, message, {
       content: `Exported ${effectiveTags.length} tags.`,
       files: [attachment],
     });
@@ -475,6 +475,6 @@ export class Tag extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 }

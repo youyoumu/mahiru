@@ -1,14 +1,12 @@
 import type { Ctx } from "#/lib/ctx";
 import type {
+  AttachmentBuilder,
   ButtonInteraction,
   ChatInputCommandInteraction,
-  InteractionEditReplyOptions,
-  InteractionReplyOptions,
+  EmbedBuilder,
   Message,
 } from "discord.js";
 import type { Logger } from "pino";
-
-import { MessagePayload } from "discord.js";
 
 export interface PrefixExecuteOpts {
   message: Message;
@@ -38,26 +36,25 @@ export abstract class Command {
    * @param message - The message context (optional)
    * @param content - The content to send (InteractionReplyOptions)
    */
-  replyToSource(
+  reply(
     interaction: ChatInputCommandInteraction | undefined,
     message: Message | undefined,
-    content: string | MessagePayload | InteractionReplyOptions,
+    content:
+      | string
+      | {
+          content?: string;
+          embeds?: EmbedBuilder[];
+          files?: AttachmentBuilder[];
+        },
   ) {
     const reply = async () => {
       if (interaction?.deferred || interaction?.replied) {
-        await interaction.editReply(content as InteractionEditReplyOptions);
+        await interaction.editReply(content);
       } else {
         await interaction?.reply(content);
       }
       if (message?.channel.isSendable()) {
-        if (typeof content === "string") {
-          await message.channel.send(content);
-        } else if (content instanceof MessagePayload) {
-          await message.channel.send(content);
-        } else {
-          const { embeds, files, components, content: textContent } = content;
-          await message.channel.send({ embeds, files, components, content: textContent });
-        }
+        await message.channel.send(content);
       }
     };
     reply().catch((e) => {

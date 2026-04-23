@@ -99,19 +99,19 @@ export class Prefix extends Command {
     message?: Message;
   }) {
     if (!prefix) {
-      this.replyToSource(interaction, message, "⚠️ Invalid arguments");
-      this.replyToSource(interaction, message, codeBlock("change <new-prefix>"));
+      this.reply(interaction, message, "⚠️ Invalid arguments");
+      this.reply(interaction, message, codeBlock("change <new-prefix>"));
       return;
     }
 
     if (prefix.length > 2) {
-      this.replyToSource(interaction, message, "The maximum prefix length is 2 characters.");
+      this.reply(interaction, message, "The maximum prefix length is 2 characters.");
       return;
     }
 
     await this.ctx.dbSvc.changeGuildPrefix(discord_guild_id, prefix);
 
-    this.replyToSource(interaction, message, inlineCode(prefix));
+    this.reply(interaction, message, inlineCode(prefix));
   }
 
   private async handleCurrent({
@@ -126,7 +126,7 @@ export class Prefix extends Command {
     const prefix =
       (await this.ctx.dbSvc.getGuildPrefixEntry(discord_guild_id))?.prefix ?? DbSvc.globalPrefix;
 
-    this.replyToSource(interaction, message, inlineCode(prefix));
+    this.reply(interaction, message, inlineCode(prefix));
   }
 
   private handleHelp({
@@ -156,6 +156,6 @@ export class Prefix extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 }

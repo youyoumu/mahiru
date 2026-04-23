@@ -60,7 +60,7 @@ export class Help extends Command {
       },
     });
 
-    this.replyToSource(interaction, message, { embeds: [embed] });
+    this.reply(interaction, message, { embeds: [embed] });
   }
 
   async handleButtonInteraction() {}

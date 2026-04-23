@@ -16,7 +16,7 @@ export class Ping extends Command {
 
   async execute(interaction?: ChatInputCommandInteraction, messageCtx?: PrefixExecuteOpts) {
     const { message } = messageCtx ?? {};
-    this.replyToSource(interaction, message, "Pong!");
+    this.reply(interaction, message, "Pong!");
   }
 
   async handleButtonInteraction() {}
