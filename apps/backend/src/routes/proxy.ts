@@ -19,20 +19,89 @@ function parseValidURL(str: string): URL | null {
   }
 }
 
-async function refreshDiscordUrl(url: string): Promise<string | null> {
+type DiscordRefreshResponse = {
+  refreshed_urls?: Array<{
+    original?: string;
+    refreshed?: string;
+  }>;
+};
+
+async function refreshDiscordUrls(urls: string[]): Promise<Map<string, string>> {
   const response = await fetch("https://discord.com/api/v9/attachments/refresh-urls", {
     method: "POST",
     headers: { Authorization: env.DISCORD_USER_TOKEN, "Content-Type": "application/json" },
-    body: JSON.stringify({ attachment_urls: [url] }),
+    body: JSON.stringify({ attachment_urls: urls }),
   });
 
-  if (!response.ok) return null;
-  const data = await response.json();
-  const refreshedUrl = data?.refreshed_urls?.[0]?.refreshed;
-  return refreshedUrl || null;
+  if (!response.ok) return new Map();
+
+  const data = (await response.json()) as DiscordRefreshResponse;
+  const refreshedUrls = new Map<string, string>();
+
+  for (const [index, item] of (data.refreshed_urls ?? []).entries()) {
+    const original = item?.original ?? urls[index];
+    const refreshed = item?.refreshed;
+    if (original && refreshed) {
+      refreshedUrls.set(original, refreshed);
+    }
+  }
+
+  return refreshedUrls;
 }
 
 const SIX_HOURS = 1000 * 60 * 60 * 6;
+const DISCORD_REFRESH_BATCH_WINDOW = 2000;
+
+type DiscordRefreshResolver = (value: string | null) => void;
+
+const discordRefreshQueue = new Map<string, DiscordRefreshResolver[]>();
+let discordRefreshBatchTimeout: ReturnType<typeof setTimeout> | undefined;
+
+function queueDiscordRefresh(url: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    const resolvers = discordRefreshQueue.get(url);
+    if (resolvers) {
+      resolvers.push(resolve);
+    } else {
+      discordRefreshQueue.set(url, [resolve]);
+    }
+
+    if (discordRefreshBatchTimeout) return;
+
+    discordRefreshBatchTimeout = setTimeout(() => {
+      void flushDiscordRefreshQueue();
+    }, DISCORD_REFRESH_BATCH_WINDOW);
+  });
+}
+
+async function flushDiscordRefreshQueue() {
+  const batch = new Map(discordRefreshQueue);
+  discordRefreshQueue.clear();
+  if (discordRefreshBatchTimeout) {
+    clearTimeout(discordRefreshBatchTimeout);
+    discordRefreshBatchTimeout = undefined;
+  }
+
+  if (batch.size === 0) return;
+
+  try {
+    const urls = [...batch.keys()];
+    const refreshedUrls = await refreshDiscordUrls(urls);
+
+    for (const [url, resolvers] of batch) {
+      const refreshedUrl = refreshedUrls.get(url) ?? null;
+      for (const resolve of resolvers) {
+        resolve(refreshedUrl);
+      }
+    }
+  } catch {
+    for (const resolvers of batch.values()) {
+      for (const resolve of resolvers) {
+        resolve(null);
+      }
+    }
+  }
+}
 
 export const proxy = new OpenAPIHono<{ Variables: Variables }>().openapi(
   createRoute({
@@ -59,7 +128,7 @@ export const proxy = new OpenAPIHono<{ Variables: Variables }>().openapi(
       const cached = discordCdnCache.get(parsedUrl.href);
       if (cached) return c.json({ refreshed_url: cached }, 200);
 
-      const refreshedUrl = await refreshDiscordUrl(parsedUrl.href);
+      const refreshedUrl = await queueDiscordRefresh(parsedUrl.href);
       if (refreshedUrl) {
         let timeout = discordCdnCacheTimeout.get(parsedUrl.href);
         if (timeout) clearTimeout(timeout);
