@@ -1,0 +1,25 @@
+{
+  "name": "@repo/shared",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.mjs"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^25.6.0",
+    "linkedom": "^0.18.12",
+    "tsdown": "^0.21.9",
+    "vitest": "^4.1.4"
+  }
+}
