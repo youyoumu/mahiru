@@ -6,7 +6,8 @@ export type EmbedInfo =
   | { type: "youtube"; url: URL }
   | { type: "twitter"; url: URL }
   | { type: "tenor"; url: URL; tenorId: string }
-  | { type: "none"; url: URL };
+  | { type: "none"; url: URL }
+  | { type: "video"; url: URL; isDiscordCdn: boolean };
 
 export function parseEmbedUrl(value: string): EmbedInfo | null {
   let url: URL;
@@ -22,11 +23,15 @@ export function parseEmbedUrl(value: string): EmbedInfo | null {
   const isImage = lastPathname
     ? /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(lastPathname)
     : false;
+  const isVideo = lastPathname ? /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(lastPathname) : false;
 
-  if (isImage) {
-    const isDiscordCdn =
-      url.hostname === "media.discordapp.net" || url.hostname === "cdn.discordapp.com";
+  const isDiscordCdn =
+    url.hostname === "media.discordapp.net" || url.hostname === "cdn.discordapp.com";
+  if (isImage && isDiscordCdn) {
     return { type: "image", url, isDiscordCdn };
+  }
+  if (isVideo && isDiscordCdn) {
+    return { type: "video", url, isDiscordCdn };
   }
 
   const isImgur = url.hostname === "imgur.com" && pathnameSplit.length === 2;
@@ -40,8 +45,15 @@ export function parseEmbedUrl(value: string): EmbedInfo | null {
     return { type: "youtube", url };
   }
 
-  const isTwitter =
-    (url.hostname === "x.com" || url.hostname === "twitter.com") && pathnameSplit[2] === "status";
+  const twitterHostnames = [
+    "twitter.com",
+    "cunnyx.com",
+    "x.com",
+    "fixupx.com",
+    "fxtwitter.com",
+    "vxtwitter.com",
+  ];
+  const isTwitter = twitterHostnames.includes(url.hostname) && pathnameSplit[2] === "status";
   if (isTwitter) {
     return { type: "twitter", url };
   }

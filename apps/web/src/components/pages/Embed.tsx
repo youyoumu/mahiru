@@ -25,6 +25,11 @@ export function Embed(props: { value: string }) {
     );
   }
 
+  if (type === "video") {
+    if (info.isDiscordCdn) return <ProxyCdnVideo url={url.href} />;
+    return <EmbedVideo url={url} />;
+  }
+
   if (type === "imgur") {
     return <EmbedImgur url={url} />;
   }
@@ -32,7 +37,7 @@ export function Embed(props: { value: string }) {
   if (type === "youtube") {
     return (
       <EmbedWithLink url={value}>
-        <YouTubeEmbed url={url.href} width="100%" height="210px" />
+        <YouTubeEmbed url={url.href} width="100%" />
       </EmbedWithLink>
     );
   }
@@ -40,7 +45,7 @@ export function Embed(props: { value: string }) {
   if (type === "twitter") {
     return (
       <EmbedWithLink url={value}>
-        <XEmbed url={url.href} width="100%" height="230px" />
+        <XEmbed url={url.href} width="100%" />
       </EmbedWithLink>
     );
   }
@@ -56,16 +61,6 @@ export function Embed(props: { value: string }) {
   return <CodeBlock value={value} isUrl />;
 }
 
-function ProxyCdnImage({ url }: { url: string }) {
-  const { data } = useDiscordCdn({ url });
-  const newUrl = data?.refreshed_url;
-  return (
-    <EmbedWithLink url={url}>
-      <ImageWithFallback url={newUrl} />
-    </EmbedWithLink>
-  );
-}
-
 function CodeBlock({ value, isUrl }: { value: string; isUrl?: boolean }) {
   return (
     <pre
@@ -78,6 +73,34 @@ function CodeBlock({ value, isUrl }: { value: string; isUrl?: boolean }) {
     >
       {value}
     </pre>
+  );
+}
+
+function ProxyCdnImage({ url }: { url: string }) {
+  const { data } = useDiscordCdn({ url });
+  const newUrl = data?.refreshed_url;
+  return (
+    <EmbedWithLink url={url}>
+      <ImageWithFallback url={newUrl} />
+    </EmbedWithLink>
+  );
+}
+
+function ProxyCdnVideo({ url }: { url: string }) {
+  const { data } = useDiscordCdn({ url });
+  const newUrl = data?.refreshed_url;
+  return (
+    <EmbedWithLink url={url}>
+      <ReactPlayer src={newUrl} playing={false} muted controls width="100%" height="100%" />
+    </EmbedWithLink>
+  );
+}
+
+function EmbedVideo({ url }: { url: URL }) {
+  return (
+    <EmbedWithLink url={url.href}>
+      <ReactPlayer src={url.href} playing={false} muted controls width="100%" height="100%" />
+    </EmbedWithLink>
   );
 }
 
