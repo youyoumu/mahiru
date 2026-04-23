@@ -49,3 +49,42 @@ export const zTagKey = z
   .regex(/^[a-zA-Z0-9_\-.]+$/);
 
 export const zTagImport = z.array(z.object({ key: zTagKey, value: z.string() }));
+
+export const zNotSoBotTag = z.object({
+  assets: z.array(z.any()),
+  content: z.string(),
+  created: z.string(),
+  edited: z.string().nullable(),
+  guild_id: z.string(),
+  id: z.string(),
+  is_command: z.boolean(),
+  is_on_directory: z.boolean(),
+  last_used: z.string().nullable(),
+  locked: z.boolean(),
+  name: z.string(),
+  nsfw: z.boolean(),
+  reference_tag: z.string().nullable(),
+  scanned: z.number(),
+  server_id: z.string(),
+  user: z.object({
+    avatar: z.string(),
+    blocked: z.boolean(),
+    blocked_on: z.string().nullable(),
+    blocked_reason: z.string().nullable(),
+    bot: z.boolean(),
+    discriminator: z.string(),
+    flags: z.number(),
+    id: z.string(),
+    username: z.string(),
+  }),
+  uses: z.number(),
+});
+
+export const zNotSoBotTagExport = z.object({
+  options: z.object({
+    userId: z.string(),
+  }),
+  serverId: z.string(),
+  tags: z.array(zNotSoBotTag),
+  timestamp: z.number(),
+});

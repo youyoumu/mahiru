@@ -30,7 +30,7 @@ describe("DbSvc.addTags", () => {
     }
 
     const logger = pino(
-      { level: "trace" },
+      { level: "silent" },
       pretty({
         ignore: "pid,hostname",
         translateTime: "SYS:HH:MM:ss",
