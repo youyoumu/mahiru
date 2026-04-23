@@ -2,7 +2,7 @@ import type { Ctx } from "#/lib/ctx";
 import type { Logger } from "pino";
 
 import { colors, discordEmojis, imageLinks } from "#/lib/constants";
-import { zTagImport, zTagKey } from "#/lib/schema";
+import { zNotSoBotTagExport, zTagImport, zTagKey } from "#/lib/schema";
 import { getTagsUrl } from "#/lib/url";
 import {
   AttachmentBuilder,
@@ -359,14 +359,23 @@ export class Tag extends Command {
       if (!response.ok) throw new Error("Failed to download file.");
 
       const data = await response.json();
-      const parsed = zTagImport.safeParse(data);
+      let parsed = zTagImport.safeParse(data);
       if (!parsed.success) {
-        this.reply(
-          interaction,
-          message,
-          "⚠️ Invalid JSON format. Please ensure it is an array of objects with 'key' and 'value'.",
-        );
-        return;
+        const parsed2 = zNotSoBotTagExport.safeParse(data);
+        if (parsed2.success) {
+          const converted = parsed2.data.tags.map((tag) => ({
+            key: tag.name,
+            value: tag.content,
+          }));
+          parsed = { success: true, data: converted };
+        } else {
+          this.reply(
+            interaction,
+            message,
+            "⚠️ Invalid JSON format. Please ensure it is an array of objects with 'key' and 'value', or a NotSoBot tag export.",
+          );
+          return;
+        }
       }
 
       if (parsed.data.length > 1000) {
