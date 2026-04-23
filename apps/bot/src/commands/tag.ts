@@ -1,12 +1,17 @@
 import type { Ctx } from "#/lib/ctx";
+import type { Tag as TagItem } from "@repo/db";
 import type { Logger } from "pino";
 
 import { colors, discordEmojis, imageLinks } from "#/lib/constants";
 import { zNotSoBotTagExport, zTagImport, zTagKey } from "#/lib/schema";
 import { getTagsUrl } from "#/lib/url";
 import {
+  ActionRowBuilder,
   AttachmentBuilder,
   bold,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
   ChatInputCommandInteraction,
   codeBlock,
   EmbedBuilder,
@@ -20,6 +25,11 @@ import type { PrefixExecuteOpts } from "../lib/command";
 
 import { Command } from "../lib/command";
 
+const BUTTON_ID = {
+  prev: "tag_list_prev",
+  next: "tag_list_next",
+} as const;
+
 const ACTION = {
   add: "add",
   drop: "drop",
@@ -31,12 +41,16 @@ const ACTION = {
 } as const;
 type Action = keyof typeof ACTION;
 
+const PAGE_SIZE = 10;
+
 const PARAMS = {
   key: "key",
   value: "value",
 };
 
 export class Tag extends Command {
+  listMessages = new Map<string, { page: number; totalPages: number; tags: TagItem[] }>();
+
   static data = new SlashCommandBuilder()
     .setName("tag")
     .setDescription("Manage your tag collections")
@@ -178,7 +192,35 @@ export class Tag extends Command {
     }
   }
 
-  async handleButtonInteraction() {}
+  async handleButtonInteraction(interaction: ButtonInteraction) {
+    const message = interaction.message;
+    const data = this.listMessages.get(message.id);
+    if (!data) return;
+
+    let newPage = data.page;
+    if (interaction.customId === BUTTON_ID.next && newPage < data.totalPages) {
+      newPage++;
+    } else if (interaction.customId === BUTTON_ID.prev && newPage > 1) {
+      newPage--;
+    }
+
+    if (newPage === data.page) return;
+
+    data.page = newPage;
+
+    const tokenRes = await this.ctx.api.admin.tags.token.$post({
+      json: { tag_ids: data.tags.map((t) => t.id) },
+    });
+    if (!tokenRes.ok) return;
+    const token = (await tokenRes.json()).token;
+    await interaction.update(
+      this.createListMessagePayload({
+        page: newPage,
+        totalPages: data.totalPages,
+        tags: data.tags,
+      }),
+    );
+  }
 
   private async handleDrop({
     discord_guild_id,
@@ -262,31 +304,86 @@ export class Tag extends Command {
     message?: Message;
   }) {
     const allTags = await this.ctx.dbSvc.getTags(discord_user_id, discord_guild_id);
+    const totalPages = Math.ceil(allTags.length / PAGE_SIZE);
+    let page = 1;
+
     const tag_ids = allTags.map((tag) => tag.id);
     const res = await this.ctx.api.admin.tags.token.$post({ json: { tag_ids } });
     if (!res.ok) return;
     const token = (await res.json()).token;
+    const payload = this.createListMessagePayload({
+      page,
+      totalPages,
+      tags: allTags,
+    });
+
+    let messageResult;
+    if (interaction) {
+      await interaction.reply(payload);
+      messageResult = await interaction.fetchReply();
+    } else if (message) {
+      messageResult = await message.reply(payload);
+    }
+
+    if (messageResult) {
+      this.listMessages.set(messageResult.id, { page, totalPages, tags: allTags });
+    }
+  }
+
+  private createListMessagePayload({
+    page,
+    totalPages,
+    tags,
+  }: {
+    page: number;
+    totalPages: number;
+    tags: TagItem[];
+  }) {
+    const start = (page - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const pageTags = tags.slice(start, end);
 
     const embed = new EmbedBuilder({
       description: "Showing tags you can drop",
       fields: [
         {
           name: "\u200B",
-          value: allTags
-            .map((tag, i) => `${bold((i + 1).toString())}. ${tag.key} - <@${tag.discord_user_id}>`)
-            .join("\n"),
+          value:
+            pageTags
+              .map(
+                (tag, i) =>
+                  `${bold((start + i + 1).toString())}. ${tag.key} - <@${tag.discord_user_id}>`,
+              )
+              .join("\n") || "No tags",
         },
-        {
-          name: "\u200B",
-          value: `[Open in Browser](${getTagsUrl(token)})`,
-        },
+        // {
+        //   name: "\u200B",
+        //   value: `[Open in Browser](${getTagsUrl(token)})`,
+        // },
       ],
       footer: {
-        text: `Page 1/1 (${allTags.length} Total)`,
+        text: `Page ${page}/${totalPages} (${tags.length} Total)`,
       },
     });
 
-    this.reply(interaction, message, { embeds: [embed] });
+    const prevButton = new ButtonBuilder()
+      .setCustomId(BUTTON_ID.prev)
+      .setLabel("Previous")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(page === 1);
+
+    const nextButton = new ButtonBuilder()
+      .setCustomId(BUTTON_ID.next)
+      .setLabel("Next")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(page === totalPages);
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(prevButton, nextButton);
+
+    return {
+      embeds: [embed],
+      components: totalPages > 1 ? [row] : [],
+    };
   }
 
   private async handleRemove({

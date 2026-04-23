@@ -46,7 +46,7 @@ const TagsGrid = memo(function ({ searchText }: { searchText: string }) {
 
   // TODO: reset to 1 for prod
   const repeatArray = (arr: typeof tags, n: number) => Array.from({ length: n }, () => arr).flat();
-  const repeatCount = 5;
+  const repeatCount = 1;
   const filteredTags = fuzzysort
     .go(searchText, repeatArray(tags, repeatCount), {
       keys: ["value", "key"],
