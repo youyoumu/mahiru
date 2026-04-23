@@ -2,6 +2,7 @@ import type { AppType } from "@repo/backend";
 
 import { Events, Client, GatewayIntentBits } from "discord.js";
 import { hc } from "hono/client";
+// import { fetch } from "undici";
 
 import type { Command } from "./lib/command";
 
@@ -30,6 +31,9 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMessageReactions,
   ],
+  rest: {
+    makeRequest: fetch,
+  },
 });
 
 const ctx = new Ctx({

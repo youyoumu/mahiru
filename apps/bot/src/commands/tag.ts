@@ -4,6 +4,7 @@ import { colors, discordEmojis, imageLinks } from "#/lib/constants";
 import { zTagImport, zTagKey } from "#/lib/schema";
 import { getTagsUrl } from "#/lib/url";
 import {
+  AttachmentBuilder,
   bold,
   ChatInputCommandInteraction,
   codeBlock,
@@ -12,6 +13,7 @@ import {
   Message,
   SlashCommandBuilder,
 } from "discord.js";
+import { uniqBy } from "es-toolkit";
 
 import type { Command, CommandProto, PrefixExecuteOpts } from "../lib/command";
 
@@ -24,6 +26,7 @@ const ACTION = {
   remove: "remove",
   help: "help",
   import: "import",
+  export: "export",
 } as const;
 type Action = keyof typeof ACTION;
 
@@ -98,6 +101,10 @@ export const Tag: CommandProto = class Tag implements Command {
         .addAttachmentOption((option) =>
           option.setName("file").setDescription("JSON file containing tags").setRequired(true),
         ),
+    )
+
+    .addSubcommand((subCommand) =>
+      subCommand.setName(ACTION.export).setDescription("Export your tags to a JSON file."),
     );
   ctx: Ctx;
 
@@ -154,6 +161,10 @@ export const Tag: CommandProto = class Tag implements Command {
       }
       case "import": {
         await this.handleImport({ discord_guild_id, discord_user_id, interaction, message });
+        break;
+      }
+      case "export": {
+        await this.handleExport({ discord_guild_id, discord_user_id, interaction, message });
         break;
       }
       default: {
@@ -373,6 +384,47 @@ export const Tag: CommandProto = class Tag implements Command {
     }
   }
 
+  private async handleExport({
+    discord_guild_id,
+    discord_user_id,
+    interaction,
+    message,
+  }: {
+    discord_guild_id: string | undefined | null;
+    discord_user_id: string;
+    interaction?: ChatInputCommandInteraction;
+    message?: Message;
+  }) {
+    await interaction?.deferReply();
+
+    const userTags = await this.ctx.dbSvc.getUserTags(discord_user_id);
+    const guildTags = await this.ctx.dbSvc.getGuildTags(discord_guild_id);
+
+    // Prioritize user tags over guild tags when keys collide
+    const effectiveTags = uniqBy([...userTags, ...guildTags], (tag) => tag.key);
+
+    if (effectiveTags.length === 0) {
+      replyToSource(interaction, message, "⚠️ You don't have any tags to export.");
+      return;
+    }
+
+    const exportData = effectiveTags.map((tag) => ({
+      key: tag.key,
+      value: tag.value,
+    }));
+
+    const buffer = Buffer.from(JSON.stringify(exportData, null, 2), "utf-8");
+    const fileName = `tags-export.json`;
+    const attachment = new AttachmentBuilder(buffer, {
+      name: fileName,
+    });
+
+    replyToSource(interaction, message, {
+      content: `Exported ${effectiveTags.length} tags.`,
+      files: [attachment],
+    });
+  }
+
   private async handleHelp({
     interaction,
     message,
@@ -409,6 +461,10 @@ export const Tag: CommandProto = class Tag implements Command {
         {
           name: `${discordEmojis.azusarelaxed} tag import`,
           value: "Import tags from a JSON file.",
+        },
+        {
+          name: `${discordEmojis.azusarelaxed} tag export`,
+          value: "Export your tags to a JSON file.",
         },
       ],
       footer: {
