@@ -1,57 +1,49 @@
 # Mahiru
 
-Mahiru is a comprehensive Discord bot ecosystem designed with a focus on modularity, performance, and advanced AI interactions. The project is structured as a monorepo containing a Discord client, a high-performance backend API, and a modern web dashboard.
+Mahiru is a fun and silly Discord bot inspired by the character Mahiru from [The Angel Next Door Spoils Me Rotten](https://en.wikipedia.org/wiki/The_Angel_Next_Door_Spoils_Me_Rotten). Its primary purpose is to bring joy and entertainment to your Discord server through AI interactions and features.
 
 ## Core Components
 
-The architecture is divided into three primary applications supported by shared internal packages.
+Mahiru has three main parts:
 
 ### Discord Bot
 
-The bot serves as the primary interface, built on Discord.js and optimized for low-latency interactions. It features a sophisticated AI chatbot system that utilizes a custom Spintax engine for prompt generation. This allows for weighted behavioral variance and dynamic personality management. Beyond AI, it includes specialized handlers for content tagging and integration with external media services.
-
-### Backend API
-
-A centralized API server built with Hono and Node.js. It provides an OpenAPI-compliant interface that facilitates communication between the bot and the web dashboard. The backend manages authentication, user data, and system-wide configurations while providing real-time health monitoring and proxy services.
+This is the bot itself that you interact with in your Discord server.
 
 ### Web Dashboard
 
-A modern administrative interface developed with React 19 and Tailwind CSS 4. It enables users and administrators to manage bot settings, configure tags, and monitor system status through a responsive and intuitive UI. The dashboard leverages TanStack Router and Query for efficient state management and navigation.
+You can access this interface by using a command from the bot to log in and configure settings.
+
+### Backend HTTP Server
+
+This server handles communication between the Discord bot and the web dashboard frontend.
 
 ## Key Features
 
-The ecosystem provides several advanced functionalities that differentiate it from standard Discord integrations.
+Mahiru includes these features:
 
-### Spintax Prompt Engine
+### AI Chatbot
 
-A custom-built syntax engine that supports weighted variations and probability-based content generation. This system is used to define bot personas and automated responses, ensuring that interactions remain diverse and natural rather than repetitive.
+You can configure the AI model, personality, and behavior prompt to customize how Mahiru interacts in your server.
 
-### Enhanced Networking
+### Tag System
 
-Integration of a DNS-over-HTTPS resolution layer allows the bot to handle requests and media fetching with improved reliability. This sub-system is designed to bypass common network restrictions and ensure consistent service availability.
+Use the `/tag` command to store text, links, images, or other content. You can preview all your tags on the web dashboard with rich embeds functionality.
 
-### Full-Stack Type Safety
+## Tech Stack
 
-The project maintains strict type definitions across the entire stack. Database schemas defined with Drizzle ORM are automatically propagated to the backend API and frontend clients, reducing runtime errors and improving developer productivity.
+### Discord Bot
 
-## Development Setup
+- **[Discord.js](https://discord.js.org/)**: For connecting to Discord and handling interactions.
 
-The project uses pnpm and Turborepo for workspace management.
+### Backend HTTP Server
 
-### Build and Execution
+- **[Hono](https://hono.dev/)**: A lightweight web framework for building the API.
+- **[Node.js](https://nodejs.org/)**: The JavaScript runtime that powers the server.
 
-To prepare the entire workspace, execute the build command from the root directory.
+### Web Dashboard
 
-```bash
-pnpm build
-```
-
-For local development with hot-reloading across all applications, use the dev command.
-
-```bash
-pnpm dev
-```
-
-### Environment Configuration
-
-Each application requires specific environment variables. Reference the .env.example files within the respective apps directories to set up local configurations for the bot, backend, and web dashboard.
+- **[React 19](https://react.dev/)**: For building a dynamic and responsive user interface.
+- **[Tailwind CSS 4](https://tailwindcss.com/)**: For styling the dashboard with utility-first classes.
+- **[TanStack Router](https://tanstack.com/router)**: A fully type-safe router with built-in data fetching and nested layout support.
+- **[shadcn/ui](https://ui.shadcn.com/)**: Reusable components built using Base UI and Tailwind CSS that are easy to customize.
