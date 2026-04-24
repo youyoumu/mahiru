@@ -21,6 +21,7 @@
     "@discordjs/rest": "^2.6.1",
     "@repo/backend": "workspace:*",
     "@repo/db": "workspace:*",
+    "@repo/shared": "workspace:*",
     "@t3-oss/env-core": "^0.13.11",
     "discord-api-types": "^0.38.47",
     "discord.js": "^14.26.3",

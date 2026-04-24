@@ -27,10 +27,10 @@ export function parseEmbedUrl(value: string): EmbedInfo | null {
 
   const isDiscordCdn =
     url.hostname === "media.discordapp.net" || url.hostname === "cdn.discordapp.com";
-  if (isImage && isDiscordCdn) {
+  if (isImage) {
     return { type: "image", url, isDiscordCdn };
   }
-  if (isVideo && isDiscordCdn) {
+  if (isVideo) {
     return { type: "video", url, isDiscordCdn };
   }
 

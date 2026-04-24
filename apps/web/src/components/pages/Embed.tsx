@@ -3,12 +3,40 @@ import { useDiscordCdn } from "#/hooks/use-proxy";
 import { useTenorPost } from "#/hooks/use-tenor";
 import { parseEmbedUrl } from "#/lib/url";
 import { cn } from "#/lib/utils";
+import { parseTagSpintax } from "@repo/shared";
+import { sample } from "es-toolkit";
 import { useState } from "react";
 import ReactPlayer from "react-player";
 import { XEmbed, YouTubeEmbed } from "react-social-media-embed";
 
 export function Embed(props: { value: string }) {
-  const value = processTagSpintax(props.value);
+  const { attach, choose } = parseTagSpintax(props.value);
+  const [chosenItem] = useState(() => sample(choose));
+
+  const items: string[] = [];
+  if (attach.length > 0) {
+    items.push(...attach);
+  }
+  if (chosenItem) {
+    items.push(chosenItem);
+  }
+
+  // If no tags were found, use the original value
+  if (attach.length === 0 && !chosenItem) {
+    items.push(props.value);
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {items.map((item, i) => (
+        <EmbedItem key={i} value={item} />
+      ))}
+    </div>
+  );
+}
+
+function EmbedItem(props: { value: string }) {
+  const { value } = props;
   const info = parseEmbedUrl(value);
   if (!info) {
     return <CodeBlock value={value} />;
@@ -175,12 +203,4 @@ function EmbedWithLink({ children, url }: { children: React.ReactNode; url: stri
       <MarqueeLink url={url} />
     </div>
   );
-}
-
-function processTagSpintax(value: string) {
-  if (!value.startsWith("{attach:")) return value;
-  if (!value.endsWith("}")) return value;
-
-  const inner = value.slice("{attach:".length, -1).trim();
-  return inner;
 }

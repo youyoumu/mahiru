@@ -5,6 +5,7 @@ import type { Logger } from "pino";
 import { colors, discordEmojis, imageLinks } from "#/lib/constants";
 import { zNotSoBotTagExport, zTagImport, zTagKey } from "#/lib/schema";
 import { getTagsUrl } from "#/lib/url";
+import { parseTagSpintax } from "@repo/shared";
 import {
   ActionRowBuilder,
   AttachmentBuilder,
@@ -19,7 +20,7 @@ import {
   Message,
   SlashCommandBuilder,
 } from "discord.js";
-import { uniqBy } from "es-toolkit";
+import { sample, uniqBy } from "es-toolkit";
 
 import type { PrefixExecuteOpts } from "../lib/command";
 
@@ -245,7 +246,23 @@ export class Tag extends Command {
 
     const tag = await this.ctx.dbSvc.getTag(key, discord_user_id, discord_guild_id);
     if (tag) {
-      this.reply(interaction, message, tag.value);
+      const { attach, choose } = parseTagSpintax(tag.value);
+      const items: string[] = [];
+
+      if (attach.length > 0) {
+        items.push(...attach);
+      }
+
+      const chosen = sample(choose);
+      if (chosen) {
+        items.push(chosen);
+      }
+
+      if (items.length > 0) {
+        this.reply(interaction, message, items.join("\n"));
+      } else {
+        this.reply(interaction, message, tag.value);
+      }
       return;
     }
 

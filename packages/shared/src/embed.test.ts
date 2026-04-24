@@ -1,5 +1,5 @@
-import { readFile } from "node:fs/promises";
 import { DOMParser as LinkedomDOMParser } from "linkedom";
+import { readFile } from "node:fs/promises";
 import { describe, expect, test } from "vitest";
 
 import { parseEmbedHtml } from "./embed";
