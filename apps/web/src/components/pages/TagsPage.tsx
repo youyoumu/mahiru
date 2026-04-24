@@ -22,17 +22,21 @@ export default function TagsPage() {
   return (
     <div className="pt-16 min-h-screen">
       <div className="w-full max-w-7xl mx-auto p-4 flex flex-col gap-4">
-        <Field>
-          <FieldLabel htmlFor="tag-search" className="text-primary-foreground">
-            Search
-          </FieldLabel>
-          <Input
-            id="tag-search"
-            placeholder="..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-        </Field>
+        <div className="sticky top-16 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 py-2 -mx-4 px-4">
+          <Field className="flex flex-col items-center">
+            <FieldLabel htmlFor="tag-search" className="text-primary-foreground justify-center">
+              Search
+            </FieldLabel>
+            <Input
+              id="tag-search"
+              placeholder="..."
+              className="text-center"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+          </Field>
+        </div>
+
         <TagsGrid searchText={deferredSearchText} />
       </div>
     </div>
