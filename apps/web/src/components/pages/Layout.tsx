@@ -1,14 +1,36 @@
 import type { ReactNode } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "#/components/ui/dropdown-menu";
 import { Toaster } from "#/components/ui/sonner";
+import { useRemoveTokenToCookie } from "#/hooks/use-auth";
 import { useCurrentUser } from "#/hooks/use-current-user";
-import { Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { cva } from "class-variance-authority";
+import { LogOut } from "lucide-react";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { data: currentUser, isLoading: L1 } = useCurrentUser();
   const isNotLogin = !currentUser && !L1;
+  const navigate = useNavigate();
+
+  const queryClient = useQueryClient();
+  const { mutate: logout } = useRemoveTokenToCookie();
+
+  const handleLogout = () => {
+    logout(undefined, {
+      onSuccess: async () => {
+        await navigate({ to: "/" });
+        await queryClient.invalidateQueries();
+      },
+    });
+  };
 
   const link = cva(
     [
@@ -50,14 +72,28 @@ export default function Layout({ children }: { children: ReactNode }) {
             {currentUser && (
               <div className="flex items-center gap-4 absolute right-4">
                 <div className="text-primary-foreground">{currentUser?.username}</div>
-                <Avatar className="size-10">
-                  <AvatarImage
-                    src={`https://cdn.discordapp.com/avatars/${currentUser?.id}/${currentUser?.avatar}`}
-                  />
-                  <AvatarFallback className="bg-primary-foreground text-primary">
-                    {currentUser?.username?.[0] ?? "A"}
-                  </AvatarFallback>
-                </Avatar>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="outline-none">
+                    <Avatar className="size-10 cursor-pointer">
+                      <AvatarImage
+                        src={`https://cdn.discordapp.com/avatars/${currentUser?.id}/${currentUser?.avatar}`}
+                      />
+                      <AvatarFallback className="bg-primary-foreground text-primary">
+                        {currentUser?.username?.[0] ?? "A"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      variant="destructive"
+                      className="cursor-pointer"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="size-4" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             )}
           </div>
