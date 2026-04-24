@@ -2,7 +2,7 @@ import type { Tag } from "@repo/db";
 
 import { Button } from "#/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "#/components/ui/card";
-import { Field, FieldLabel } from "#/components/ui/field";
+import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { useTags } from "#/hooks/use-tags";
 import { useUser } from "#/hooks/use-users";
@@ -24,12 +24,9 @@ export default function TagsPage() {
       <div className="w-full max-w-7xl mx-auto p-4 flex flex-col gap-4">
         <div className="sticky top-16 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 py-2 -mx-4 px-4">
           <Field className="flex flex-col items-center">
-            <FieldLabel htmlFor="tag-search" className="text-primary-foreground justify-center">
-              Search
-            </FieldLabel>
             <Input
               id="tag-search"
-              placeholder="..."
+              placeholder={`Search...`}
               className="text-center"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
