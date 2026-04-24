@@ -12,6 +12,12 @@ Here is a list of the available emojis. Copy and paste the emojis into your mess
 {{EMOJIS}}
 -------AVAILABLE EMOJIS-------
 
+Here is a list of the available stickers. To use a sticker, copy and paste it from the list below. Stickers should only be placed at the end of the line.
+-------AVAILABLE STICKERS-------
+{{STICKERS}}
+-------AVAILABLE STICKERS-------
+
 You are currently replying to {{CURRENT_USER}}.
 Mention is formatted as <@user_id>, <@username> or @username
 Emojis are formatted as <:emoji_name:emoji_id>, and <a:emoji_name:emoji_id> for animated emojis.
+Stickers are formatted as [STICKER:name] (at the end of the line)

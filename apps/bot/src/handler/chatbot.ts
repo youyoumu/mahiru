@@ -1,10 +1,10 @@
 import type { Ctx } from "#/lib/ctx";
-import type { Guild } from "discord.js";
-import type { Message, PartialMessage } from "discord.js";
+import type { Collection, Guild, Message, PartialMessage, Sticker } from "discord.js";
 import type { Logger } from "pino";
 
 import { env } from "#/env";
 import {
+  extractStickers,
   fixEmojis,
   fixMentions,
   hasClearToken,
@@ -33,6 +33,8 @@ export class ChatbotHandler {
   private failedImageCache = new Set<string>();
   private cacheClearInterval: ReturnType<typeof setInterval> | undefined;
   private guildEmojis = new Map<string, string[]>();
+  private guildStickers = new Map<string, string[]>();
+  private stickerNameMap = new Map<string, Map<string, string>>();
 
   constructor(opts: { log: Logger; ctx: Ctx }) {
     this.log = opts.log;
@@ -50,8 +52,15 @@ export class ChatbotHandler {
   async handle({ message }: { message: Message | PartialMessage }) {
     if (!message.channel.isSendable()) return;
 
-    if (message.guild && message.content) {
-      this.trackEmojis(message.guild, message.content).catch(() => {});
+    if (message.guild) {
+      if (message.content) {
+        this.trackEmojis(message.guild, message.content).catch(() => {});
+      }
+      if (message.stickers.size > 0) {
+        this.trackStickers(message.guild, message.stickers).catch((e) => {
+          console.log("DEBUG[1999]: e=", e);
+        });
+      }
     }
     const isMention = message.mentions.users.some((user) => {
       return user.id === env.CLIENT_ID;
@@ -84,12 +93,27 @@ export class ChatbotHandler {
           message,
         );
 
-        const chunks = splitMessage(processedContent);
+        const { content: cleanContent, stickerNames } = extractStickers(processedContent);
+
+        const chunks = splitMessage(cleanContent).filter((c) => c.trim().length > 0);
         for (const chunk of chunks) {
           await message.channel.send(chunk).catch((err) => {
             this.log.error(err, "Error while sending message");
           });
           await delay(1000);
+        }
+
+        if (message.guild) {
+          const nameMap = this.stickerNameMap.get(message.guild.id);
+          for (const stickerName of stickerNames) {
+            const stickerId = nameMap?.get(stickerName);
+            if (stickerId) {
+              await message.channel.send({ stickers: [stickerId] }).catch((err) => {
+                this.log.error(err, "Error while sending sticker");
+              });
+              await delay(1000);
+            }
+          }
         }
       }
     } catch (err) {
@@ -119,9 +143,10 @@ export class ChatbotHandler {
       }
     }
 
-    // Collect server emojis
+    // Collect server emojis and stickers
     const guild = message.guild;
     const emojis = guild ? this.guildEmojis.get(guild.id) || [] : [];
+    const stickers = guild ? this.guildStickers.get(guild.id) || [] : [];
 
     const membersList =
       usersInChat.size > 0
@@ -131,10 +156,12 @@ export class ChatbotHandler {
         : "";
 
     const emojisList = emojis.join("\n");
+    const stickersList = stickers.map((name) => `[STICKER:${name}]`).join("\n");
 
     const discordContext = prompts.discordContext
       .replace(/\{\{MEMBERS\}\}/g, membersList)
       .replace(/\{\{EMOJIS\}\}/g, emojisList)
+      .replace(/\{\{STICKERS\}\}/g, stickersList)
       .replace(/\{\{BOT_NAME\}\}/g, env.BOT_NAME)
       .replace(
         /\{\{CURRENT_USER\}\}/g,
@@ -173,7 +200,7 @@ export class ChatbotHandler {
     for (let i = messagesArray.length - 1; i >= 0; i--) {
       const msg = messagesArray[i];
       if (!msg) continue;
-      const content = this.processMentions(msg);
+      const content = this.formatMessage(msg);
       if (hasClearToken(content)) {
         clearChatIndex = i;
         break;
@@ -186,7 +213,7 @@ export class ChatbotHandler {
     for (let i = startIndex; i < messagesArray.length; i++) {
       const msg = messagesArray[i];
       if (!msg) continue;
-      const content = this.processMentions(msg);
+      const content = this.formatMessage(msg);
 
       // Skip messages that contain the clear token marker
       if (hasClearToken(content)) continue;
@@ -205,7 +232,7 @@ export class ChatbotHandler {
 
     //TODO: do something about this
     if (repliedMessage) {
-      const repliedContent = this.processMentions(repliedMessage);
+      const repliedContent = this.formatMessage(repliedMessage);
 
       // Skip if the replied message contains the clear token marker
       if (!hasClearToken(repliedContent)) {
@@ -224,7 +251,7 @@ export class ChatbotHandler {
       }
     }
 
-    const currentContent = this.processMentions(message);
+    const currentContent = this.formatMessage(message);
     const currentContentParts = await this.getMessageContent(
       message,
       `${message.author?.username}: ${currentContent}`,
@@ -365,6 +392,22 @@ export class ChatbotHandler {
     }
   }
 
+  formatMessage(message: Message<boolean> | PartialMessage): string {
+    let result = this.processMentions(message);
+    result = this.processStickers(message, result);
+    return result.trim();
+  }
+
+  processStickers(message: Message<boolean> | PartialMessage, content: string): string {
+    let result = content;
+    if (message.stickers && message.stickers.size > 0) {
+      for (const sticker of message.stickers.values()) {
+        result += ` [STICKER:${sticker.name}]`;
+      }
+    }
+    return result;
+  }
+
   processMentions(message: Message<boolean> | PartialMessage): string {
     let result = message.content ?? "";
     message.mentions.users.forEach((user) => {
@@ -401,5 +444,39 @@ export class ChatbotHandler {
     const last10 = uniqueEmojis.slice(-10);
 
     this.guildEmojis.set(guildId, last10);
+  }
+
+  private async trackStickers(guild: Guild, stickers: Collection<string, Sticker>) {
+    const guildId = guild.id;
+    const guildStickerCache = await guild.stickers.fetch().catch(() => null);
+    if (!guildStickerCache) return;
+
+    const validStickerIds = new Set(guildStickerCache.keys());
+    const newStickers: string[] = [];
+
+    for (const sticker of stickers.values()) {
+      if (validStickerIds.has(sticker.id)) {
+        newStickers.push(sticker.name);
+      }
+    }
+
+    if (newStickers.length === 0) return;
+
+    // Update the name -> id map
+    let nameMap = this.stickerNameMap.get(guildId);
+    if (!nameMap) {
+      nameMap = new Map();
+      this.stickerNameMap.set(guildId, nameMap);
+    }
+    for (const s of guildStickerCache.values()) {
+      if (s.name) nameMap.set(s.name, s.id);
+    }
+
+    const existing = this.guildStickers.get(guildId) || [];
+    const combined = [...existing, ...newStickers];
+    const uniqueStickers = [...new Set(combined)];
+    const last5 = uniqueStickers.slice(-5);
+
+    this.guildStickers.set(guildId, last5);
   }
 }

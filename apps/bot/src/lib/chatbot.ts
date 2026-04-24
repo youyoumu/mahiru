@@ -197,3 +197,16 @@ export function fixEmojis(content: string, message: Message | PartialMessage): s
 
   return result;
 }
+
+export function extractStickers(content: string): { content: string; stickerNames: string[] } {
+  const STICKER_PATTERN = /\[STICKER:([^\]]+)\]/g;
+  const stickerNames: string[] = [];
+  const cleanContent = content
+    .replace(STICKER_PATTERN, (_, name) => {
+      stickerNames.push(name.trim());
+      return "";
+    })
+    .replace(/\s\s+/g, " ")
+    .trim();
+  return { content: cleanContent, stickerNames };
+}
