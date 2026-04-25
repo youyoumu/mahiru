@@ -385,6 +385,7 @@ export class ChatbotHandler {
           messages: messages,
         },
       });
+
       if (!res.response.ok && res.error) throw res.error;
       return zCompletionResponse.parse(res.data);
     } catch (err) {
