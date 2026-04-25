@@ -183,15 +183,32 @@ export function fixEmojis(content: string, message: Message | PartialMessage): s
     return result;
   }
 
+  const staticEmojiMap = new Map<string, string>();
+  for (const [key, value] of emojiMap) {
+    if (value.startsWith("<:")) {
+      staticEmojiMap.set(key, value);
+    }
+  }
+
   const parts = result.split(/(```[\s\S]*?```|`[^`]+`)/g);
   const processedParts = parts.map((part) => {
     if (part.startsWith("```") || part.startsWith("`")) {
       return part;
     }
-    return part.replace(/(?<![<a]):([a-zA-Z0-9_]+):/g, (match, emojiName) => {
+    let processed = part.replace(/(?<![<a]):([a-zA-Z0-9_]+):/g, (match, emojiName) => {
       const emojiFormat = emojiMap.get(emojiName.toLowerCase());
       return emojiFormat || match;
     });
+    if (staticEmojiMap.size > 0) {
+      processed = processed.replace(/<a:([a-zA-Z0-9_]+):(\d+)>/g, (match, emojiName, emojiId) => {
+        const staticFormat = staticEmojiMap.get(emojiName.toLowerCase());
+        if (staticFormat && staticFormat.endsWith(`:${emojiId}>`)) {
+          return staticFormat;
+        }
+        return match;
+      });
+    }
+    return processed;
   });
   result = processedParts.join("");
 

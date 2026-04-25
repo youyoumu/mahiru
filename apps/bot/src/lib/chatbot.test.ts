@@ -260,6 +260,23 @@ describe("chatbot utils", () => {
       expect(result).toBe("Already formatted <a:dance:333333>");
     });
 
+    it("should convert animated emoji format to static when emoji is not animated", () => {
+      const emojis = new Map<string, GuildEmoji>();
+      emojis.set("pogius", createMockEmoji("893374526543507487", "pogius", false));
+
+      const mockGuild = createMockGuild(undefined, emojis);
+
+      const message = createMockMessage({ guild: mockGuild });
+      const content = `I'm sorry if I caused any confusion earlier... I was just a bit nervous. <a:pogius:893374526543507487>
+
+Um, since you asked... if I were to cook something special for you today, what would you actually want to eat?`;
+      const result = fixEmojis(content, message);
+
+      expect(result).toBe(`I'm sorry if I caused any confusion earlier... I was just a bit nervous. <:pogius:893374526543507487>
+
+Um, since you asked... if I were to cook something special for you today, what would you actually want to eat?`);
+    });
+
     it("should not replace emojis inside code blocks", () => {
       const emojis = new Map<string, GuildEmoji>();
       emojis.set("smile", createMockEmoji("111111", "smile"));
