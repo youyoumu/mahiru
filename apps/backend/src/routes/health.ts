@@ -13,6 +13,6 @@ export const health = new OpenAPIHono().openapi(
     },
   }),
   (c) => {
-    return c.json({ ok: true }, 200);
+    return c.json({ ok: true, status: "online" }, 200);
   },
 );

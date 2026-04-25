@@ -5,8 +5,6 @@
 ![License](https://img.shields.io/github/license/youyoumu/kiku)
 ![GitHub top language](https://img.shields.io/github/languages/top/youyoumu/kiku)
 
-
-
 <div align="center">
 <br/>
 <img width="230" height="345" alt="image" src="https://github.com/user-attachments/assets/e6153d0d-5605-482e-9420-d809c739ddd0" />
@@ -54,8 +52,6 @@ This server handles communication between the Discord bot and the web dashboard 
 </div>
 
 ## Key Features
-
-Mahiru includes these features:
 
 ### AI Chatbot
 
