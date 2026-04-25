@@ -4,6 +4,7 @@ import type { Logger } from "pino";
 import { env } from "#/env";
 import { extractTrailingParam } from "#/lib/command";
 import { colors, discordEmojis, imageLinks } from "#/lib/constants";
+import { ollama } from "#/lib/ollama";
 import {
   ChatInputCommandInteraction,
   codeBlock,
@@ -19,7 +20,6 @@ import type { PrefixExecuteOpts } from "../lib/command";
 
 import { generateClearToken, formatClearToken } from "../lib/chatbot";
 import { Command } from "../lib/command";
-import { openWebuiClient } from "../lib/openapi";
 import { processSpintax } from "../lib/spintax";
 import { prompts } from "../prompts";
 
@@ -797,11 +797,11 @@ export class Chatbot extends Command {
     const replyMessage = await message?.reply("Checking OpenWebUI status...");
 
     try {
-      const res = await openWebuiClient.GET("/health");
+      const res = await ollama.health();
       const embed = new EmbedBuilder({
         title: "OpenWebUI Status",
-        description: res.response?.ok ? "✅ Connected" : "❌ Unavailable",
-        color: res.response?.ok ? colors.green : colors.red,
+        description: res.ok ? "✅ Connected" : "❌ Unavailable",
+        color: res.ok ? colors.green : colors.red,
       });
       await delay(1000);
       if (interaction) {

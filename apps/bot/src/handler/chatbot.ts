@@ -11,7 +11,7 @@ import {
   splitMessage,
   stripThinkingBlock,
 } from "#/lib/chatbot";
-import { openWebuiClient } from "#/lib/openapi";
+import { ollama } from "#/lib/ollama";
 import { zCompletionResponse } from "#/lib/schema";
 import { processSpintax } from "#/lib/spintax";
 import { prompts } from "#/prompts";
@@ -378,16 +378,11 @@ export class ChatbotHandler {
       const model = env.CHATBOT_MODELS.includes(guildModel ?? "")
         ? guildModel
         : env.CHATBOT_MODELS[0];
+      if (!model) throw new Error("No chatbot model found");
 
-      const res = await openWebuiClient.POST("/api/chat/completions", {
-        body: {
-          model,
-          messages: messages,
-        },
-      });
-
-      if (!res.response.ok && res.error) throw res.error;
-      return zCompletionResponse.parse(res.data);
+      const res = await ollama.completion(model, messages);
+      if (!res.ok) throw new Error(`Failed to fetch response: ${res.statusText}`);
+      return zCompletionResponse.parse(await res.json());
     } catch (err) {
       this.log.error(err, "Error while generating response");
     }
