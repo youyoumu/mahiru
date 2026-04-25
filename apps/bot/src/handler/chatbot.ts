@@ -125,7 +125,7 @@ export class ChatbotHandler {
 
   async createMessages(message: Message<boolean> | PartialMessage) {
     const lastMessages = await message.channel.messages.fetch({
-      limit: 10,
+      limit: 25,
     });
 
     const repliedMessage = lastMessages.find((msg) => msg.id === message.reference?.messageId);
