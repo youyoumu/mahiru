@@ -145,6 +145,17 @@
   }
 }
 
+@layer utilities {
+  .bg-polkadot {
+    background-image:
+      radial-gradient(white 10%, transparent 20%), radial-gradient(white 10%, transparent 20%);
+    background-position:
+      0 0,
+      24px 24px;
+    background-size: 48px 48px;
+  }
+}
+
 @keyframes float-heart {
   0% {
     opacity: 1;

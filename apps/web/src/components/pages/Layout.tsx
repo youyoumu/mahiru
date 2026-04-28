@@ -51,7 +51,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-polkadot">
         <div className="h-16 bg-neutral-50 flex justify-center border-b fixed top-0 shrink-0 w-full z-10">
           <div className="max-w-7xl grow justify-center flex items-center px-4 relative">
             <a
