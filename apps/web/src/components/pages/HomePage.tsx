@@ -57,7 +57,13 @@ export default function HomePage() {
                 <StatusBot isOnline={!!health} isLoading={isHealthLoading} />
                 <span>Server Status: {status()}</span>
               </div>
-              <div className="text-muted-foreground">v{__VERSION__}</div>
+              <a
+                href="https://github.com/youyoumu/mahiru"
+                target="_blank"
+                className="text-muted-foreground underline"
+              >
+                v{__VERSION__}
+              </a>
             </div>
             <p className="font-medium tracking-wide text-foreground/80">
               A small corner under the Angel’s wing
