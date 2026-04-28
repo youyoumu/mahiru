@@ -1,0 +1,4 @@
+Provide a very short, concise description of this sticker.
+Focus on the character, emotion, and any text if present.
+The description must be between 2 and 100 characters.
+Respond ONLY with the description text. Do not include any other text, quotes, preamble, or markdown formatting.

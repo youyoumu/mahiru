@@ -272,7 +272,8 @@ describe("chatbot utils", () => {
 Um, since you asked... if I were to cook something special for you today, what would you actually want to eat?`;
       const result = fixEmojis(content, message);
 
-      expect(result).toBe(`I'm sorry if I caused any confusion earlier... I was just a bit nervous. <:pogius:893374526543507487>
+      expect(result)
+        .toBe(`I'm sorry if I caused any confusion earlier... I was just a bit nervous. <:pogius:893374526543507487>
 
 Um, since you asked... if I were to cook something special for you today, what would you actually want to eat?`);
     });

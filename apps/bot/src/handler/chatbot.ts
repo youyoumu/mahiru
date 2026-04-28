@@ -16,6 +16,9 @@ import { zCompletionResponse } from "#/lib/schema";
 import { processSpintax } from "#/lib/spintax";
 import { prompts } from "#/prompts";
 import { delay } from "es-toolkit";
+import { z } from "zod";
+
+const zStickerDescription = z.string().min(2).max(120);
 
 type MessageContent =
   | { type: "text"; text: string }
@@ -34,6 +37,7 @@ export class ChatbotHandler {
   private cacheClearInterval: ReturnType<typeof setInterval> | undefined;
   private guildEmojis = new Map<string, string[]>();
   private guildStickers = new Map<string, string[]>();
+  private stickerDescriptions = new Map<string, string>();
   private stickerNameMap = new Map<string, Map<string, string>>();
 
   constructor(opts: { log: Logger; ctx: Ctx }) {
@@ -156,7 +160,12 @@ export class ChatbotHandler {
         : "";
 
     const emojisList = emojis.join("\n");
-    const stickersList = stickers.map((name) => `[STICKER:${name}]`).join("\n");
+    const stickersList = stickers
+      .map((name) => {
+        const desc = this.stickerDescriptions.get(name);
+        return desc ? `[STICKER:${name}] (${desc})` : `[STICKER:${name}]`;
+      })
+      .join("\n");
 
     const discordContext = prompts.discordContext
       .replace(/\{\{MEMBERS\}\}/g, membersList)
@@ -398,7 +407,8 @@ export class ChatbotHandler {
     let result = content;
     if (message.stickers && message.stickers.size > 0) {
       for (const sticker of message.stickers.values()) {
-        result += ` [STICKER:${sticker.name}]`;
+        const desc = this.stickerDescriptions.get(sticker.name);
+        result += desc ? ` [STICKER:${sticker.name}] (${desc})` : ` [STICKER:${sticker.name}]`;
       }
     }
     return result;
@@ -454,6 +464,12 @@ export class ChatbotHandler {
       if (validStickerIds.has(sticker.id)) {
         newStickers.push(sticker.name);
       }
+
+      if (sticker.name && !this.stickerDescriptions.has(sticker.name)) {
+        this.describeSticker(guildId, sticker.name, sticker.url).catch((e) => {
+          this.log.error(e, `Failed to describe sticker ${sticker.name}`);
+        });
+      }
     }
 
     if (newStickers.length === 0) return;
@@ -474,5 +490,43 @@ export class ChatbotHandler {
     const last5 = uniqueStickers.slice(-5);
 
     this.guildStickers.set(guildId, last5);
+  }
+
+  private async describeSticker(guildId: string, stickerName: string, stickerUrl: string) {
+    const imageData = await this.fetchImage(stickerUrl);
+    if (!imageData) return;
+
+    const messages: MessagesPayload = [
+      {
+        role: "system",
+        content: prompts.describeImage,
+      },
+      {
+        role: "user",
+        content: [
+          {
+            type: "image_url",
+            image_url: { url: `data:${imageData.contentType};base64,${imageData.base64}` },
+          },
+        ],
+      },
+    ];
+
+    this.log.debug(`Generating description for sticker: ${stickerName}`);
+    const res = await this.completion(messages, guildId);
+    const content = res?.choices[0]?.message.content;
+    if (content) {
+      this.log.debug(`[Image Description] \n${content}`);
+      try {
+        const cleaned = content.replace(/[`"']/g, "").trim();
+        const description = zStickerDescription.parse(cleaned);
+        this.stickerDescriptions.set(stickerName, description);
+      } catch (e) {
+        this.log.error(
+          e,
+          `Failed to parse sticker description for ${stickerName}. Content: ${content}`,
+        );
+      }
+    }
   }
 }
